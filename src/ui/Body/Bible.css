@@ -1,0 +1,91 @@
+.bible-container {
+  background: var(--gray-0);
+  width: 80vw;
+  height: 80vh;
+  border-radius: var(--br-small);
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  box-sizing: border-box;
+  gap: 6px
+}
+
+.bible-text-inputs-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-gap);
+  flex: 1;
+  min-width: 0;
+}
+
+.bible-form-container {
+  display: flex;
+  --form-gap: 4px;
+  gap: var(--form-gap);
+  max-height: 100px;
+
+}
+
+.bible-form-submit-button {
+  width: 100px;
+  border: none;
+  border-radius: var(--br-small);
+  background-color: var(--green-600)
+}
+
+.bible-form-submit-button:hover {
+  background-color: var(--green-400)
+}
+
+.bible-form-submit-button:active {
+  background-color: var(--green-800)
+}
+
+.bible-input-container {
+  position: relative;
+  display: inline-block;
+  background-color: var(--gray-2);
+  border-radius: var(--br-small);
+  box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
+}
+
+.bible-input-container:hover {
+  background-color: var(--gray-4)
+}
+
+.bible-text-input {
+  all: unset;
+  display: block;
+  overflow: clip;
+  white-space: nowrap;
+  overflow: clip;
+  max-width: 100%;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.bible-input-suggestions-container {
+  flex-direction: column;
+  position: absolute;
+  width: 100%;
+  max-width: 100%;
+  max-height: 100px;
+  overflow: auto;
+  z-index: 1;
+  background-color: var(--gray-2);
+  margin-top: var(--form-gap);
+  border-radius: var(--br-small);
+}
+
+
+.bible-input-suggestion {
+  all: unset;
+  text-align: left;
+  color: var(--base-300);
+}
+
+.bible-input-suggestion:hover {
+  color: white;
+}

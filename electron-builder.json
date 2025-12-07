@@ -1,0 +1,16 @@
+{
+  "appId": "sinai-project",
+  "files": [
+    "dist-electron",
+    "dist-ui",
+    "dist-display"
+  ],
+  "extraResources": [
+    "dist-electron/preload.cjs"
+  ],
+  "win": {
+    "target": [
+      "msi"
+    ]
+  }
+}

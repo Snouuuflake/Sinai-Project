@@ -1,0 +1,15 @@
+.general-icon-button {
+  all: unset;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.general-icon-button:hover {
+  color: var(--gray-5);
+}
+
+.general-icon-button:active {
+  color: var(--hi1);
+}
+

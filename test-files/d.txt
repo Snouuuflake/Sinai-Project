@@ -1,0 +1,11 @@
+!-T a
+o
+o
+!-S d
+Verse text goes here.
+Verse text goes here.
+o
+!-R d
+o
+!-N d
+o

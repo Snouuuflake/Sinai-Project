@@ -1,0 +1,72 @@
+
+.form-input-component {
+  height: 27px !important;
+}
+
+
+.no-spin::-webkit-outer-spin-button,
+.no-spin::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.boolean-input-button {
+  all: unset;
+  font-size: inherit;
+  padding: 0 7px;
+  border-radius: var(--br-small);
+  flex-grow: 1;
+  text-align: center;
+}
+.boolean-input-active {
+  background-color: var(--hi1);
+}
+.boolean-input-inactive {
+  background-color: var(--gray-6);
+}
+
+.text-input-v-container {
+  display: flex;
+  gap: 2px;
+  flex-direction: column;
+}
+
+.text-input-title {
+  font-size: 13px;
+  font-weight: bold;
+  padding-top: 0;
+  margin: 0;
+  padding-left: 2px;
+}
+
+.text-input-h-container {
+  display: flex;
+  gap: 5px;
+}
+
+.text-input-input {
+}
+
+.text-input-reset-button {
+  all: unset;
+  background-color: var(--hi1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 27px;
+  min-width: 27px;
+  border-radius: var(--br-small);
+}
+
+.int-input-input {
+  all: unset;
+  text-align: center;
+  border-radius: var(--br-small);
+  flex-grow: 1;
+  background-color: var(--gray-2);
+}
+
+.path-input-button {
+  overflow: hidden;
+  white-space: nowrap;
+}

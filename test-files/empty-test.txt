@@ -1,0 +1,12 @@
+!-T Test
+!-A AAAAAAAAAa
+
+!-S Empty1
+!-S Text 1
+line 1 1
+line 2 1
+
+!-S Empty2
+!-S Text 2
+line 1 2
+line 2 2

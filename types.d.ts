@@ -269,15 +269,5 @@ type LiveElementsState = {
 type NullFullDisplayConfigState = StateObject<FullDisplayConfigType | null>;
 
 type GlobalContextType = {
-  MAX_LIVE_ELEMENTS: number;
-  liveElements: LiveElementsState;
-  openElements: OpenElementsState;
-  viewElement: OpenElementState;
-  logoState: StateObject<boolean>;
-  bodyContent: {
-    value: "main" | "display";
-    set: React.Dispatch<React.SetStateAction<"main" | "display">>;
-  };
-  displayConfig: NullFullDisplayConfigState;
-  canType: React.MutableRefObject<boolean>;
+  x: number;
 };

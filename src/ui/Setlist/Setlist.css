@@ -16,4 +16,7 @@
   overflow-y: scroll;
   border-top: 2px solid var(--gray-60);
   border-bottom: 2px solid var(--gray-60);
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }

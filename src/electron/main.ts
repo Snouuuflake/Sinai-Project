@@ -36,7 +36,7 @@ let uiWindow: BrowserWindow;
 
 const appState = new AppState();
 for (let index = 0; index < 50; index++) {
-  appState.addMedia(new MediaImage("an image!", { path: path.join(app.getAppPath(), "test-files/", "lizard cat.jpg") }))
+  appState.addMedia(new MediaImage("an image :3", { path: path.join(app.getAppPath(), "test-files/", "lizard cat.jpg") }))
 }
 
 

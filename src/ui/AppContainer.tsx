@@ -9,6 +9,7 @@ const AppContainer: React.FC<{}> = ({ }) => {
   return <div className="app-container">
     <Header />
     <Setlist setlist={uiState?.setlist ?? null} />
+    <div className="main-container"></div>
   </div>
 }
 

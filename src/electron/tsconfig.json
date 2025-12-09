@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "types": ["../../types"],
+    "types": [
+      "../../types"
+    ],
     "strict": true,
     "target": "ESNext",
     "module": "NodeNext",

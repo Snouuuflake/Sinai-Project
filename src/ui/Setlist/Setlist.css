@@ -1,0 +1,19 @@
+.setlist {
+  gap: 10px;
+}
+
+.setlist-header-plus-button {
+  width: 40px;
+  border-radius: 4px 10px 4px 4px;
+  display: grid;
+  align-items: center;
+  /* TODO: real icon */
+  padding: 0;
+}
+
+.setlist-items-container {
+  flex-grow: 1;
+  overflow-y: scroll;
+  border-top: 2px solid var(--gray-60);
+  border-bottom: 2px solid var(--gray-60);
+}

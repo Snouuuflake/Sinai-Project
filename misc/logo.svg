@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="logo.svg"
+   inkscape:export-filename="..\src\ui\assets\logo-light.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#111111"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.6819304"
+     inkscape:cx="263.09055"
+     inkscape:cy="228.30909"
+     inkscape:window-width="1880"
+     inkscape:window-height="956"
+     inkscape:window-x="11"
+     inkscape:window-y="66"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient1289">
+      <stop
+         style="stop-color:#ff0065;stop-opacity:1;"
+         offset="0"
+         id="stop1285" />
+      <stop
+         style="stop-color:#00dbff;stop-opacity:1;"
+         offset="1"
+         id="stop1287" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient1289"
+       id="linearGradient1291"
+       x1="31.142925"
+       y1="20.087321"
+       x2="47.11851"
+       y2="20.087321"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(8.2808731,0,0,8.2808731,-248.68064,-137.85204)" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-size:65.7513px;line-height:0.9;font-family:'Devina Garden';-inkscape-font-specification:'Devina Garden';text-align:center;text-anchor:middle;fill:url(#linearGradient1291);fill-opacity:1;stroke-width:0.579661;stroke-linecap:round;paint-order:markers stroke fill;stop-color:#000000"
+       x="75.553116"
+       y="48.213943"
+       id="text236"><tspan
+         sodipodi:role="line"
+         id="tspan234"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Junegull;-inkscape-font-specification:Junegull;fill:url(#linearGradient1291);fill-opacity:1;stroke-width:0.579661"
+         x="75.553116"
+         y="48.213943">Sinai</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.2653px;line-height:0.9;font-family:Junegull;-inkscape-font-specification:Junegull;text-align:center;text-anchor:middle;display:inline;fill:#353535;fill-opacity:1;stroke-width:0.328528;stroke-linecap:round;paint-order:markers stroke fill;stop-color:#000000"
+       x="75.020447"
+       y="74.529488"
+       id="text1301"><tspan
+         sodipodi:role="line"
+         id="tspan1299"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Junegull;-inkscape-font-specification:'Junegull Bold';fill:#353535;fill-opacity:1;stroke-width:0.328528"
+         x="0"
+         y="0">Project</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.2653px;line-height:0.9;font-family:Junegull;-inkscape-font-specification:Junegull;text-align:center;text-anchor:middle;display:none;fill:#e4e4e4;fill-opacity:1;stroke:none;stroke-width:0.328528;stroke-linecap:round;paint-order:markers stroke fill;stop-color:#000000"
+       x="75.020447"
+       y="74.529488"
+       id="text2145"><tspan
+         sodipodi:role="line"
+         id="tspan2143"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Junegull;-inkscape-font-specification:'Junegull Bold';fill:#e4e4e4;fill-opacity:1;stroke:none;stroke-width:0.328528"
+         x="75.020447"
+         y="74.529488">Project</tspan></text>
+  </g>
+</svg>

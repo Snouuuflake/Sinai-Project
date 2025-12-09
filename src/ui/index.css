@@ -1,59 +1,76 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: dark;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
- --black:	    #100F0FFF;
- --base-950:	#1C1B1AFF;
- --base-900:	#282726FF;
- --base-850:	#343331FF;
- --base-800:	#403E3CFF;
- --base-700:	#575653FF;
- --base-600:	#6F6E69FF;
- --base-500:	#878580FF;
- --base-300:	#B7B5ACFF;
- --base-200:	#CECDC3FF;
- --base-150:	#DAD8CEFF;
- --base-100:	#E6E4D9FF;
- --paper:	    #FFFCF0FF;
-
- --green-600: #66800BFF;
- --green-400: #879A39FF;
- --green-800: #3D4C07FF;
-
-  /* variables */
-  --gray-0: var(--black);
-  --gray-1: var(--base-950);
-  --gray-2: var(--base-900);
-  --gray-3: var(--base-850);
-  --gray-4: var(--base-800);
-  --gray-5: var(--base-700);
-  --gray-6: var(--base-600);
-
-  --hi1: #d71f16ff;
-  --hi2: var(--hi1);
-
   --br-small: 3px;
+  --hi-1-base: #ff0065ff;
+  --hi-2-base: #00dbffff;
 
-  color: var(paper);
-  background-color: var(--gray-0);
+  --main-container-br: 13px;
+}
+
+:root,
+:root[data-theme="dark"] {
+  --text-color: white;
+  --fg: white;
+  --disabled-text: hsl(0 0% 80%);
+  --background: black;
+  --gray-95: hsl(0 0% 5%);
+  --gray-90: hsl(0 0% 10%);
+  --gray-80: hsl(0 0% 20%);
+  --gray-70: hsl(0 0% 30%);
+  --gray-60: hsl(0 0% 40%);
+  --gray-50: hsl(0 0% 50%);
+  --gray-40: hsl(0 0% 60%);
+  --gray-30: hsl(0 0% 70%);
+  --gray-20: hsl(0 0% 80%);
+  --gray-10: hsl(0 0% 90%);
+
+  --hi-1: var(--hi-1-base);
+  --hi-2: var(--hi-2-base);
+}
+
+:root[data-theme="light"] {
+  --text-color: black;
+  --fg: black;
+  --disabled-text: hsl(0 0% 20%);
+  --background: white;
+  --gray-10: hsl(0 0% 10%);
+  --gray-20: hsl(0 0% 20%);
+  --gray-30: hsl(0 0% 30%);
+  --gray-40: hsl(0 0% 40%);
+  --gray-50: hsl(0 0% 50%);
+  --gray-60: hsl(0 0% 60%);
+  --gray-70: hsl(0 0% 70%);
+  --gray-80: hsl(0 0% 80%);
+  --gray-90: hsl(0 0% 90%);
+  --gray-95: hsl(0 0% 95%);
+
+  --hi-1: color-mix(in oklch, var(--hi-1-base), black 5%);
+  --hi-2: color-mix(in oklch, var(--hi-2-base), black 50%);
+}
+
+body {
+  background-color: var(--background);
 }
 
 @font-face {
-  font-family: "myfont";
+  font-family: "atk";
   src: url("./assets/AtkinsonHyperlegibleNext-VariableFont_wght.ttf");
   font-style: normal;
 }
 
 * {
-  font-family: "myfont", Arial;
+  font-family: "atk", Arial;
+  zoom: reset;
+  color: var(--text-color);
+  outline-color: var(--hi-1-base);
 }
 
 *::-webkit-scrollbar {
@@ -82,59 +99,37 @@ body {
   height: 100%;
 }
 
-* {
-  zoom: reset;
-}
-
-
-.inverse-title {
-  background-color: white;
-  color: black;
-  padding-left: 5px;
-  font-weight: bold;
-  flex-grow: 1;
-  justify-self: flex-end;
-  height: 100%;
-  align-content: center;
-}
-.inverse-title-container {
-  display: flex;
-  gap: 7px;
-  height: 28px;
-  align-items: center;
-}
-.inverse-title-button {
-  flex-shrink: 0;
+button {
+  /* background-color: var(--gray-95); */
+  background-color: var(--gray-90);
+  /* border: 2px solid var(--gray-40); */
   border: none;
-  background-color: var(--gray-3);
-  height: 100%;
-  border-radius: var(--br-small);
-}
-.inverse-title-button:hover {
-  background-color: var(--gray-4);
-}
-.inverse-title-button:active {
-  background-color: var(--gray-2);
+  border-radius: 7px;
+  font-size: 12pt;
+  font-weight: bold;
 }
 
-.margin-bottom-7 {
-  margin-bottom: 7px;
-}
-.dark-material-input {
-  all: unset;
-  width: 100%;
-  border-radius: 3px 3px 0 0;
-  flex-grow: 1;
-  padding: 0 4px;
-  border-bottom: 3px solid white;
-  background-color: var(--gray-2);
-  box-sizing: border-box;
+button:hover {
+  /* border-color: var(--hi-1); */
+  background-color: color-mix(in srgb, var(--gray-90), var(--hi-1))
 }
 
-.form-label-1 {
-  display: block;
+button:active {
+  background-color: var(--hi-1)
 }
 
-.darken-hover:hover {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.2) 0 0);
+.hi-1-button {
+  color: white;
+  background-color: var(--hi-1);
 }
+
+.hi-1-button:hover {
+  /* border-color: var(--hi-1); */
+  background-color: color-mix(in srgb, var(--gray-90), var(--hi-1) 70%)
+}
+
+.hi-1-button:active {
+  /* border-color: var(--hi-1); */
+  background-color: color-mix(in srgb, var(--gray-90), var(--hi-1) 30%)
+}
+

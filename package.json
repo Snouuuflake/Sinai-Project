@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.3.3",
   "type": "module",
-  "main": "dist-electron/main.js",
+  "main": "dist-electron/electron/main.js",
   "icon": "./icon.png",
   "author": "Snouuuflake",
   "scripts": {

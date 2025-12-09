@@ -1,14 +1,19 @@
+import { ThemeContextProvider } from "./ThemeContext";
+import { UIStateContextProvider, useUIState } from "./UIStateContext";
+
 import "./App.css";
-import Body from "./Body/Body";
-import  InlineEditor from "./Editor/InlineEditor";
-import GlobalContextProvider from "./GlobalContext";
+
+import AppContainer from "./AppContainer";
 
 function App() {
+  const uiState = useUIState();
+  console.log(uiState);
   return (
-    <GlobalContextProvider>
-    {/*<InlineEditor />*/}
-      <Body></Body>
-    </GlobalContextProvider>
+    <UIStateContextProvider>
+      <ThemeContextProvider>
+        <AppContainer />
+      </ThemeContextProvider>
+    </UIStateContextProvider>
   );
 }
 

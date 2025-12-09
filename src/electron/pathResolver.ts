@@ -6,7 +6,7 @@ function getPreloadPath(): string {
   return path.join(
     app.getAppPath(),
     isDev() ? "." : "..",
-    "dist-electron/preload.cjs",
+    "dist-electron/electron/preload.cjs",
   );
 }
 
@@ -18,4 +18,4 @@ function getConfigPath(): string {
   );
 }
 
-export {getConfigPath, getPreloadPath}
+export { getConfigPath, getPreloadPath }

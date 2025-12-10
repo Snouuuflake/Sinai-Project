@@ -28,6 +28,28 @@ class AppState {
   getUIStateSetlist(): SerializedMediaWithId[] {
     return this.#setlist.map(id => this.#media.get(id)!.toSerializedMediaWithId(id));
   }
+  /**
+   * @param id id of media to be moved 
+   * @param index index isnide setlist to put it's id 
+   */
+  moveSetlistMedia(id: number, index: number) {
+    if (this.#setlist.indexOf(id) == -1) {
+      throw new Error("moveSetlistMedia: id not in this.#setlist")
+    }
+    if (!this.#media.get(id)) {
+      throw new Error("moveSetlistMedia: id not in this.media")
+    }
+    if (index >= this.#setlist.length) {
+      throw new Error(
+        "moveSetlistMEdia: index is greater than this.#setlist.length"
+      );
+    }
+
+    const itemSetlistIndex = this.#setlist.indexOf(id);
+
+    this.#setlist.splice(itemSetlistIndex, 1);
+    this.#setlist.splice(index, 0, id);
+  }
 }
 
 let uiWindow: BrowserWindow;
@@ -38,6 +60,13 @@ for (let index = 0; index < 50; index++) {
 }
 
 /* ------- ui ipc ------- */
+function alertMessageBox(message: string) {
+  dialog.showMessageBox({ message: message });
+}
+
+ipcMain.on("_alert", (_event, message: string) => {
+  alertMessageBox(message);
+});
 
 function sendToUIWindow(channel: string, ...args: any[]) {
   if (!uiWindow) return;
@@ -53,7 +82,13 @@ function updateAllUI() {
 }
 
 ipcMain.on("ui-state-request", (_event) => { updateAllUI(); });
-ipcMain.on("move-media", (_event, id: number) => {
+ipcMain.on("move-media", (_event, id: number, index: number) => {
+  try {
+    appState.moveSetlistMedia(id, index);
+    updateUISetlist();
+  } catch (e) {
+    if (e instanceof Error) alertMessageBox(e.message);
+  }
 })
 
 
@@ -79,7 +114,4 @@ app.on("window-all-closed", () => {
   app.quit();
 });
 
-ipcMain.on("_alert", (_event, message: string) => {
-  dialog.showMessageBox({ message: message });
-});
 

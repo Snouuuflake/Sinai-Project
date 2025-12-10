@@ -2,22 +2,69 @@
   background-color: var(--gray-90);
   border-radius: var(--main-container-br);
   border: 2px solid var(--fg);
-  width: 80%;
+  /* width: 80%; */
   max-height: 80%;
-  padding: 5px;
-  overflow-y: scroll;
+  padding: 10px;
+  overflow-y: clip;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .setlist-item-move-item-modal-title-id {
   font-weight: normal;
   color: var(--gray-50);
 }
+.setlist-item-move-item-modal-x-button {
+  background-color: var(--hi-1);
+  color: white;
+  font-size: 10pt;
+  border-radius: 100%;
+  height: 23px;
+  width: 23px;
+}
+.setlist-item-move-item-modal-x-button {
+}
 .setlist-item-move-item-modal-list-container {
+  overflow-y: scroll;
+  flex-grow: 1;
+
+  border-top: 2px solid var(--gray-60);
+  border-bottom: 2px solid var(--gray-60);
+}
+.setlist-item-move-item-modal-list-item-container {
   display: flex;
   gap: 10px;
   width: 100%;
   box-sizing: border-box;
   user-select: none;
-  cursor: pointer;
+}
+
+.setlist-item-move-item-modal-move-button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  background-color: transparent;
+  color: var(--hi-2);
+}
+.setlist-item-move-item-modal-move-button:hover {
+  background-color: transparent;
+  color: color-mix(in oklch, var(--hi-2), white 40%);
+}
+.setlist-item-move-item-modal-move-button:active {
+  background-color: transparent;
+  color: color-mix(in oklch, var(--hi-2), black 40%);
+}
+.setlist-item-move-item-modal-move-button-hr {
+  height: 0;
+  flex-grow: 1;
+  border: none;
+  border-top: 2px solid var(--hi-2)
+}
+.setlist-item-move-item-modal-move-button-text {
+  font-weight: bold;
+  color: inherit;
 }
 
 /* .setlist-item-move-item-modal-header-container { */

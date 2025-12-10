@@ -6,6 +6,38 @@ import { useUIState } from "../UIStateContext";
 
 import "./SetlistItem.css";
 
+type HoveredHalfType = {
+  index: number;
+  half: number;
+}
+
+const MoveButton: React.FC<{ item: SerializedMediaWithId, hoveredHalf: HoveredHalfType }> = ({ item, hoveredHalf }) => {
+  const { hideModal } = useModal();
+  return <button
+    className="setlist-item-move-item-modal-move-button"
+    onClick={
+      () => {
+        window.electron.sendMoveMedia(
+          item.id, hoveredHalf.index + hoveredHalf.half
+        );
+        hideModal();
+      }
+    }
+  >
+    <hr
+      className="setlist-item-move-item-modal-move-button-hr"
+    />
+    <div
+      className="setlist-item-move-item-modal-move-button-text"
+    >
+      [Move here!]
+    </div>
+    <hr
+      className="setlist-item-move-item-modal-move-button-hr"
+    />
+  </button>
+}
+
 const VSplitClickable:
   React.FC<{
     onHover: (half: number) => void,
@@ -41,15 +73,15 @@ const VSplitClickable:
   }
 
 const MoveItemModal: React.FC<{ item: SerializedMediaWithId }> = ({ item }) => {
-  type HoveredHalfType = {
-    id: number;
-    half: number;
-  }
   const [hoveredHalf, setHoveredHalf] =
     useState<HoveredHalfType | null>(null);
 
   const { hideModal } = useModal();
   const { setlist } = useUIState();
+
+  const setlistWithoutItem = [...setlist];
+
+  setlistWithoutItem.splice(setlist.findIndex(i => i.id == item.id), 1);
 
   const maxIdChars = 4;
 
@@ -69,41 +101,46 @@ const MoveItemModal: React.FC<{ item: SerializedMediaWithId }> = ({ item }) => {
         </button>
       </div>
     </div>
-    {setlist.flatMap(i => {
-      const renderedItem =
-        <VSplitClickable onHover={
-          (half) => {
-            setHoveredHalf({
-              id: i.id,
-              half: half,
-            })
-          }
-        } onClick={console.log}>
-          <div className="setlist-item-move-item-modal-list-container">
-            <div
-              className="setlist-item-id-container"
-              style={{ width: `${maxIdChars * 1.1}ch` }}
-            >
-              {i.id}
-            </div>
-            <div
-              className="setlist-item-name-container"
-            >
-              {i.name}
-            </div>
-          </div>
-        </VSplitClickable>;
+    <div className="setlist-item-move-item-modal-list-container">
+      {setlistWithoutItem.flatMap((x, i) => {
+        const renderedButton = hoveredHalf ? <MoveButton item={item} hoveredHalf={hoveredHalf} /> : <></>;
+        {/* const renderedButton = <div>hi</div>; */ }
 
-      return (i.id == hoveredHalf?.id) ?
-        [
-          (hoveredHalf.half == 0) ? <hr /> : <></>,
-          renderedItem,
-          (hoveredHalf.half == 1) ? <hr /> : <></>,
-        ]
-        :
-        renderedItem;
-    }
-    )}
+        const renderedItem =
+          <VSplitClickable key={`item-${i}`} onHover={
+            (half) => {
+              setHoveredHalf({
+                index: i,
+                half: half,
+              })
+            }
+          } onClick={console.log}>
+            <div className="setlist-item-move-item-modal-list-item-container">
+              <div
+                className="setlist-item-id-container"
+                style={{ width: `${maxIdChars * 1.1}ch` }}
+              >
+                {x.id}
+              </div>
+              <div
+                className="setlist-item-name-container"
+              >
+                {x.name}
+              </div>
+            </div>
+          </VSplitClickable>;
+
+        return (i == hoveredHalf?.index) ?
+          [
+            (hoveredHalf.half == 0) ? renderedButton : <></>,
+            renderedItem,
+            (hoveredHalf.half == 1) ? renderedButton : <></>,
+          ]
+          :
+          renderedItem;
+      }
+      )}
+    </div>
   </div>
 }
 

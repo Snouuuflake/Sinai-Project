@@ -34,12 +34,15 @@
 .main-container-header {
   display: flex;
   flex-direction: row;
+  gap: 10px;
+  align-items: center;
 }
 
 .main-container-header-buttons-container {
   flex-grow: 1;
   display: flex;
   justify-content: flex-end;
+  height: 100%
 }
 
 .main-container-title {

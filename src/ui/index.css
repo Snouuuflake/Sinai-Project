@@ -55,7 +55,7 @@
   --gray-95: hsl(0 0% 95%);
 
   --hi-1: color-mix(in oklch, var(--hi-1-base), black 5%);
-  --hi-2: color-mix(in oklch, var(--hi-2-base), black 50%);
+  --hi-2: color-mix(in oklch, var(--hi-2-base), black 25%);
 }
 
 body {
@@ -113,6 +113,7 @@ button {
   border-radius: 7px;
   font-size: 12pt;
   font-weight: bold;
+  cursor: pointer;
 }
 
 button:hover {

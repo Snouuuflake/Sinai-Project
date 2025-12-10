@@ -1,4 +1,3 @@
-import { memo } from "react";
 import { SerializedMediaWithId } from "../../shared/media-classes";
 
 import "./Setlist.css";
@@ -14,7 +13,7 @@ const Setlist: React.FC<{ setlist: SerializedMediaWithId[] | null }> = ({ setlis
       </div>
     </div>
     <div className="setlist-items-container">
-      {setlist?.map(x => <SetlistItem maxIdChars={4} item={x} />) ?? <></>}
+      {setlist?.map((x, i) => <SetlistItem key={i} maxIdChars={4} item={x} />) ?? <></>}
     </div>
   </div >
 };

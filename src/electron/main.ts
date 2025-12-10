@@ -3,7 +3,7 @@ import path from "path";
 import { isDev } from "./util.js";
 import { getConfigPath, getPreloadPath } from "./pathResolver.js";
 // import { readMSSFile, writeMSSFile } from "./parser.js";
-import { Media, MediaImage, MediaImageValueType, UIState } from "../shared/media-classes.js";
+import { Media, MediaImage, MediaImageValueType, SerializedMediaWithId, UIState } from "../shared/media-classes.js";
 import * as constants from "../shared/constants.js";
 import * as fs from "fs";
 
@@ -25,10 +25,8 @@ class AppState {
     this.#setlist.push(this.#mediaIdCounter);
     this.#mediaIdCounter++;
   }
-  getUIState(): UIState {
-    return {
-      setlist: this.#setlist.map(id => this.#media.get(id)!.toSerializedMediaWithId(id)),
-    }
+  getUIStateSetlist(): SerializedMediaWithId[] {
+    return this.#setlist.map(id => this.#media.get(id)!.toSerializedMediaWithId(id));
   }
 }
 
@@ -46,11 +44,15 @@ function sendToUIWindow(channel: string, ...args: any[]) {
   uiWindow.webContents.send(channel, ...args);
 }
 
-function updateUI() {
-  sendToUIWindow("ui-state-update", appState.getUIState());
+function updateUISetlist() {
+  sendToUIWindow("ui-state-update-setlist", appState.getUIStateSetlist());
 }
 
-ipcMain.on("ui-state-request", (_event) => { updateUI(); });
+function updateAllUI() {
+  updateUISetlist();
+}
+
+ipcMain.on("ui-state-request", (_event) => { updateAllUI(); });
 
 
 app.on("ready", () => {

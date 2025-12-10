@@ -1,19 +1,24 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { UIState } from "../shared/media-classes";
+import { UIState, SerializedMediaWithId } from "../shared/media-classes";
 
+type UIStateContextType = {
+  setlist: SerializedMediaWithId[];
+}
 
-export const UIStateContext = createContext<UIState | null>(null);
+export const UIStateContext = createContext<UIStateContextType | null>(null);
 
 export const UIStateContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [uiState, setUIState] = useState<UIState | null>(null);
+  const [setlist, setSetlist] = useState<SerializedMediaWithId[]>([]);
+
   useEffect(() => {
-    const remover = window.electron.onUIStateUpdate((state: UIState) => { setUIState(state); });
+    const remover = window.electron.onUIStateUpdateSetlist(
+      (newValue: SerializedMediaWithId[]) => { setSetlist(newValue); }
+    );
     window.electron.sendUIStateRequest();
     return remover;
   }, [])
-  useEffect(() => (console.log(1, uiState)), [uiState]);
 
-  return <UIStateContext.Provider value={uiState}>
+  return <UIStateContext.Provider value={{ setlist }}>
     {children}
   </UIStateContext.Provider >
 };

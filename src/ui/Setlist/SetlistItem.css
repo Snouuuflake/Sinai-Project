@@ -1,22 +1,51 @@
+.setlist-item-menu-container {
+  background-color: var(--gray-90);
+  border-radius: var(--main-container-br);
+  border: 2px solid var(--fg);
+  width: 100px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  font-size: 11pt;
+}
+.setlist-item-menu-button {
+  all: unset;
+}
+.setlist-item-menu-button:hover {
+  background: transparent;
+  color: color-mix(in srgb, var(--gray-30), var(--hi-1));
+}
+.setlist-item-menu-button:active {
+  background: transparent;
+  color: var(--hi-1);
+}
+
 .setlist-item {
   all: unset;
   display: flex;
   gap: 10px;
   width: 100%;
+  box-sizing: border-box;
 }
 .setlist-item:hover {
-  /* background-color: transparent; */
-  color: color-mix(in srgb, var(--gray-40), var(--hi-1));
+  background-color: transparent;
+  color: color-mix(in srgb, var(--gray-70), var(--hi-1));
 
 }
 .setlist-item:active {
   /* background-color: transparent; */
   color: var(--hi-1);
 }
+.setlist-item:hover>.setlist-item-id-container,
+.setlist-item:hover>.setlist-item-name-container,
 .setlist-item:active>.setlist-item-id-container,
 .setlist-item:active>.setlist-item-name-container
 {
   color: inherit;
+}
+.setlist-item:hover>.setlist-item-name-container,
+.setlist-item:active>.setlist-item-name-container{
+  font-weight: bold;
 }
 
 .setlist-item-id-container {

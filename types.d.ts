@@ -64,7 +64,7 @@ import * as mc from "./src/shared/media-classes.js";
 declare global {
   interface Window {
     electron: {
-      onUIStateUpdate: (callback: (state: UIState) => void) => () => void;
+      onUIStateUpdateSetlist: (callback: (newValue: mc.SerializedMediaWithId[]) => void) => () => void;
       sendUIStateRequest: () => void;
     };
   }

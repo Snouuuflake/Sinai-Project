@@ -24,5 +24,9 @@ export const UIStateContextProvider: React.FC<{ children: React.ReactNode }> = (
 };
 
 export const useUIState = () => {
-  return useContext(UIStateContext);
+  const context = useContext(UIStateContext);
+  if (!context) {
+    throw new Error("used useUIState outside of UIStateContext");
+  }
+  return context;
 }

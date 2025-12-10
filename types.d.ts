@@ -66,6 +66,7 @@ declare global {
     electron: {
       onUIStateUpdateSetlist: (callback: (newValue: mc.SerializedMediaWithId[]) => void) => () => void;
       sendUIStateRequest: () => void;
+      sendMoveMedia: (id: number) => void;
     };
   }
 }

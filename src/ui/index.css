@@ -21,6 +21,7 @@
   --fg: white;
   --disabled-text: hsl(0 0% 80%);
   --background: black;
+  --bg: var(--background);
   --gray-95: hsl(0 0% 5%);
   --gray-90: hsl(0 0% 10%);
   --gray-80: hsl(0 0% 20%);
@@ -41,6 +42,7 @@
   --fg: black;
   --disabled-text: hsl(0 0% 20%);
   --background: white;
+  --bg: var(--background);
   --gray-10: hsl(0 0% 10%);
   --gray-20: hsl(0 0% 20%);
   --gray-30: hsl(0 0% 30%);

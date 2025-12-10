@@ -37,7 +37,7 @@ for (let index = 0; index < 50; index++) {
   appState.addMedia(new MediaImage("an image :3", { path: path.join(app.getAppPath(), "test-files/", "lizard cat.jpg") }))
 }
 
-
+/* ------- ui ipc ------- */
 
 function sendToUIWindow(channel: string, ...args: any[]) {
   if (!uiWindow) return;
@@ -53,6 +53,8 @@ function updateAllUI() {
 }
 
 ipcMain.on("ui-state-request", (_event) => { updateAllUI(); });
+ipcMain.on("move-media", (_event, id: number) => {
+})
 
 
 app.on("ready", () => {

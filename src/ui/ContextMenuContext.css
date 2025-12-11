@@ -1,0 +1,6 @@
+.context-menu-default-container {
+  background-color: var(--gray-90);
+  border-radius: var(--main-container-br);
+  border: 2px solid var(--fg);
+  padding: 5px;
+}

@@ -11,6 +11,7 @@ node_modules
 dist-display
 dist-react
 dist-electron
+test-files
 *.local
 
 # Editor directories and files

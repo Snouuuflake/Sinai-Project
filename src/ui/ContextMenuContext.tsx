@@ -1,5 +1,7 @@
 import { useRef, useState, useEffect, createContext, useContext, MouseEvent } from "react";
 
+import "./ContextMenuContext.css";
+
 type ContextMenuPositionType = {
   x: number;
   y: number;

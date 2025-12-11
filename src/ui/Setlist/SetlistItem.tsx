@@ -103,7 +103,9 @@ const MoveItemModal: React.FC<{ item: SerializedMediaWithId }> = ({ item }) => {
     </div>
     <div className="setlist-item-move-item-modal-list-container">
       {setlistWithoutItem.flatMap((x, i) => {
-        const renderedButton = hoveredHalf ? <MoveButton item={item} hoveredHalf={hoveredHalf} /> : <></>;
+        const renderedButton = hoveredHalf ?
+          <MoveButton key="button" item={item} hoveredHalf={hoveredHalf} />
+          : <></>;
         {/* const renderedButton = <div>hi</div>; */ }
 
         const renderedItem =
@@ -150,7 +152,7 @@ const SetlistItemMenu:
     const { hideMenu } = useContextMenu();
     const { showModal } = useModal();
     return <div
-      className="setlist-item-menu-container">
+      className="context-menu-default-container setlist-item-menu-container">
       <button
         className="setlist-item-menu-button"
         onClick={
@@ -162,7 +164,15 @@ const SetlistItemMenu:
       >
         Move
       </button>
-      <button className="setlist-item-menu-button">
+      <button
+        className="setlist-item-menu-button"
+        onClick={
+          (_e) => {
+            window.electron.sendDeleteMedia(item.id);
+            hideMenu();
+          }
+        }
+      >
         Delete
       </button>
     </div>

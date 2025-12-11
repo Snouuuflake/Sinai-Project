@@ -1,5 +1,6 @@
 .setlist {
   gap: 10px;
+  min-width: 0;
 }
 
 .setlist-header-plus-button {
@@ -12,6 +13,7 @@
 }
 
 .setlist-items-container {
+  width: 100%;
   flex-grow: 1;
   overflow-y: scroll;
   border-top: 2px solid var(--gray-60);

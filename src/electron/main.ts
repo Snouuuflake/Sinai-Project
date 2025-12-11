@@ -2,7 +2,6 @@ import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import path from "path";
 import { isDev } from "./util.js";
 import { getConfigPath, getPreloadPath } from "./pathResolver.js";
-// import { readMSSFile, writeMSSFile } from "./parser.js";
 import { Media, MediaImage, MediaImageValueType, SerializedMediaWithId, UIState } from "../shared/media-classes.js";
 import * as constants from "../shared/constants.js";
 import * as fs from "fs";
@@ -50,14 +49,24 @@ class AppState {
     this.#setlist.splice(itemSetlistIndex, 1);
     this.#setlist.splice(index, 0, id);
   }
+  /**
+   * @param id id of item to remove 
+   */
+  deleteMedia(id: number) {
+    if (this.#setlist.indexOf(id) == -1) {
+      throw new Error("deleteMedia: id not in this.#setlist")
+    }
+    if (!this.#media.get(id)) {
+      throw new Error("deleteMedia: id not in this.media")
+    }
+    this.#setlist.splice(this.#setlist.indexOf(id), 1);
+    this.#media.delete(id);
+  }
 }
 
 let uiWindow: BrowserWindow;
 
 const appState = new AppState();
-for (let index = 0; index < 50; index++) {
-  appState.addMedia(new MediaImage("an image :3", { path: path.join(app.getAppPath(), "test-files/", "lizard cat.jpg") }))
-}
 
 /* ------- ui ipc ------- */
 function alertMessageBox(message: string) {
@@ -82,6 +91,34 @@ function updateAllUI() {
 }
 
 ipcMain.on("ui-state-request", (_event) => { updateAllUI(); });
+
+/* on setlist operations */
+ipcMain.on("add-images", (_event) => {
+  if (!uiWindow)
+    return;
+  dialog.showOpenDialog(uiWindow, {
+    title: "Add Media Images",
+    filters: [
+      {
+        name: "Images", extensions: [
+          "apng", "gif", "ico", "cur", "jpg", "jpeg", "jfif", "pjpeg", "pjp", "png", "svg",
+        ]
+      },
+    ],
+    properties: ["openFile", "multiSelections"]
+  }).then(
+    result => {
+      if (result.canceled) return;
+      result.filePaths.map(fp => new MediaImage(
+        fp.split(path.sep).at(-1) ?? "Image", {
+        path: fp
+      })
+      ).forEach(mi => appState.addMedia(mi));
+      updateUISetlist();
+    }
+  )
+});
+
 ipcMain.on("move-media", (_event, id: number, index: number) => {
   try {
     appState.moveSetlistMedia(id, index);
@@ -90,6 +127,15 @@ ipcMain.on("move-media", (_event, id: number, index: number) => {
     if (e instanceof Error) alertMessageBox(e.message);
   }
 })
+
+ipcMain.on("delete-media", (_event, id: number) => {
+  try {
+    appState.deleteMedia(id);
+    updateUISetlist();
+  } catch (e) {
+    if (e instanceof Error) alertMessageBox(e.message);
+  }
+});
 
 
 app.on("ready", () => {

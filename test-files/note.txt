@@ -1,6 +1,0 @@
-!-T Test
-!-A AAAAAAAAAa
-!-N :3
-
-!-S :3
-:3

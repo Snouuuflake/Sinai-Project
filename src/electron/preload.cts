@@ -32,5 +32,7 @@ function makeIpcOn(channel: string) {
 contextBridge.exposeInMainWorld("electron", {
   onUIStateUpdateSetlist: makeIpcOn("ui-state-update-setlist"),
   sendUIStateRequest: makeIpcSend("ui-state-request"),
-  sendMoveMedia: makeIpcSend("move-media")
+  sendAddImages: makeIpcSend("add-images"),
+  sendMoveMedia: makeIpcSend("move-media"),
+  sendDeleteMedia: makeIpcSend("delete-media"),
 });

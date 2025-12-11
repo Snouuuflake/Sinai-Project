@@ -1,5 +1,5 @@
 import { useState, useRef } from "react"
-import { SerializedMediaWithId } from "../../shared/media-classes"
+import { SerializedMediaIdentifier } from "../../shared/media-classes"
 import { useContextMenu } from "../ContextMenuContext";
 import { useModal } from "../ModalContext";
 import { useUIState } from "../UIStateContext";
@@ -11,7 +11,7 @@ type HoveredHalfType = {
   half: number;
 }
 
-const MoveButton: React.FC<{ item: SerializedMediaWithId, hoveredHalf: HoveredHalfType }> = ({ item, hoveredHalf }) => {
+const MoveButton: React.FC<{ item: SerializedMediaIdentifier, hoveredHalf: HoveredHalfType }> = ({ item, hoveredHalf }) => {
   const { hideModal } = useModal();
   return <button
     className="setlist-item-move-item-modal-move-button"
@@ -72,7 +72,7 @@ const VSplitClickable:
     </div>
   }
 
-const MoveItemModal: React.FC<{ item: SerializedMediaWithId }> = ({ item }) => {
+const MoveItemModal: React.FC<{ item: SerializedMediaIdentifier }> = ({ item }) => {
   const [hoveredHalf, setHoveredHalf] =
     useState<HoveredHalfType | null>(null);
 
@@ -147,7 +147,7 @@ const MoveItemModal: React.FC<{ item: SerializedMediaWithId }> = ({ item }) => {
 }
 
 const SetlistItemMenu:
-  React.FC<{ item: SerializedMediaWithId }>
+  React.FC<{ item: SerializedMediaIdentifier }>
   = ({ item }) => {
     const { hideMenu } = useContextMenu();
     const { showModal } = useModal();
@@ -178,13 +178,20 @@ const SetlistItemMenu:
     </div>
   }
 
-const SetlistItem: React.FC<{ maxIdChars: number, item: SerializedMediaWithId }> = ({ maxIdChars, item }) => {
+const SetlistItem: React.FC<{ maxIdChars: number, item: SerializedMediaIdentifier }> = ({ maxIdChars, item }) => {
   const { showMenu } = useContextMenu();
+  const { openMedia } = useUIState();
   return <button
     className="setlist-item"
     onContextMenu={(e) => {
       showMenu(e, <SetlistItemMenu item={item} />)
-    }}>
+    }}
+    onClick={
+      () => {
+        window.electron.sendSetOpenMedia(item.id);
+      }
+    }
+  >
     <div
       className="setlist-item-id-container"
       style={{ width: `${maxIdChars * 1.1}ch` }}
@@ -193,10 +200,11 @@ const SetlistItem: React.FC<{ maxIdChars: number, item: SerializedMediaWithId }>
     </div>
     <div
       className="setlist-item-name-container"
+      style={{ color: item.id === (openMedia?.id) ? "var(--hi-2) !important" : "" }}
     >
       {item.name}
     </div>
-  </button>
+  </button >
 };
 
 export default SetlistItem;

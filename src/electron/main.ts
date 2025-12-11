@@ -2,7 +2,13 @@ import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import path from "path";
 import { isDev } from "./util.js";
 import { getConfigPath, getPreloadPath } from "./pathResolver.js";
-import { Media, MediaImage, MediaImageValueType, SerializedMediaWithId, UIState } from "../shared/media-classes.js";
+import {
+  Media,
+  MediaImage,
+  MediaImageValueType,
+  SerializedMediaIdentifier,
+  SerializedMediaWithId,
+} from "../shared/media-classes.js";
 import * as constants from "../shared/constants.js";
 import * as fs from "fs";
 
@@ -10,6 +16,7 @@ class AppState {
   #setlist: number[] = [];
   #media: Map<number, Media> = new Map();
   #mediaIdCounter: number = 0;
+  #openMedia: number | null = null;
   /*
     live-elements: {
       string: LiveElement | null;
@@ -19,13 +26,23 @@ class AppState {
    */
   constructor() {
   }
-  addMedia(media: Media) {
-    this.#media.set(this.#mediaIdCounter, media);
-    this.#setlist.push(this.#mediaIdCounter);
-    this.#mediaIdCounter++;
+  getUIStateSetlist(): SerializedMediaIdentifier[] {
+    return this.#setlist.map(id => this.#media.get(id)!.toSerializedMediaIdentifier(id));
   }
-  getUIStateSetlist(): SerializedMediaWithId[] {
-    return this.#setlist.map(id => this.#media.get(id)!.toSerializedMediaWithId(id));
+  getUIStateOpenMedia(): SerializedMediaWithId | null {
+    if (this.#openMedia === null) return null;
+    return this.#media.get(this.#openMedia)!
+      .toSerializedMediaWithId(this.#openMedia);
+  }
+  setOpenMedia(id: number | null) {
+    if (id == null) {
+      this.#openMedia = null;
+      return;
+    }
+    if (!this.#media.get(id)) {
+      throw new Error("setOpenMedia: id not in this.media")
+    }
+    this.#openMedia = id;
   }
   /**
    * @param id id of media to be moved 
@@ -48,6 +65,11 @@ class AppState {
 
     this.#setlist.splice(itemSetlistIndex, 1);
     this.#setlist.splice(index, 0, id);
+  }
+  addMedia(media: Media) {
+    this.#media.set(this.#mediaIdCounter, media);
+    this.#setlist.push(this.#mediaIdCounter);
+    this.#mediaIdCounter++;
   }
   /**
    * @param id id of item to remove 
@@ -86,8 +108,13 @@ function updateUISetlist() {
   sendToUIWindow("ui-state-update-setlist", appState.getUIStateSetlist());
 }
 
+function updateUIOpenMedia() {
+  sendToUIWindow("ui-state-update-open-media", appState.getUIStateOpenMedia());
+}
+
 function updateAllUI() {
   updateUISetlist();
+  updateUIOpenMedia();
 }
 
 ipcMain.on("ui-state-request", (_event) => { updateAllUI(); });
@@ -132,6 +159,17 @@ ipcMain.on("delete-media", (_event, id: number) => {
   try {
     appState.deleteMedia(id);
     updateUISetlist();
+  } catch (e) {
+    if (e instanceof Error) alertMessageBox(e.message);
+  }
+});
+
+/* ------- */
+
+ipcMain.on("set-open-media", (_event, id: number | null) => {
+  try {
+    appState.setOpenMedia(id);
+    updateUIOpenMedia();
   } catch (e) {
     if (e instanceof Error) alertMessageBox(e.message);
   }

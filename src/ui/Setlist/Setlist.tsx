@@ -1,4 +1,4 @@
-import { SerializedMediaWithId } from "../../shared/media-classes";
+import { SerializedMediaIdentifier } from "../../shared/media-classes";
 import { useContextMenu } from "../ContextMenuContext";
 
 import "./Setlist.css";
@@ -20,7 +20,7 @@ const SetlistPlusMenu: React.FC<{}> = ({ }) => {
   </div>
 }
 
-const Setlist: React.FC<{ setlist: SerializedMediaWithId[] | null }> = ({ setlist }) => {
+const Setlist: React.FC<{ setlist: SerializedMediaIdentifier[] | null }> = ({ setlist }) => {
   const { showMenu } = useContextMenu();
   const maxIdChars = setlist?.map<number>(x => x.id.toString().length).reduce((p, c) => c > p ? c : p, 0) ?? 0
   return <div className="setlist main-container">

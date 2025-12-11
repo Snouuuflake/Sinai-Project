@@ -57,9 +57,22 @@ class MediaImage extends Media {
   }
 }
 
+type LiveElementIdentifier = {
+  id: number;
+  element: number;
+}
+
+type LiveElement = {
+  id: number;
+  element: number;
+  type: "image";
+  value: MediaImageValueType;
+}
+
 type UIStateContextType = {
   setlist: SerializedMediaIdentifier[];
   openMedia: SerializedMediaWithId | null;
+  liveElements: Array<LiveElementIdentifier | null>;
 }
 
 export { Media, MediaImage };
@@ -68,5 +81,7 @@ export type {
   SerializedMediaIdentifier,
   SerializedMediaWithId,
   SerializedImageMediaWithId,
+  LiveElementIdentifier,
+  LiveElement,
   UIStateContextType
 };

@@ -4,12 +4,15 @@ import path from "path";
 import { isDev } from "./util.js";
 import { getConfigPath, getPreloadPath } from "./pathResolver.js";
 import {
+  LiveElement,
+  LiveElementIdentifier,
   Media,
   MediaImage,
   MediaImageValueType,
   SerializedMediaIdentifier,
   SerializedMediaWithId,
 } from "../shared/media-classes.js";
+import { DISPLAYS } from "../shared/constants.js";
 import * as constants from "../shared/constants.js";
 import * as fs from "fs";
 
@@ -31,6 +34,7 @@ class AppState {
   #media: Map<number, Media> = new Map();
   #mediaIdCounter: number = 0;
   #openMedia: number | null = null;
+  #liveElements: Array<LiveElementIdentifier | null> = Array.from({ length: DISPLAYS }, (_x) => null);
   /*
     live-elements: {
       string: LiveElement | null;
@@ -51,6 +55,9 @@ class AppState {
     return this.#media.get(this.#openMedia)!
       .toSerializedMediaWithId(this.#openMedia);
   }
+  getUIStateLiveElements(): Array<LiveElementIdentifier | null> {
+    return [...this.#liveElements];
+  }
   setOpenMedia(id: number | null) {
     if (id == null) {
       this.#openMedia = null;
@@ -62,6 +69,25 @@ class AppState {
     this.#openMedia = id;
   }
   /**
+   * @param index display window index to set 
+   * @param id media id of new live media
+   */
+  setLiveElement(index: number, liveElementIdentifier: LiveElementIdentifier | null) {
+    if (index < 0 || index >= DISPLAYS) {
+      throw new Error("setLiveElements: index is invalid");
+    }
+    if (liveElementIdentifier === null) {
+      this.#liveElements[index] = null;
+      return;
+    }
+    if (!this.#media.get(liveElementIdentifier.id)) {
+      throw new Error("setLiveElements: id not in this.#media");
+    }
+    this.#liveElements[index] = liveElementIdentifier;
+    console.log("setLiveElement result", this.#liveElements);
+    return;
+  }
+  /**
    * @param id id of media to be moved 
    * @param index index isnide setlist to put it's id 
    */
@@ -70,7 +96,7 @@ class AppState {
       throw new Error("moveSetlistMedia: id not in this.#setlist")
     }
     if (!this.#media.get(id)) {
-      throw new Error("moveSetlistMedia: id not in this.media")
+      throw new Error("moveSetlistMedia: id not in this.#media")
     }
     if (index >= this.#setlist.length) {
       throw new Error(
@@ -96,7 +122,7 @@ class AppState {
       throw new Error("deleteMedia: id not in this.#setlist")
     }
     if (!this.#media.get(id)) {
-      throw new Error("deleteMedia: id not in this.media")
+      throw new Error("deleteMedia: id not in this.#media")
     }
     this.#setlist.splice(this.#setlist.indexOf(id), 1);
     this.#media.delete(id);
@@ -133,9 +159,14 @@ function updateUIOpenMedia() {
   sendToUIWindow("ui-state-update-open-media", appState.getUIStateOpenMedia());
 }
 
+function updateUILiveElements() {
+  sendToUIWindow("ui-state-update-live-elements", appState.getUIStateLiveElements());
+}
+
 function updateAllUI() {
   updateUISetlist();
   updateUIOpenMedia();
+  updateUILiveElements();
 }
 
 ipcMain.on("ui-state-request", (_event) => { updateAllUI(); });
@@ -194,6 +225,15 @@ ipcMain.on("set-open-media", (_event, id: number | null) => {
     if (e instanceof Error) alertMessageBox(e.message);
   }
 });
+
+ipcMain.on("set-live-element", (_event, displayIndex: number, liveElementIdentifier: LiveElementIdentifier | null) => {
+  try {
+    appState.setLiveElement(displayIndex, liveElementIdentifier);
+    updateUILiveElements();
+  } catch (e) {
+    if (e instanceof Error) alertMessageBox(e.message);
+  }
+})
 
 
 app.on("ready", () => {

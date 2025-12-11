@@ -1,4 +1,18 @@
+:root {
+  --blink-opacity: 1;
+  --blink-transparent-blend: 0%;
+}
+
+@keyframes blink {
+  50% {
+    --blink-opacity: 0.3;
+  --blink-transparent-blend: 50%;
+  }
+}
+
 .app-container {
+  animation: blink 0.7s step-start 0s infinite;
+
   display: grid;
   grid-template-areas: 
     "header header"
@@ -57,4 +71,5 @@
   text-overflow: ellipsis;
   overflow-x: clip;
   min-width: 0;
+  padding-right: 10px;
 }

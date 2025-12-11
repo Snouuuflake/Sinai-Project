@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, createContext, useContext, MouseEvent } from "react";
+import { useRef, useState, useEffect, createContext, useContext, } from "react";
 
 import "./ContextMenuContext.css";
 
@@ -78,17 +78,21 @@ export const ContextMenuContextProvider: React.FC<{ children: React.ReactNode }>
       };
 
       if (menuBounds.right > viewportWidth) {
-        newPosition.x = viewportWidth - menuBounds.width - 5;
+        newPosition.x = viewportWidth - menuBounds.width - 10;
+        console.log("overflow x");
       }
       if (menuBounds.bottom > viewportHeight) {
-        newPosition.y = viewportHeight - menuBounds.height - 5;
+        newPosition.y = viewportHeight - menuBounds.height - 10;
+        console.log("overflow y");
       }
+
+      console.log(menuBounds.right, viewportWidth, menuBounds.bottom, viewportHeight)
 
       if (newPosition.x !== position.x || newPosition.y !== position.y) {
         setPosition(newPosition);
       }
     }
-  }, [visible, position]);
+  }, [position]);
 
   return <ContextMenuContext.Provider
     value={value}

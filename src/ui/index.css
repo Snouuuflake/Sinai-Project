@@ -34,7 +34,7 @@
   --gray-10: hsl(0 0% 90%);
 
   --hi-1: var(--hi-1-base);
-  --hi-2: var(--hi-2-base);
+  --hi-2: color-mix(in oklch, var(--hi-2-base), black 5%);
 }
 
 :root[data-theme="light"] {
@@ -55,7 +55,7 @@
   --gray-95: hsl(0 0% 95%);
 
   --hi-1: color-mix(in oklch, var(--hi-1-base), black 5%);
-  --hi-2: color-mix(in oklch, var(--hi-2-base), black 25%);
+  --hi-2: color-mix(in oklch, var(--hi-2-base), black 20%);
 }
 
 body {

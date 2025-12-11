@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, protocol, net } from "electron";
+import { pathToFileURL } from "url";
 import path from "path";
 import { isDev } from "./util.js";
 import { getConfigPath, getPreloadPath } from "./pathResolver.js";
@@ -11,6 +12,19 @@ import {
 } from "../shared/media-classes.js";
 import * as constants from "../shared/constants.js";
 import * as fs from "fs";
+
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'local-file',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: false,
+      bypassCSP: false
+    }
+  }
+]);
 
 class AppState {
   #setlist: number[] = [];
@@ -25,6 +39,9 @@ class AppState {
     range(constants.DISPLAYS) -> "i": null;
    */
   constructor() {
+  }
+  get media(): Map<number, Media> {
+    return new Map(this.#media);
   }
   getUIStateSetlist(): SerializedMediaIdentifier[] {
     return this.#setlist.map(id => this.#media.get(id)!.toSerializedMediaIdentifier(id));
@@ -83,6 +100,10 @@ class AppState {
     }
     this.#setlist.splice(this.#setlist.indexOf(id), 1);
     this.#media.delete(id);
+
+    if (this.#openMedia === id) {
+      this.setOpenMedia(null);
+    }
   }
 }
 
@@ -137,9 +158,7 @@ ipcMain.on("add-images", (_event) => {
     result => {
       if (result.canceled) return;
       result.filePaths.map(fp => new MediaImage(
-        fp.split(path.sep).at(-1) ?? "Image", {
-        path: fp
-      })
+        fp.split(path.sep).at(-1) ?? "Image", fp)
       ).forEach(mi => appState.addMedia(mi));
       updateUISetlist();
     }
@@ -159,6 +178,7 @@ ipcMain.on("delete-media", (_event, id: number) => {
   try {
     appState.deleteMedia(id);
     updateUISetlist();
+    updateUIOpenMedia(); // !!
   } catch (e) {
     if (e instanceof Error) alertMessageBox(e.message);
   }
@@ -177,6 +197,23 @@ ipcMain.on("set-open-media", (_event, id: number | null) => {
 
 
 app.on("ready", () => {
+  protocol.handle('fetch-media', (request) => {
+    const requestContent = decodeURIComponent(request.url.replace('fetch-media://', ''));
+    let fileUrl: string;
+    try {
+      fileUrl = pathToFileURL(
+        appState.media.get(parseInt(requestContent))!.value.path
+      ).toString();
+    } catch (e) {
+      if (e instanceof Error) alertMessageBox(
+        `Error handling ${request.url}: ${e.message}`
+      );
+      fileUrl = "";
+    }
+    console.log("local-file: fileUrl = ", fileUrl.toString());
+    return net.fetch(fileUrl);
+  });
+
   uiWindow = new BrowserWindow({
     minWidth: 500,
     minHeight: 500,
@@ -192,6 +229,10 @@ app.on("ready", () => {
   } else {
     uiWindow.loadFile(path.join(app.getAppPath(), "/dist-react/index.html"));
   }
+});
+
+
+app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {

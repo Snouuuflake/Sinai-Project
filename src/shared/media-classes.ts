@@ -36,10 +36,11 @@ type SerializedMediaWithId = {
   value: any;
 }
 
-type UIState = {
-  setlist: SerializedMediaIdentifier[];
-  openMedia: SerializedMediaWithId;
-}
+type SerializedImageMediaWithId =
+  Omit<SerializedMediaWithId, "value" | "type"> & {
+    type: "image";
+    value: MediaImageValueType;
+  }
 
 type MediaImageValueType = {
   path: string;
@@ -48,9 +49,11 @@ type MediaImageValueType = {
 class MediaImage extends Media {
   type = "image" as const;
   value: MediaImageValueType;
-  constructor(name: string, value: MediaImageValueType) {
+  constructor(name: string, path: string) {
     super(name);
-    this.value = value;
+    this.value = {
+      path: path,
+    };
   }
 }
 
@@ -64,5 +67,6 @@ export type {
   MediaImageValueType,
   SerializedMediaIdentifier,
   SerializedMediaWithId,
+  SerializedImageMediaWithId,
   UIStateContextType
 };

@@ -26,9 +26,11 @@
   
   display: flex;
   flex-direction: column;
+  gap: 10px;
 
   overflow: clip;
   min-height: 0;
+  min-width: 0;
 }
 
 .main-container-header {
@@ -36,17 +38,23 @@
   flex-direction: row;
   gap: 10px;
   align-items: center;
+  width: 100%;
 }
 
 .main-container-header-buttons-container {
   flex-grow: 1;
   display: flex;
   justify-content: flex-end;
-  height: 100%
+  height: 100%;
+  min-width: 0;
 }
 
 .main-container-title {
   all: unset;
   font-size: 15pt;
   font-weight: bold;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow-x: clip;
+  min-width: 0;
 }

@@ -143,6 +143,7 @@ const displayWindows: BrowserWindow[] = []
 
 function createDisplayWindow(displayId: number) {
   const displayWindow = new BrowserWindow({
+    title: `Sinai Worship: Display Window ${displayId + 1}`,
     webPreferences: {
       preload: path.join(app.getAppPath(),
         isDev() ? "." : "..",

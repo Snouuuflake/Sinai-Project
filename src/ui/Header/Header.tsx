@@ -1,6 +1,7 @@
 import "./Header.css"
 import { useTheme } from "../ThemeContext";
 import Logo from "./Logo";
+import NewDisplayWindowButton from "./NewDisplayWindowButton";
 
 const Header: React.FC<{}> = ({ }) => {
   const themeContext = useTheme();
@@ -20,16 +21,7 @@ const Header: React.FC<{}> = ({ }) => {
       {b("Logo")}
       {b("Clear")}
       {b("Settings")}
-      <button
-        className="header-button"
-        onClick={
-          () => {
-            window.electron.sendNewDisplayWindow(0);
-          }
-        }
-      >
-        New Display Window
-      </button>
+      <NewDisplayWindowButton />
     </div>
   </div>
 }

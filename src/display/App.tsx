@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { SerializedLiveElement } from "../shared/media-classes";
 
+import DisplayImage from "./DisplayImage";
+
+
 const App: React.FC<{}> = ({ }) => {
   const params = new URLSearchParams(window.location.search);
   const DISPLAY_ID = parseInt(params.get('displayId') || '0');
@@ -21,7 +24,12 @@ const App: React.FC<{}> = ({ }) => {
   }, []);
 
   return <div>
-    {liveElement?.id ?? "null"}
+    {
+      liveElement === null ?
+        "null" :
+        liveElement.type === "image" ?
+          <DisplayImage liveElement={liveElement} /> : ""
+    }
   </div>
 }
 

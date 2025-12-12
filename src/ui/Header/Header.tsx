@@ -20,7 +20,16 @@ const Header: React.FC<{}> = ({ }) => {
       {b("Logo")}
       {b("Clear")}
       {b("Settings")}
-      {b("New Window")}
+      <button
+        className="header-button"
+        onClick={
+          () => {
+            window.electron.sendNewDisplayWindow(0);
+          }
+        }
+      >
+        New Display Window
+      </button>
     </div>
   </div>
 }

@@ -7,14 +7,14 @@
   "icon": "./icon.png",
   "author": "Snouuuflake",
   "scripts": {
-    "dev": "npm-run-all --parallel dev:react dev:electron",
-    "dev:react": "vite",
+    "dev": "npm-run-all --parallel dev:react dev:display dev:electron",
+    "dev:react": "vite --config vite.config.ui.ts",
+    "dev:display": "vite --config vite.config.display.ts",
     "dev:electron": "npm run transpile:electron && cross-env NODE_ENV=development electron .",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "transpile:electron": "tsc --project src/electron/tsconfig.json",
-    "dist:win": "npm run transpile:electron && npm run build && electron-builder --win --x64"
+    "build": "npm run build:ui && npm run build:display && npm run transpile:electron",
+    "build:ui": "tsc -b && vite build --config vite.config.ui.ts",
+    "build:display": "vite build --config vite.config.display.ts",
+    "transpile:electron": "tsc --project src/electron/tsconfig.json"
   },
   "dependencies": {
     "fast-fuzzy": "^1.12.0",

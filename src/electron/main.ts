@@ -4,7 +4,7 @@ import path from "path";
 import { isDev } from "./util.js";
 import { getConfigPath, getPreloadPath } from "./pathResolver.js";
 import {
-  LiveElement,
+  SerializedLiveElement,
   LiveElementIdentifier,
   Media,
   MediaImage,
@@ -57,6 +57,11 @@ class AppState {
   }
   getUIStateLiveElements(): Array<LiveElementIdentifier | null> {
     return [...this.#liveElements];
+  }
+  getDisplayStateLiveElement(displayId: number): SerializedLiveElement | null {
+    const le = this.#liveElements[displayId] ?? null;
+    if (le === null) return null;
+    return this.#media.get(le.id)?.toSerializedLiveElement(le.id, le.element) ?? null;
   }
   setOpenMedia(id: number | null) {
     if (id == null) {
@@ -134,8 +139,43 @@ class AppState {
 }
 
 let uiWindow: BrowserWindow;
+const displayWindows: BrowserWindow[] = []
+
+function createDisplayWindow(displayId: number) {
+  const displayWindow = new BrowserWindow({
+    webPreferences: {
+      preload: path.join(app.getAppPath(),
+        isDev() ? "." : "..",
+        "dist-electron/electron/preload.cjs"
+      ),
+    },
+  });
+
+  displayWindow.setMenu(null);
+
+  displayWindow.on("close", () => {
+    displayWindows.splice(displayWindows.indexOf(displayWindow), 0);
+  })
+
+  if (isDev()) {
+    displayWindow.loadURL(`http://localhost:5124?displayId=${displayId}`);
+    displayWindow.webContents.openDevTools();
+  } else {
+    displayWindow.loadFile(
+      path.join(app.getAppPath(), "/dist-display/index.html"),
+      { query: { displayId: displayId.toString() } }
+    );
+  }
+
+  displayWindows.push(displayWindow);
+  return displayWindow;
+}
 
 const appState = new AppState();
+
+ipcMain.on("new-display-window", (_event, id: number) => {
+  createDisplayWindow(id);
+});
 
 /* ------- ui ipc ------- */
 function alertMessageBox(message: string) {
@@ -170,6 +210,24 @@ function updateAllUI() {
 }
 
 ipcMain.on("ui-state-request", (_event) => { updateAllUI(); });
+
+/* ----- display ipc ----- */
+
+function sendToDisplayWinows(channel: string, ...args: any[]) {
+  displayWindows.forEach(dw => {
+    if (dw)
+      dw.webContents.send(channel, ...args);
+  })
+}
+
+function updateDisplayLiveElement(displayId: number) {
+  sendToDisplayWinows(
+    "display-state-update-live-elements",
+    displayId,
+    appState.getDisplayStateLiveElement(displayId)
+  );
+}
+
 
 /* on setlist operations */
 ipcMain.on("add-images", (_event) => {
@@ -226,10 +284,11 @@ ipcMain.on("set-open-media", (_event, id: number | null) => {
   }
 });
 
-ipcMain.on("set-live-element", (_event, displayIndex: number, liveElementIdentifier: LiveElementIdentifier | null) => {
+ipcMain.on("set-live-element", (_event, displayId: number, liveElementIdentifier: LiveElementIdentifier | null) => {
   try {
-    appState.setLiveElement(displayIndex, liveElementIdentifier);
+    appState.setLiveElement(displayId, liveElementIdentifier);
     updateUILiveElements();
+    updateDisplayLiveElement(displayId);
   } catch (e) {
     if (e instanceof Error) alertMessageBox(e.message);
   }
@@ -267,7 +326,7 @@ app.on("ready", () => {
     uiWindow.loadURL("http://localhost:5123");
     uiWindow.webContents.openDevTools();
   } else {
-    uiWindow.loadFile(path.join(app.getAppPath(), "/dist-react/index.html"));
+    uiWindow.loadFile(path.join(app.getAppPath(), "/dist-ui/index.html"));
   }
 });
 

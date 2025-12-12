@@ -21,6 +21,15 @@ abstract class Media {
       value: this.value,
     }
   }
+  toSerializedLiveElement(id: number, element: number): SerializedLiveElement {
+    return {
+      id: id,
+      element: element,
+      type: this.type,
+      value: this.getSerializedLiveElementValue(id, element),
+    }
+  }
+  abstract getSerializedLiveElementValue(id: number, element: number): any;
 }
 
 type SerializedMediaIdentifier = {
@@ -46,6 +55,10 @@ type MediaImageValueType = {
   path: string;
 }
 
+type LiveElementImageValueType = {
+  id: number;
+}
+
 class MediaImage extends Media {
   type = "image" as const;
   value: MediaImageValueType;
@@ -55,6 +68,12 @@ class MediaImage extends Media {
       path: path,
     };
   }
+  /**
+   * @returns this.id
+  */
+  getSerializedLiveElementValue(id: number, element: number): LiveElementImageValueType {
+    return { id: id };
+  }
 }
 
 type LiveElementIdentifier = {
@@ -62,11 +81,13 @@ type LiveElementIdentifier = {
   element: number;
 }
 
-type LiveElement = {
+type LiveElementTypeType = "image";
+
+type SerializedLiveElement = {
   id: number;
   element: number;
-  type: "image";
-  value: MediaImageValueType;
+  type: LiveElementTypeType;
+  value: any;
 }
 
 type UIStateContextType = {
@@ -82,6 +103,6 @@ export type {
   SerializedMediaWithId,
   SerializedImageMediaWithId,
   LiveElementIdentifier,
-  LiveElement,
+  SerializedLiveElement,
   UIStateContextType
 };

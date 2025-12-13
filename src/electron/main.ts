@@ -12,6 +12,7 @@ import {
   SerializedMediaIdentifier,
   SerializedMediaWithId,
   MediaSong,
+  Song,
 } from "../shared/media-classes.js";
 import { DISPLAYS } from "../shared/constants.js";
 import * as fs from "fs";
@@ -86,6 +87,13 @@ class AppState {
     const le = this.#liveElements[displayId] ?? null;
     if (le === null) return null;
     return this.#media.get(le.id)?.toSerializedLiveElement(le.id, le.element) ?? null;
+  }
+  setSongMediaSong(id: number, song: Song) {
+    const targetMedia = this.#media.get(id);
+    if (targetMedia instanceof MediaSong) {
+      targetMedia.value.song = song;
+      targetMedia.name = song.properties.title;
+    }
   }
   setOpenMedia(id: number | null) {
     if (id == null) {
@@ -207,7 +215,7 @@ function alertMessageBox(message: string) {
   dialog.showMessageBox({ message: message });
 }
 
-ipcMain.on("_alert", (_event, message: string) => {
+ipcMain.on("alert", (_event, message: string) => {
   alertMessageBox(message);
 });
 
@@ -349,6 +357,12 @@ ipcMain.on("delete-media", (_event, id: number) => {
     if (e instanceof Error) alertMessageBox(e.message);
   }
 });
+
+ipcMain.on("replace-song", (_event, id: number, song: Song) => {
+  appState.setSongMediaSong(id, song);
+  updateUIOpenMedia();
+  updateUISetlist();
+})
 
 /* ------- */
 

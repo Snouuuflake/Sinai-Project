@@ -31,11 +31,58 @@
   border-radius: var(--main-container-br);
   background-color: var(--gray-95);
   padding: 5px;
+  min-height: 0;
+  height: 80%;
+  width: 80%;
+  display: grid;
+  grid-template-areas: "header header" "left right" "save cancel";
+  grid-template-columns: 1fr 200px;
+  grid-template-rows: auto 1fr;
+  gap: 5px;
+}
+.edit-song-modal-cancel-button {
+  grid-area: cancel;
+}
+.edit-song-modal-save-button {
+  grid-area: save;
+}
+.edit-song-modal-header {
+  grid-area: header;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 5px;
+  align-items: center;
+}
+.edit-song-modal-header input {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 2px solid var(--gray-80);
+  border-radius: 4px;
+  padding: 3px;
 }
 .edit-song-modal-section-list {
+  grid-area: right;
+  display: grid;
+  grid-template-areas:"buttons" "list" "trash";
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+  min-height: 0;
+  overflow: clip;
+  gap: 5px;
+}
+.edit-song-modal-section-list-items-container {
+  grid-area: list;
   display: flex;
   flex-direction: column;
   gap: 5px;
+  border-top: 2px solid var(--gray-60);
+  border-bottom: 2px solid var(--gray-60);
+  padding: 5px 0;
+  min-height: 0;
+  overflow-y: scroll;
+  overflow-x: clip;
 }
 .edit-song-modal-section-list-item {
   background-color: var(--gray-80);
@@ -43,21 +90,107 @@
   display: flex;
   align-items: center;
   gap: 5px;
+  padding-right: 5px;
+  min-width: 0;
 }
 .edit-song-modal-section-list-item-name {
-  flex-grow: 1;
+  flex: 1;
+  min-width: 0;
+  text-overflow: ellipsis;
+  overflow-x: clip;
 }
 .edit-song-modal-section-list-item:hover {
   background-color: color-mix(in oklch, var(--gray-80), var(--hi-1));
 }
-.edit-song-modal-section-list-item-edit-button {
+.edit-song-modal-section-list-item-icon-button {
   all: unset;
-  padding: 0 5px;
   display: grid;
   place-items: center;
-  color: green;
+  color: var(--fg);
 }
-.edit-song-modal-section-list-item-edit-button:hover  {
+.edit-song-modal-section-list-item-icon-button:hover  {
   background-color: transparent;
+  color: var(--bg);
 }
+.edit-song-modal-section-list-item-icon-button:active  {
+  background-color: transparent;
+  color: var(--gray-50);
+}
+.edit-song-modal-trash {
+  grid-area: trash;
+  display: grid;
+  place-items: center;
+  height: 50px;
+  background-color: var(--gray-80);
+  border-radius: 10px;
+  color: var(--gray-40);
+}
+.edit-song-modal-add-section-container {
+  display: flex;
+  gap: 3px;
+  height: 25px;
+}
+.edit-song-modal-add-section-button {
+  display: grid;
+  place-items: center;
+  height: 25px;
+  width: 25px;
+  padding: 0;
+}
+.edit-song-modal-add-section-input {
+  flex-grow: 1;
+  min-width: 0;
+  width: 10px;
+  border: 2px solid var(--gray-80);
+  border-radius: 4px;
+}
+.edit-song-modal-section-editor {
+  min-width: 0;
+  display: grid;
+  grid-template-areas: "title" "textarea";
+  grid-template-rows: auto 1fr;
+  gap: 5px;
+  overflow-y: clip;
+  height: 100%;
+  min-height: 0;
+}
+.edit-song-modal-section-editor-header {
+  grid-area: title;
+  height: 25px;
+  overflow-x: clip;
+  width: 100%;
+  min-width: 0;
+}
+.edit-song-modal-section-editor-title {
+  all: unset;
+  font-size: 13pt;
+  font-weight: bold;
+  min-width: 0;
+  text-overflow: ellipsis;
+  overflow-x: clip;
+}
+.edit-song-modal-textarea {
+  grid-area: textarea;
+  display: block;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 5px;
+  box-sizing: border-box;
+  border: 2px solid var(--gray-80);
+  border-radius: 4px;
+  overflow-y: scroll;
+  
+  /* Guarantee proper wrapping */
+  white-space: normal;
 
+  /* Crucial for handling single long words/URLs that exceed container width */
+  overflow-wrap: break-word; 
+  word-break: break-word; /* Alias for robustness */
+  background-color: var(--bg);
+}
+.edit-song-modal-setion-editor-save-button {
+  height: 100%;
+}

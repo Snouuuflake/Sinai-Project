@@ -14,8 +14,11 @@ declare global {
       sendAddSongs: () => void;
       sendMoveMedia: (id: number, index: number) => void;
       sendDeleteMedia: (id: number) => void;
+      sendReplaceSong: (id: number, song: Song) => void;
 
       onDisplayStateUpdateLiveElement: (callback: (displayId: number, newValue: SerializedLiveElement | null) => void) => () => void;
+
+      sendAlert: (message: string) => void;
     };
   }
 }

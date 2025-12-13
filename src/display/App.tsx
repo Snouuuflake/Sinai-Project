@@ -8,8 +8,7 @@ const App: React.FC<{}> = ({ }) => {
   const params = new URLSearchParams(window.location.search);
   const DISPLAY_ID = parseInt(params.get('displayId') || '0');
   console.log("DISPLAY_ID", DISPLAY_ID);
-  const [liveElement, setLiveElement] =
-    useState<SerializedLiveElement | null>(null);
+  const [liveElement, setLiveElement] = useState<SerializedLiveElement | null>(null);
 
   useEffect(() => {
     const remover = window.electron.onDisplayStateUpdateLiveElement(

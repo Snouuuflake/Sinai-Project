@@ -38,7 +38,7 @@ type Song = {
 type MediaTypeType = "image" | "song";
 
 abstract class Media {
-  readonly name: string;
+  name: string;
   abstract readonly type: MediaTypeType;
   abstract value: any;
   constructor(name: string) {

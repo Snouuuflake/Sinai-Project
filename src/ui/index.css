@@ -74,7 +74,7 @@ body {
   font-style: normal;
 }
 
-*:not(.lucide) {
+*:not(svg):not(svg *) {
   font-family: "atk", Arial;
   zoom: reset;
   color: var(--text-color);
@@ -121,14 +121,15 @@ button {
   font-weight: bold;
   cursor: pointer;
 }
-
 button:hover {
-  /* border-color: var(--hi-1); */
   background-color: color-mix(in srgb, var(--gray-90), var(--hi-1))
 }
-
 button:active {
   background-color: var(--hi-1)
+}
+
+input {
+  background-color: var(--gray-90);
 }
 
 .hi-1-button {
@@ -146,3 +147,6 @@ button:active {
   background-color: color-mix(in srgb, var(--gray-90), var(--hi-1) 30%)
 }
 
+.droppable * {
+  pointer-events: none;
+}

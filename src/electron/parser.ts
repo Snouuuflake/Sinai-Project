@@ -66,12 +66,12 @@ function logSong(song: Song) {
   console.log("Title:", song.properties.title);
   console.log("Author:", song.properties.author);
   console.log("Element Order:");
-  song.elementOrder.forEach(sei => {
-    console.log(" ", sei.type, sei.name)
+  song.elementOrder.forEach(i => {
+    console.log(" ", i, song.sections.find(s => s.id == i)?.name ?? "NOT FOUND")
   });
   console.log("Sections:")
   song.sections.forEach(s => {
-    console.log(" ", s.name);
+    console.log(" ", `s${s.id}`, s.name);
     s.verses.forEach((v, vi) => {
       v.lines.forEach((l, li) => {
         console.log("   ", `v${vi}l${li}`, l);
@@ -82,7 +82,7 @@ function logSong(song: Song) {
 }
 
 function parseSectionLines(lines: string[]): SongVerse[] {
-  const verseLines: string[][] = lines.reduce<string[][]>((p, c) => {
+  const verseLiness: string[][] = lines.reduce<string[][]>((p, c) => {
     if (c === "") {
       p.push([]);
     } else if (p.length == 0) {
@@ -96,7 +96,7 @@ function parseSectionLines(lines: string[]): SongVerse[] {
       if (c.length != 0) p.push(c);
       return p;
     }, []);
-  return verseLines.map(v => ({ lines: v }));
+  return verseLiness.map((v, i) => ({ lines: v, id: i }));
 }
 
 function parseSong(rawText: string): Song {
@@ -129,15 +129,12 @@ function parseSong(rawText: string): Song {
   const sectionRanges: [number, number][] = sectionIndexes.map(i => [i + 1, elementCommandIndexes.find(eci => eci > i) ?? (lines.length - 1)])
   const sectionLines = sectionRanges.map(x => lines.slice(...x));
 
-  const sections: SongSection[] = sectionNames.map((x, i) => ({ name: x, verses: parseSectionLines(sectionLines[i]) }));
+  // validating no duplicate section names 
+  if ((new Set(sectionNames)).size !== sectionNames.length)
+    throw new Error("Duplicate section names");
 
-  // sections.forEach(s => {
-  //   console.log(s.name);
-  //   s.verses.forEach(v => {
-  //     v.lines.forEach((l, i) => console.log(`l${i}`, l));
-  //     console.log();
-  //   })
-  // })
+  const sections: SongSection[] = sectionNames.map((x, i) => ({ name: x, id: i, verses: parseSectionLines(sectionLines[i]) }));
+
   function makeSongElementIdentifier(line: string): SongElementIdentifier {
     const command = line.charAt(2);
     switch (command) {
@@ -156,20 +153,35 @@ function parseSong(rawText: string): Song {
     }
   }
 
-  const elementOrder: SongElementIdentifier[] = elementCommandIndexes.map(i => makeSongElementIdentifier(lines[i]));
+  const elementOrder: number[] = elementCommandIndexes.map(i => {
+    const sei = makeSongElementIdentifier(lines[i]);
+    if (sei.type === "section") {
+      return sections.find(s => s.name === sei.name)!.id; // this has to exist
+    } else if (sei.type === "repeat") {
+      const elementId = sections.find(s => s.name === sei.name)?.id; // this has to exist
+      if (elementId === undefined) {
+        throw new Error(`Repeat ${sei.name} has no corresponding defined section`);
+      }
+      return elementId;
+    }
+    throw new Error("how");
+  })
 
-  // validating no empty section or repeat names
-  elementOrder.forEach(sei => {
-    if (sei.name === "") {
-      throw new Error("Song section or repeat has no name");
-    }
-  })
-  console.log(elementOrder);
-  elementOrder.forEach(sei => {
-    if (sei.type === "repeat" && !(sections.find(s => s.name === sei.name) ?? false)) {
-      throw new Error(`Song repeat with name ${sei.name} has no corresponding defined section`);
-    }
-  })
+  // old
+  // const elementOrder: SongElementIdentifier[] = elementCommandIndexes.map(i => makeSongElementIdentifier(lines[i]));
+  //
+  // // validating no empty section or repeat names
+  // elementOrder.forEach(sei => {
+  //   if (sei.name === "") {
+  //     throw new Error("Song section or repeat has no name");
+  //   }
+  // })
+  // console.log(elementOrder);
+  // elementOrder.forEach(sei => {
+  //   if (sei.type === "repeat" && !(sections.find(s => s.name === sei.name) ?? false)) {
+  //     throw new Error(`Song repeat with name ${sei.name} has no corresponding defined section`);
+  //   }
+  // })
 
   return {
     properties: {

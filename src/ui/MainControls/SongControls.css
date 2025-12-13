@@ -1,0 +1,63 @@
+.song-controls-edit-button: {
+  justify-self: end;
+}
+
+.song-controls-song-container {
+  overflow-y: scroll;
+  border-top: 2px solid var(--gray-60);
+  border-bottom: 2px solid var(--gray-60);
+}
+
+.song-project-button-inner {
+  padding: 5px;
+  padding-top: 0;
+  padding-left: 7px;
+}
+
+.song-controls-section-header {
+  all: unset;
+  font-weight: bold;
+  font-size: 14pt;
+}
+
+.song-controls-section-verses-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.edit-song-modal-container {
+  border: 2px solid var(--fg);
+  border-radius: var(--main-container-br);
+  background-color: var(--gray-95);
+  padding: 5px;
+}
+.edit-song-modal-section-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.edit-song-modal-section-list-item {
+  background-color: var(--gray-80);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.edit-song-modal-section-list-item-name {
+  flex-grow: 1;
+}
+.edit-song-modal-section-list-item:hover {
+  background-color: color-mix(in oklch, var(--gray-80), var(--hi-1));
+}
+.edit-song-modal-section-list-item-edit-button {
+  all: unset;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  color: green;
+}
+.edit-song-modal-section-list-item-edit-button:hover  {
+  background-color: transparent;
+}
+

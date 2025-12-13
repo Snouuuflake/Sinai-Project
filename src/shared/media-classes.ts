@@ -1,9 +1,11 @@
 type SongVerse = {
   lines: Array<string>;
+  id: number;
 }
 
 type SongSection = {
   name: string;
+  id: number; // not saved
   verses: Array<SongVerse>;
 }
 
@@ -28,12 +30,13 @@ type Song = {
   properties: SongPropertiesType;
   sections: Array<SongSection>;
   // notes: SongNote[];
-  elementOrder: Array<SongElementIdentifier>;
+  elementOrder: number[];
 }
 
 
 
-type MediaTypeType = "image";
+type MediaTypeType = "image" | "song";
+
 abstract class Media {
   readonly name: string;
   abstract readonly type: MediaTypeType;
@@ -56,15 +59,7 @@ abstract class Media {
       value: this.value,
     }
   }
-  toSerializedLiveElement(id: number, element: number): SerializedLiveElement {
-    return {
-      id: id,
-      element: element,
-      type: this.type,
-      value: this.getSerializedLiveElementValue(id, element),
-    }
-  }
-  abstract getSerializedLiveElementValue(id: number, element: number): any;
+  abstract toSerializedLiveElement(id: number, element: number): SerializedLiveElement;
 }
 
 type SerializedMediaIdentifier = {
@@ -86,12 +81,18 @@ type SerializedImageMediaWithId =
     value: MediaImageValueType;
   }
 
+type SerializedSongMediaWithId =
+  Omit<SerializedMediaWithId, "value" | "type"> & {
+    type: "song";
+    value: MediaSongValueType;
+  }
+
 type MediaImageValueType = {
   path: string;
 }
 
-type LiveElementImageValueType = {
-  id: number;
+type MediaSongValueType = {
+  song: Song;
 }
 
 class MediaImage extends Media {
@@ -106,24 +107,72 @@ class MediaImage extends Media {
   /**
    * @returns this.id
   */
-  getSerializedLiveElementValue(id: number, element: number): LiveElementImageValueType {
-    return { id: id };
+  toSerializedLiveElement(id: number, element: number): SerializedLiveElement {
+    return {
+      id: id,
+      element: element,
+      type: "image",
+      value: {
+        id: id,
+      } as LiveElementImageValue,
+    };
   }
 }
+
+class MediaSong extends Media {
+  type = "song" as const;
+  value: MediaSongValueType;
+  constructor(name: string, song: Song) {
+    super(name);
+    this.value = { song };
+  }
+  toSerializedLiveElement(id: number, element: number): SerializedLiveElement {
+    return {
+      id: id,
+      element: element,
+      type: "text",
+      value: {
+        text: this.value.song.sections
+          .find(s => s.id === Math.floor(element / 100000))?.
+          verses[element % 100000]?.
+          lines.reduce((p, c, i, a) => p + c + (i == a.length ? "" : "\n"), "")
+          ?? ""
+      }
+    }
+  }
+}
+const SECTION_MULTIPLIER = 1000000
+const encodeVerseId =
+  (section: number, verse: number) => (section * SECTION_MULTIPLIER) + verse;
+const decodeVerseId =
+  (id: number) => ({
+    section: Math.floor(id / SECTION_MULTIPLIER),
+    verse: id % SECTION_MULTIPLIER
+  });
 
 type LiveElementIdentifier = {
   id: number;
   element: number;
 }
 
-type LiveElementTypeType = "image";
+type LiveElementTypeType = "image" | "text";
 
-type SerializedLiveElement = {
+type LiveElementImageValue = {
+  id: number;
+}
+
+type LiveElementTextValue = {
+  text: string;
+}
+
+
+interface SerializedLiveElement {
   id: number;
   element: number;
   type: LiveElementTypeType;
   value: any;
 }
+
 
 type UIStateContextType = {
   setlist: SerializedMediaIdentifier[];
@@ -131,12 +180,19 @@ type UIStateContextType = {
   liveElements: Array<LiveElementIdentifier | null>;
 }
 
-export { Media, MediaImage };
+export {
+  Media,
+  MediaImage,
+  MediaSong,
+  encodeVerseId,
+  decodeVerseId
+};
 export type {
   MediaImageValueType,
   SerializedMediaIdentifier,
   SerializedMediaWithId,
   SerializedImageMediaWithId,
+  SerializedSongMediaWithId,
   LiveElementIdentifier,
   SerializedLiveElement,
   UIStateContextType,

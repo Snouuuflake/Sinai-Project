@@ -17,6 +17,15 @@ const SetlistPlusMenu: React.FC<{}> = ({ }) => {
       }>
       Add Images
     </button>
+    <button
+      onClick={
+        (e) => {
+          window.electron.sendAddSongs();
+          hideMenu();
+        }
+      }>
+      Add Songs
+    </button>
   </div>
 }
 

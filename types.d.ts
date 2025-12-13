@@ -11,6 +11,7 @@ declare global {
       sendSetOpenMedia: (id: number) => void;
       sendSetLiveElement: (displayIndex: number, liveElementIdentifier: mc.LiveElementIdentifier | null) => void;
       sendAddImages: () => void;
+      sendAddSongs: () => void;
       sendMoveMedia: (id: number, index: number) => void;
       sendDeleteMedia: (id: number) => void;
 

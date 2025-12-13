@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog, protocol, net } from "electron";
 import { pathToFileURL } from "url";
-import path, { parse } from "path";
+import path from "path";
 import { isDev } from "./util.js";
 import { getConfigPath, getPreloadPath } from "./pathResolver.js";
 import {
@@ -11,11 +11,17 @@ import {
   MediaImageValueType,
   SerializedMediaIdentifier,
   SerializedMediaWithId,
+  MediaSong,
 } from "../shared/media-classes.js";
 import { DISPLAYS } from "../shared/constants.js";
-import * as constants from "../shared/constants.js";
 import * as fs from "fs";
 import { parseSong, logSong } from "./parser.js";
+
+process.on('unhandledRejection', (error: Error) => {
+  console.error('Unhandled rejection in main process:', error);
+  // Show dialog to user instead of crashing
+  dialog.showErrorBox('Error', error.message);
+});
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -30,22 +36,22 @@ protocol.registerSchemesAsPrivileged([
   }
 ]);
 
-fs.readFile(
-  path.join(app.getAppPath(), "test-files/", "our-god.txt"),
-  "utf8",
-  (err, data) => {
-    if (err) {
-      console.error(err)
-    } else {
-      try {
-        logSong(parseSong(data));
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    process.exit(1);
-  }
-)
+// fs.readFile(
+//   path.join(app.getAppPath(), "test-files/", "our-god.txt"),
+//   "utf8",
+//   (err, data) => {
+//     if (err) {
+//       console.error(err)
+//     } else {
+//       try {
+//         logSong(parseSong(data));
+//       } catch (e) {
+//         console.error(e);
+//       }
+//     }
+//     process.exit(1);
+//   }
+// )
 
 class AppState {
   #setlist: number[] = [];
@@ -265,10 +271,62 @@ ipcMain.on("add-images", (_event) => {
   }).then(
     result => {
       if (result.canceled) return;
-      result.filePaths.map(fp => new MediaImage(
-        fp.split(path.sep).at(-1) ?? "Image", fp)
-      ).forEach(mi => appState.addMedia(mi));
+      // result.filePaths.map(fp => new MediaImage(
+      //   fp.split(path.sep).at(-1) ?? "Image", fp)
+      // ).forEach(mi => appState.addMedia(mi));
+      result.filePaths.forEach(fp =>
+        appState.addMedia(
+          new MediaImage(fp.split(path.sep).at(-1) ?? "Image", fp)
+        )
+      );
       updateUISetlist();
+    }
+  )
+});
+
+ipcMain.on("add-songs", (_event) => {
+  if (!uiWindow)
+    return;
+  dialog.showOpenDialog(uiWindow, {
+    title: "Add Media Songs",
+    filters: [
+      {
+        name: "Songs", extensions: ["txt", "mss"]
+      }
+    ],
+    properties: ["openFile", "multiSelections"]
+  }).then(
+    result => {
+      if (result.canceled) return;
+      Promise.allSettled(
+        result.filePaths.map<Promise<void>>(fp => {
+          return new Promise<void>((resolve, reject) => {
+            fs.readFile(fp, "utf8",
+              (err, data) => {
+                if (err) {
+                  alertMessageBox(err.message);
+                  reject();
+                } else {
+                  try {
+                    const song = parseSong(data);
+                    logSong(song);
+                    appState.addMedia(
+                      new MediaSong(
+                        song.properties.title, song
+                      )
+                    );
+                  } catch (e) {
+                    if (e instanceof Error) {
+                      alertMessageBox(`Error parsing song at:\n${fp}\n${e.message}`);
+                    }
+                    reject();
+                  }
+                  resolve();
+                }
+              }
+            );
+          })
+        })).then(results => { updateUISetlist() });
     }
   )
 });

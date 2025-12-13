@@ -1,3 +1,38 @@
+type SongVerse = {
+  lines: Array<string>;
+}
+
+type SongSection = {
+  name: string;
+  verses: Array<SongVerse>;
+}
+
+// type SongNote = {
+//   name: string;
+//   text: string;
+// }
+
+type SongElementTypeType = "section" | /*"note" |*/ "repeat";
+
+type SongElementIdentifier = {
+  type: SongElementTypeType;
+  name: string;
+}
+
+type SongPropertiesType = {
+  title: string;
+  author: string;
+}
+
+type Song = {
+  properties: SongPropertiesType;
+  sections: Array<SongSection>;
+  // notes: SongNote[];
+  elementOrder: Array<SongElementIdentifier>;
+}
+
+
+
 type MediaTypeType = "image";
 abstract class Media {
   readonly name: string;
@@ -104,5 +139,12 @@ export type {
   SerializedImageMediaWithId,
   LiveElementIdentifier,
   SerializedLiveElement,
-  UIStateContextType
+  UIStateContextType,
+
+  SongVerse,
+  SongSection,
+  SongElementIdentifier,
+  SongElementTypeType,
+  SongPropertiesType,
+  Song,
 };

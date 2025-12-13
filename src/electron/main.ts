@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog, protocol, net } from "electron";
 import { pathToFileURL } from "url";
-import path from "path";
+import path, { parse } from "path";
 import { isDev } from "./util.js";
 import { getConfigPath, getPreloadPath } from "./pathResolver.js";
 import {
@@ -15,6 +15,7 @@ import {
 import { DISPLAYS } from "../shared/constants.js";
 import * as constants from "../shared/constants.js";
 import * as fs from "fs";
+import { parseSong, logSong } from "./parser.js";
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -28,6 +29,23 @@ protocol.registerSchemesAsPrivileged([
     }
   }
 ]);
+
+fs.readFile(
+  path.join(app.getAppPath(), "test-files/", "our-god.txt"),
+  "utf8",
+  (err, data) => {
+    if (err) {
+      console.error(err)
+    } else {
+      try {
+        logSong(parseSong(data));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    process.exit(1);
+  }
+)
 
 class AppState {
   #setlist: number[] = [];

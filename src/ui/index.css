@@ -1,8 +1,8 @@
-html, body {
-  transform: translateZ(0); /* Forces hardware acceleration */
-    will-change: transform;   /* Optimizes rendering for transformations */
+/*html, body {
+  transform: translateZ(0); 
+    will-change: transform;
     overflow-x: hidden;       
-}
+}*/
 
 :root {
   font-family: system-ui, sans-serif;

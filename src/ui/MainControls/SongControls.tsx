@@ -303,7 +303,7 @@ const EditSongModalSectionEditor:
             className="edit-song-modal-setion-editor-save-button"
             onClick={() => {
               const newSection = structuredClone(openSection);
-              const currentMaxId = Math.max(...song.sections.map(s => s.id));
+              const currentMaxId = Math.max(...openSection.verses.map(s => s.id));
               newSection.verses = parseVerses(currentMaxId, textareaContent.current);
               const newSections = structuredClone(song.sections)
               newSections.splice(
@@ -452,7 +452,7 @@ const SectionContainer:
       (v, i) => (
         <ProjectVerseButton
           id={id}
-          key={`verse-${i}`}
+          key={`verse-${v.id}`}
           sectionId={section.id}
           verse={v}
         />

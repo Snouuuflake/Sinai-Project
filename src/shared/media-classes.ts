@@ -127,17 +127,18 @@ class MediaSong extends Media {
     this.value = { song };
   }
   toSerializedLiveElement(id: number, element: number): SerializedLiveElement {
+    const decodedElement = decodeVerseId(element);
     return {
       id: id,
       element: element,
       type: "text",
       value: {
-        text: this.value.song.sections
-          .find(s => s.id === Math.floor(element / 100000))?.
-          verses[element % 100000]?.
-          lines.reduce((p, c, i, a) => p + c + (i == a.length ? "" : "\n"), "")
-          ?? ""
-      }
+        lines: this.value.song.sections
+          .find(s => s.id === decodedElement.section)?.
+          verses.find(v => v.id === decodedElement.verse)?.
+          lines
+          ?? []
+      } as LiveElementTextValue
     }
   }
 }
@@ -162,7 +163,7 @@ type LiveElementImageValue = {
 }
 
 type LiveElementTextValue = {
-  text: string;
+  lines: string[]
 }
 
 
@@ -194,6 +195,8 @@ export type {
   SerializedImageMediaWithId,
   SerializedSongMediaWithId,
   LiveElementIdentifier,
+  LiveElementImageValue,
+  LiveElementTextValue,
   SerializedLiveElement,
   UIStateContextType,
 

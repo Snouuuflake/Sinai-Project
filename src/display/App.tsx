@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { SerializedLiveElement } from "../shared/media-classes";
 
 import DisplayImage from "./DisplayImage";
+import DisplayText from "./DisplayText";
 
 
 const App: React.FC<{}> = ({ }) => {
@@ -22,12 +23,14 @@ const App: React.FC<{}> = ({ }) => {
     return remover;
   }, []);
 
-  return <div>
+  return <div className="app">
     {
       liveElement === null ?
-        "null" :
-        liveElement.type === "image" ?
-          <DisplayImage liveElement={liveElement} /> : ""
+        <></> :
+        liveElement.type === "text" ?
+          <DisplayText liveElement={liveElement} /> :
+          liveElement.type === "image" ?
+            <DisplayImage liveElement={liveElement} /> : ""
     }
   </div>
 }

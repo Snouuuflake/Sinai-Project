@@ -33,7 +33,7 @@ const LiveDisplayIndexArray:
     return <div className="live-display-index-array">
       {Array.from({ length: DISPLAYS }, (_x, i) =>
         <LiveDisplayIndexArrayElement
-          index={i} id={id} element={element}
+          index={i} id={id} element={element} key={i}
         />
       )}
     </div>

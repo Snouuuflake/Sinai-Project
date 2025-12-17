@@ -16,7 +16,7 @@ import {
 } from "../shared/media-classes.js";
 import { DISPLAYS } from "../shared/constants.js";
 import * as fs from "fs";
-import { parseSong, logSong } from "./parser.js";
+import { parseSong, logSong, stringifySong } from "./parser.js";
 
 process.on('unhandledRejection', (error: Error) => {
   console.error('Unhandled rejection in main process:', error);
@@ -299,7 +299,7 @@ ipcMain.on("add-songs", (_event) => {
     title: "Add Media Songs",
     filters: [
       {
-        name: "Songs", extensions: ["txt", "mss"]
+        name: "Songs", extensions: ["sinai", "txt", "mss"]
       }
     ],
     properties: ["openFile", "multiSelections"]
@@ -362,7 +362,36 @@ ipcMain.on("replace-song", (_event, id: number, song: Song) => {
   appState.setSongMediaSong(id, song);
   updateUIOpenMedia();
   updateUISetlist();
-})
+});
+
+ipcMain.on("save-song", (_event, id: number) => {
+  const media = appState.media.get(id);
+  if (media?.type !== "song")
+    return;
+  dialog.showSaveDialog(uiWindow, {
+    title: "Save song",
+    filters: [
+      {
+        name: "Sinai Project Song",
+        extensions: ["sinai"]
+      }
+    ]
+  }).then(result => {
+    if (result.canceled)
+      return;
+    try {
+      fs.writeFile(result.filePath, stringifySong(media.value.song), err => {
+        if (err) {
+          alertMessageBox(`Error saving song: {media.id} {media.name}\n{err.message}`);
+        }
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        alertMessageBox(`Error saving song: {media.id} {media.name}\n{err.message}`);
+      }
+    }
+  });
+});
 
 /* ------- */
 

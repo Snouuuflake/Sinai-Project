@@ -15,6 +15,7 @@ declare global {
       sendMoveMedia: (id: number, index: number) => void;
       sendDeleteMedia: (id: number) => void;
       sendReplaceSong: (id: number, song: Song) => void;
+      sendSaveSong: (id: number) => void;
 
       onDisplayStateUpdateLiveElement: (callback: (displayId: number, newValue: SerializedLiveElement | null) => void) => () => void;
 

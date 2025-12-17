@@ -193,4 +193,38 @@ function parseSong(rawText: string): Song {
   }
 }
 
-export { parseSong, logSong };
+/**
+  * @throws Error
+  */
+function stringifySong(song: Song): string {
+  type sectionWithWrittenFlag = SongSection & { isWritten: boolean };
+  let buffer: string = ""
+  const sectionsWithWrittenFlag = song.sections.map<sectionWithWrittenFlag>(
+    s => ({ ...s, isWritten: false })
+  );
+  buffer += `!-T ${song.properties.title}\n`;
+  buffer += `!-A ${song.properties.author}\n`;
+  song.elementOrder.forEach(id => {
+    const referencedSection = sectionsWithWrittenFlag.find(s => s.id === id) ?? null;
+    try {
+      if (referencedSection === null)
+        throw new Error("stringifySong: referencedSection is null");
+      if (referencedSection.isWritten) {
+        buffer += `!-R ${referencedSection.name}\n`;
+      } else {
+        referencedSection.isWritten = true;
+        buffer += `!-S ${referencedSection.name}\n`;
+        buffer += referencedSection.verses.reduce<string>(
+          (p, c) => p + c.lines.reduce<string>((p, c) => p + c + "\n", "") + "\n", ""
+        );
+      }
+    } catch (e) {
+      if (e instanceof Error) {
+        throw new Error(`Song ${song.properties.title} is corrupted, @writing section ${id}: ${e.message}`);
+      }
+    }
+  });
+  return buffer;
+}
+
+export { parseSong, logSong, stringifySong };

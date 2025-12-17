@@ -5,6 +5,22 @@
 }*/
 
 :root {
+  --blink-opacity: 1;
+  --blink-transparent-blend: 0%;
+}
+
+@keyframes blink {
+  50% {
+    --blink-opacity: 0.3;
+  --blink-transparent-blend: 50%;
+  }
+}
+
+body {
+  animation: blink 0.7s step-start 0s infinite;
+}
+
+:root {
   font-family: system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -30,6 +46,7 @@
   --bg: var(--background);
   --gray-95: hsl(0 0% 5%);
   --gray-90: hsl(0 0% 10%);
+  --gray-85: hsl(0 0% 15%);
   --gray-80: hsl(0 0% 20%);
   --gray-70: hsl(0 0% 30%);
   --gray-60: hsl(0 0% 40%);
@@ -57,6 +74,7 @@
   --gray-60: hsl(0 0% 60%);
   --gray-70: hsl(0 0% 70%);
   --gray-80: hsl(0 0% 80%);
+  --gray-85: hsl(0 0% 85%);
   --gray-90: hsl(0 0% 90%);
   --gray-95: hsl(0 0% 95%);
 
@@ -128,6 +146,7 @@ button:active {
   background-color: var(--hi-1)
 }
 
+
 input {
   background-color: var(--gray-90);
 }
@@ -146,6 +165,7 @@ input {
   /* border-color: var(--hi-1); */
   background-color: color-mix(in srgb, var(--gray-90), var(--hi-1) 30%)
 }
+
 
 .droppable * {
   pointer-events: none;

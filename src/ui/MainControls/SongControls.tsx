@@ -283,11 +283,11 @@ const EditSongModalSectionEditor:
         )
         + (i == (a.length - 1) ? "" : "\n\n"), ""
     );
-    console.log(initialText)
     const textareaRef = useRef<HTMLDivElement>(null);
     const textareaContent = useRef<string>(
       initialText
     )
+    const [typed, setTyped] = useState<boolean>(false);
     useEffect(() => {
       if (textareaRef.current) {
         textareaRef.current.innerText = initialText
@@ -299,32 +299,40 @@ const EditSongModalSectionEditor:
           <h2 className="edit-song-modal-section-editor-title">
             {openSection.name}
           </h2>
-          <button
-            className="edit-song-modal-setion-editor-save-button"
-            onClick={() => {
-              const newSection = structuredClone(openSection);
-              const currentMaxId = Math.max(...openSection.verses.map(s => s.id));
-              newSection.verses = parseVerses(currentMaxId, textareaContent.current);
-              const newSections = structuredClone(song.sections)
-              newSections.splice(
-                newSections.findIndex(s => s.id == newSection.id),
-                1,
-                newSection
-              );
-              const newSong = { ...song, sections: newSections }
-              console.log(newSong);
-              setSong(newSong);
-              setOpenSection(null);
-            }}
-          >
-            Save
-          </button>
+          <div className="main-container-header-buttons-container">
+            <button
+              className="edit-song-modal-setion-editor-save-button"
+              onClick={() => {
+                const newSection = structuredClone(openSection);
+                const currentMaxId = Math.max(...openSection.verses.map(s => s.id));
+                newSection.verses = parseVerses(currentMaxId, textareaContent.current);
+                const newSections = structuredClone(song.sections)
+                newSections.splice(
+                  newSections.findIndex(s => s.id == newSection.id),
+                  1,
+                  newSection
+                );
+                const newSong = { ...song, sections: newSections }
+                console.log(newSong);
+                setSong(newSong);
+                setOpenSection(null);
+              }}
+              style={
+                typed ? {
+                  color: "color-mix(in oklch, var(--hi-1), transparent var(--blink-transparent-blend))"
+                } : {}
+              }
+            >
+              Save
+            </button>
+          </div>
         </div>
         <div
           ref={textareaRef}
           contentEditable
           className="edit-song-modal-textarea"
           onInput={(e) => {
+            setTyped(true);
             if (e.target instanceof HTMLDivElement) {
               textareaContent.current = (e.target.innerText ?? "")
               // console.log(textareaContent.current)
@@ -403,7 +411,7 @@ const EditSongModal:
           hideModal();
         }}
       >
-        Save
+        Update Changes
       </button>
       <button
         className="edit-song-modal-cancel-button"
@@ -479,7 +487,7 @@ const SongControls:
         <h1 className="main-container-title">Song Controls</h1>
         <div className="main-container-header-buttons-container">
           <button
-            className="hi-1-button song-controls-edit-button"
+            className="song-controls-edit-button main-container-button"
             onClick={
               (e) => {
                 showModal(e,
@@ -488,6 +496,16 @@ const SongControls:
             }
           >
             Edit
+          </button>
+          <button
+            className="song-controls-edit-button main-container-button"
+            onClick={
+              (e) => {
+                window.electron.sendSaveSong(openMedia.id);
+              }
+            }
+          >
+            Save
           </button>
         </div>
       </div>

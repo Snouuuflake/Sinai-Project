@@ -60,13 +60,6 @@ class AppState {
   #mediaIdCounter: number = 0;
   #openMedia: number | null = null;
   #liveElements: Array<LiveElementIdentifier | null> = Array.from({ length: DISPLAYS }, (_x) => null);
-  /*
-    live-elements: {
-      string: LiveElement | null;
-    }
-    in constructor:
-    range(constants.DISPLAYS) -> "i": null;
-   */
   constructor() {
   }
   get media(): Map<number, Media> {
@@ -187,7 +180,7 @@ function createDisplayWindow(displayId: number) {
   displayWindow.setMenu(null);
 
   displayWindow.on("close", () => {
-    displayWindows.splice(displayWindows.indexOf(displayWindow), 0);
+    displayWindows.splice(displayWindows.indexOf(displayWindow), 1);
   })
 
   if (isDev()) {
@@ -198,6 +191,7 @@ function createDisplayWindow(displayId: number) {
       path.join(app.getAppPath(), "/dist-display/index.html"),
       { query: { displayId: displayId.toString() } }
     );
+    displayWindow.webContents.openDevTools();
   }
 
   displayWindows.push(displayWindow);
@@ -358,6 +352,19 @@ ipcMain.on("delete-media", (_event, id: number) => {
   }
 });
 
+ipcMain.on("create-song", (_event, title: string, author: string) => {
+  appState.addMedia(new MediaSong(title, {
+    properties: {
+      title: title,
+      author: author,
+    },
+    sections: [],
+    elementOrder: []
+  }));
+  updateUISetlist();
+  updateUIOpenMedia(); // !!
+})
+
 ipcMain.on("replace-song", (_event, id: number, song: Song) => {
   appState.setSongMediaSong(id, song);
   updateUIOpenMedia();
@@ -447,6 +454,7 @@ app.on("ready", () => {
     uiWindow.webContents.openDevTools();
   } else {
     uiWindow.loadFile(path.join(app.getAppPath(), "/dist-ui/index.html"));
+    uiWindow.webContents.openDevTools();
   }
 });
 

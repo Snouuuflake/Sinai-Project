@@ -9,8 +9,9 @@ lerna-debug.log*
 
 node_modules
 dist-display
-dist-react
+dist-ui
 dist-electron
+dist
 test-files
 *.local
 

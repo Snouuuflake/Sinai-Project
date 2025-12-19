@@ -6,6 +6,7 @@
   overflow-y: scroll;
   border-top: 2px solid var(--gray-60);
   border-bottom: 2px solid var(--gray-60);
+  height: 100%;
 }
 
 .song-project-button-inner {
@@ -57,10 +58,6 @@
 .edit-song-modal-header input {
   flex: 1;
   min-width: 0;
-  box-sizing: border-box;
-  border: 2px solid var(--gray-80);
-  border-radius: 4px;
-  padding: 3px;
 }
 .edit-song-modal-section-list {
   grid-area: right;

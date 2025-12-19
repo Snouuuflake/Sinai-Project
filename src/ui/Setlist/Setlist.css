@@ -1,3 +1,32 @@
+.new-song-modal-container {
+  border: 2px solid var(--fg);
+  border-radius: var(--main-container-br);
+  background-color: var(--gray-95);
+  padding: 7px;
+  min-height: 0;
+  display: grid;
+  grid-template-areas:  "body body" "create cancel";
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.new-song-modal-form-header {
+  all: unset;
+  grid-area: header;
+  font-size: 15pt;
+  font-weight: bold;
+}
+
+.new-song-modal-form-container {
+  grid-area: body;
+}
+.new-song-modal-cancel-button {
+  grid-area: cancel;
+}
+.new-song-modal-create-button {
+  grid-area: create;
+}
+
+
 .setlist {
   gap: 10px;
   min-width: 0;
@@ -18,4 +47,13 @@
   overflow-y: scroll;
   border-top: 2px solid var(--gray-60);
   border-bottom: 2px solid var(--gray-60);
+}
+
+.setlist-plus-menu-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.setlist-plus-menu-container button{
+  text-align: left;
 }

@@ -149,6 +149,10 @@ button:active {
 
 input {
   background-color: var(--gray-90);
+  box-sizing: border-box;
+  border: 2px solid var(--gray-80);
+  border-radius: 4px;
+  padding: 3px;
 }
 
 .hi-1-button {

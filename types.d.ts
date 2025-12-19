@@ -14,6 +14,7 @@ declare global {
       sendAddSongs: () => void;
       sendMoveMedia: (id: number, index: number) => void;
       sendDeleteMedia: (id: number) => void;
+      sendCreateSong: (title: string, author: string) => void;
       sendReplaceSong: (id: number, song: Song) => void;
       sendSaveSong: (id: number) => void;
 

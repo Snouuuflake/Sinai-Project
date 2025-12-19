@@ -4,12 +4,10 @@ import ProjectElementButton from "./ProjectElementButton";
 import LiveDisplayIndexArray from "./LiveDisplayIndexArray";
 
 import "./SongControls.css";
-import { useContextMenu } from "../ContextMenuContext";
 import { useModal } from "../ModalContext";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { GripVertical, SquarePen, Copy, Trash2, Plus, Check } from "lucide-react";
-import { useUIState } from "../UIStateContext";
+import { GripVertical, SquarePen, Copy, Trash2, Plus } from "lucide-react";
 
 
 const EditSongModalSectionListItem:
@@ -145,33 +143,32 @@ const EditSongModalSectionList:
   }
   > = ({ song, setSong, onEdit, onCopy }) => {
     const indexBeingDragged = useRef<number | null>(null);
-    const newSectionName = useRef<string>("");
+    const [newSectionName, setNewSectionName] = useState<string>("");
     return (
       <div className="edit-song-modal-section-list ">
         <div className="edit-song-modal-add-section-container">
           <input
             className="edit-song-modal-add-section-input"
             type="text"
-            onInput={(e) => {
-              if (e.target instanceof HTMLInputElement) {
-                newSectionName.current = e.target.value.trim();
-              }
-            }}
-          >
+            value={newSectionName}
+            onChange={(e) => {
+              setNewSectionName(e.target.value);
+            }}>
           </input>
           <button
             className="hi-1-button edit-song-modal-add-section-button"
             onClick={() => {
+              const trimmedNewSectionName = newSectionName.trim();
               if (
                 song.sections.filter(
-                  s => s.name === newSectionName.current
+                  s => s.name === trimmedNewSectionName
                 ).length == 0
-                && newSectionName.current !== ""
+                && trimmedNewSectionName !== ""
               ) {
                 const newSections = structuredClone(song.sections);
                 const newId = Math.max(...song.sections.map(s => s.id)) + 1;
                 newSections.push({
-                  name: newSectionName.current,
+                  name: trimmedNewSectionName,
                   id: newId,
                   verses: [],
                 })
@@ -180,6 +177,9 @@ const EditSongModalSectionList:
                 const newSong: Song = { ...song, sections: newSections, elementOrder: newOrder };
                 console.log(newSong);
                 setSong(newSong);
+              } else {
+                window.electron.sendAlert("Section as no name");
+                setNewSectionName(newSectionName.trim());
               }
             }}
           >
@@ -190,6 +190,7 @@ const EditSongModalSectionList:
           {song.elementOrder.map(
             (id, i) => (
               <EditSongModalSectionListItem
+                key={i}
                 song={song}
                 sectionId={id}
                 index={i}
@@ -323,7 +324,7 @@ const EditSongModalSectionEditor:
                 } : {}
               }
             >
-              Save
+              Save Section
             </button>
           </div>
         </div>
@@ -370,7 +371,7 @@ const EditSongModal:
             const newTitle = e.target.value;
             setLocalSong({ ...localSong, properties: { ...localSong.properties, title: newTitle } });
           }}
-        ></input>
+        />
         <div>by</div>
         <input
           value={localSong.properties.author}
@@ -378,7 +379,7 @@ const EditSongModal:
             const newAuthor = e.target.value;
             setLocalSong({ ...localSong, properties: { ...localSong.properties, author: newAuthor } });
           }}
-        > </input>
+        />
       </div>
       {
         openSection === null ? <></> :
@@ -403,11 +404,28 @@ const EditSongModal:
       <button
         className="edit-song-modal-save-button hi-1-button"
         onClick={() => {
-          if (localSong.properties.title === "") {
+          if (localSong.properties.title.trim() === "") {
             window.electron.sendAlert("Song has no title!");
+            setLocalSong(
+              {
+                ...localSong,
+                properties: {
+                  title: localSong.properties.title.trim(),
+                  author: localSong.properties.author.trim(),
+                }
+              }
+            );
             return;
           }
-          window.electron.sendReplaceSong(mediaId, localSong);
+          window.electron.sendReplaceSong(mediaId,
+            {
+              ...localSong,
+              properties: {
+                title: localSong.properties.title.trim(),
+                author: localSong.properties.author.trim(),
+              }
+            }
+          );
           hideModal();
         }}
       >
@@ -443,7 +461,7 @@ const ProjectVerseButton:
           />
           <div>{
             verse.lines.reduce<any[]>((p, c, i, a) => {
-              p.push(<div>{c}</div>)
+              p.push(<div key={i}>{c}</div>)
               return p;
             }, [])
           }</div>

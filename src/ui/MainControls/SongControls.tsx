@@ -7,7 +7,7 @@ import "./SongControls.css";
 import { useModal } from "../ModalContext";
 import { useEffect, useRef, useState } from "react";
 
-import { GripVertical, SquarePen, Copy, Trash2, Plus } from "lucide-react";
+import { GripVertical, SquarePen, Copy, Trash2, Plus, ZapIcon } from "lucide-react";
 
 
 const EditSongModalSectionListItem:
@@ -252,7 +252,7 @@ function parseVerses(previousMaxId: number, text: string): SongVerse[] {
   let verseIdCounter: number = previousMaxId;
   console.log(lines);
   const verses: SongVerse[] = lines.reduce<SongVerse[]>(
-    (p, c, i, a) => {
+    (p, c, i) => {
       if (i == 0 || c === "") {
         p.push({
           id: ++verseIdCounter,
@@ -288,14 +288,17 @@ const EditSongModalSectionEditor:
     const textareaContent = useRef<string>(
       initialText
     )
-    const [typed, setTyped] = useState<boolean>(false);
     useEffect(() => {
       if (textareaRef.current) {
         textareaRef.current.innerText = initialText
       }
     }, [sectionId])
     return (
-      <div className="edit-song-modal-section-editor">
+      <div className="edit-song-modal-section-editor"
+        style={{
+          zIndex: 1000
+        }}
+      >
         <div className="main-container-header edit-song-modal-section-editor-header">
           <h2 className="edit-song-modal-section-editor-title">
             {openSection.name}
@@ -318,13 +321,11 @@ const EditSongModalSectionEditor:
                 setSong(newSong);
                 setOpenSection(null);
               }}
-              style={
-                typed ? {
-                  color: "color-mix(in oklch, var(--hi-1), transparent var(--blink-transparent-blend))"
-                } : {}
-              }
             >
-              Save Section
+              Save
+            </button>
+            <button>
+              Cancel
             </button>
           </div>
         </div>
@@ -333,10 +334,8 @@ const EditSongModalSectionEditor:
           contentEditable
           className="edit-song-modal-textarea"
           onInput={(e) => {
-            setTyped(true);
             if (e.target instanceof HTMLDivElement) {
               textareaContent.current = (e.target.innerText ?? "")
-              // console.log(textareaContent.current)
             }
           }}
           onPaste={(e) => {
@@ -359,8 +358,10 @@ const EditSongModal:
     const [localSong, setLocalSong] = useState<Song>(structuredClone(song));
     const [openSection, setOpenSection] = useState<number | null>(null);
 
-    return <div className="edit-song-modal-container">
-      <div className="edit-song-modal-header">
+    return <div className="edit-song-modal-container"
+    >
+      <div className="edit-song-modal-header"
+      >
         <h1
           className="main-container-title"
         >Edit Song:
@@ -383,13 +384,26 @@ const EditSongModal:
       </div>
       {
         openSection === null ? <></> :
-          <EditSongModalSectionEditor
-            key={openSection}
-            song={localSong}
-            setSong={setLocalSong}
-            setOpenSection={setOpenSection}
-            sectionId={openSection}
-          />
+          <>
+            <EditSongModalSectionEditor
+              key={openSection}
+              song={localSong}
+              setSong={setLocalSong}
+              setOpenSection={setOpenSection}
+              sectionId={openSection}
+            />
+            <div style={{
+              "position": "absolute",
+              top: "0",
+              bottom: "0",
+              left: "0",
+              right: "0",
+              background: "var(--gray-95)",
+              opacity: "0.8",
+              zIndex: "0"
+            }}>
+            </div>
+          </>
       }
       <EditSongModalSectionList
         song={localSong}
@@ -429,7 +443,7 @@ const EditSongModal:
           hideModal();
         }}
       >
-        Update Changes
+        Update Song
       </button>
       <button
         className="edit-song-modal-cancel-button"
@@ -460,7 +474,7 @@ const ProjectVerseButton:
             element={encodeVerseId(sectionId, verse.id)}
           />
           <div>{
-            verse.lines.reduce<any[]>((p, c, i, a) => {
+            verse.lines.reduce<any[]>((p, c, i) => {
               p.push(<div key={i}>{c}</div>)
               return p;
             }, [])
@@ -475,7 +489,7 @@ const SectionContainer:
   React.FC<{ id: number, section: SongSection }>
   = ({ id, section }) => {
     const verseButtons = section.verses.map(
-      (v, i) => (
+      (v) => (
         <ProjectVerseButton
           id={id}
           key={`verse-${v.id}`}
@@ -498,7 +512,7 @@ const SongControls:
   React.FC<{ openMedia: SerializedSongMediaWithId }>
   = ({ openMedia }) => {
     console.log(openMedia);
-    const { showModal, hideModal } = useModal()
+    const { showModal } = useModal()
     return <>
       <div className="main-container-header ">
         {/* TODO: icon */}
@@ -518,7 +532,7 @@ const SongControls:
           <button
             className="song-controls-edit-button main-container-button"
             onClick={
-              (e) => {
+              (_e) => {
                 window.electron.sendSaveSong(openMedia.id);
               }
             }

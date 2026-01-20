@@ -40,6 +40,9 @@
   grid-template-columns: 1fr 200px;
   grid-template-rows: auto 1fr;
   gap: 5px;
+
+  overflow: hidden;
+  position: relative;
 }
 .edit-song-modal-cancel-button {
   grid-area: cancel;
@@ -190,4 +193,5 @@
 }
 .edit-song-modal-setion-editor-save-button {
   height: 100%;
+  color: var(--hi-1);
 }

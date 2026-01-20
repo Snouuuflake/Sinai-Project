@@ -166,7 +166,8 @@ const EditSongModalSectionList:
                 && trimmedNewSectionName !== ""
               ) {
                 const newSections = structuredClone(song.sections);
-                const newId = Math.max(...song.sections.map(s => s.id)) + 1;
+                const newId = newSections.length == 0 ? 0 :
+                  Math.max(...song.sections.map(s => s.id)) + 1;
                 newSections.push({
                   name: trimmedNewSectionName,
                   id: newId,
@@ -324,7 +325,9 @@ const EditSongModalSectionEditor:
             >
               Save
             </button>
-            <button>
+            <button onClick={() => {
+              setOpenSection(null);
+            }}>
               Cancel
             </button>
           </div>

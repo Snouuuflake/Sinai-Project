@@ -37,22 +37,6 @@ protocol.registerSchemesAsPrivileged([
   }
 ]);
 
-// fs.readFile(
-//   path.join(app.getAppPath(), "test-files/", "our-god.txt"),
-//   "utf8",
-//   (err, data) => {
-//     if (err) {
-//       console.error(err)
-//     } else {
-//       try {
-//         logSong(parseSong(data));
-//       } catch (e) {
-//         console.error(e);
-//       }
-//     }
-//     process.exit(1);
-//   }
-// )
 
 class AppState {
   #setlist: number[] = [];
@@ -168,7 +152,7 @@ const displayWindows: BrowserWindow[] = []
 
 function createDisplayWindow(displayId: number) {
   const displayWindow = new BrowserWindow({
-    title: `Sinai Worship: Display Window ${displayId + 1}`,
+    title: `Sinai Project: Display Window ${displayId + 1}`,
     webPreferences: {
       preload: path.join(app.getAppPath(),
         isDev() ? "." : "..",
@@ -200,6 +184,9 @@ function createDisplayWindow(displayId: number) {
 
 const appState = new AppState();
 
+// appState.addConfigEntry(new ConfigEntryPath("display", "logo", false));
+// appState.addConfigCategoryListener({ category: "ui", callback: console.log });
+//
 ipcMain.on("new-display-window", (_event, id: number) => {
   createDisplayWindow(id);
 });
@@ -229,6 +216,7 @@ function updateUIOpenMedia() {
 function updateUILiveElements() {
   sendToUIWindow("ui-state-update-live-elements", appState.getUIStateLiveElements());
 }
+
 
 function updateAllUI() {
   updateUISetlist();
@@ -273,9 +261,6 @@ ipcMain.on("add-images", (_event) => {
   }).then(
     result => {
       if (result.canceled) return;
-      // result.filePaths.map(fp => new MediaImage(
-      //   fp.split(path.sep).at(-1) ?? "Image", fp)
-      // ).forEach(mi => appState.addMedia(mi));
       result.filePaths.forEach(fp =>
         appState.addMedia(
           new MediaImage(fp.split(path.sep).at(-1) ?? "Image", fp)
@@ -441,6 +426,7 @@ app.on("ready", () => {
   });
 
   uiWindow = new BrowserWindow({
+    title: `Sinai Project`,
     minWidth: 500,
     minHeight: 500,
     webPreferences: {

@@ -175,10 +175,13 @@ interface SerializedLiveElement {
 }
 
 
-type UIStateContextType = {
-  setlist: SerializedMediaIdentifier[];
-  openMedia: SerializedMediaWithId | null;
-  liveElements: Array<LiveElementIdentifier | null>;
+
+type SerializedDisplayConfigEntry = {
+  type: string;
+  category: string;
+  id: string;
+  defaultValue: any;
+  values: any[];
 }
 
 export {
@@ -186,7 +189,7 @@ export {
   MediaImage,
   MediaSong,
   encodeVerseId,
-  decodeVerseId
+  decodeVerseId,
 };
 export type {
   MediaImageValueType,
@@ -198,7 +201,6 @@ export type {
   LiveElementImageValue,
   LiveElementTextValue,
   SerializedLiveElement,
-  UIStateContextType,
 
   SongVerse,
   SongSection,
@@ -206,4 +208,6 @@ export type {
   SongElementTypeType,
   SongPropertiesType,
   Song,
+
+  SerializedDisplayConfigEntry as SerializedConfigEntry,
 };

@@ -6,6 +6,7 @@ declare global {
       onUIStateUpdateSetlist: (callback: (newValue: mc.SerializedMediaIdentifier[]) => void) => () => void;
       onUIStateUpdateOpenMedia: (callback: (newValue: mc.SerializedMediaWithId) => void) => () => void;
       onUIStateUpdateLiveElements: (callback: (newValue: Array<mc.LiveElementIdentifier | null>) => void) => () => void;
+      onUIStateUpdateConfig: (callback: (newValue: SerializedConfigEntry[]) => void) => () => void;
       sendUIStateRequest: () => void;
       sendNewDisplayWindow: (displayId: number) => void;
       sendSetOpenMedia: (id: number) => void;

@@ -179,7 +179,7 @@ const EditSongModalSectionList:
                 console.log(newSong);
                 setSong(newSong);
               } else {
-                window.electron.sendAlert("Section as no name");
+                window.electron.sendAlert("Section has as no name");
                 setNewSectionName(newSectionName.trim());
               }
             }}

@@ -193,7 +193,8 @@ ipcMain.on("new-display-window", (_event, id: number) => {
 
 /* ------- ui ipc ------- */
 function alertMessageBox(message: string) {
-  dialog.showMessageBox({ message: message });
+  if (uiWindow)
+    dialog.showMessageBox(uiWindow, { message: message, });
 }
 
 ipcMain.on("alert", (_event, message: string) => {

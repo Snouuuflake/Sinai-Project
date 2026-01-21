@@ -334,7 +334,7 @@ const EditSongModalSectionEditor:
         </div>
         <div
           ref={textareaRef}
-          contentEditable
+          contentEditable="plaintext-only"
           className="edit-song-modal-textarea"
           onInput={(e) => {
             if (e.target instanceof HTMLDivElement) {
@@ -342,11 +342,15 @@ const EditSongModalSectionEditor:
             }
           }}
           onPaste={(e) => {
-            e.preventDefault();
-            const text = e.clipboardData.getData('text/plain');
-            textareaContent.current += text.replace(/\r?\n/, "\n");
-            if (textareaRef.current !== null)
-              textareaRef.current.innerText = textareaContent.current;
+            // ---
+            // e.preventDefault();
+            // var text = e.clipboardData.getData('text/plain');
+            // document.execCommand('insertText', false, text);
+            // ---
+            // const text = e.clipboardData.getData('text/plain');
+            // textareaContent.current += text.replace(/\r?\n/, "\n");
+            // if (textareaRef.current !== null)
+            //   textareaRef.current.innerText = textareaContent.current;
           }}
         >
         </div>

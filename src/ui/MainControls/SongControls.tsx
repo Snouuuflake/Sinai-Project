@@ -159,12 +159,16 @@ const EditSongModalSectionList:
             className="hi-1-button edit-song-modal-add-section-button"
             onClick={() => {
               const trimmedNewSectionName = newSectionName.trim();
+              setNewSectionName(trimmedNewSectionName);
               if (
                 song.sections.filter(
                   s => s.name === trimmedNewSectionName
-                ).length == 0
-                && trimmedNewSectionName !== ""
+                ).length != 0
               ) {
+                window.electron.sendAlert("Cannot have repeated section names");
+              } else if (trimmedNewSectionName === "") {
+                window.electron.sendAlert("New section name cannot be empty");
+              } else {
                 const newSections = structuredClone(song.sections);
                 const newId = newSections.length == 0 ? 0 :
                   Math.max(...song.sections.map(s => s.id)) + 1;
@@ -178,9 +182,6 @@ const EditSongModalSectionList:
                 const newSong: Song = { ...song, sections: newSections, elementOrder: newOrder };
                 console.log(newSong);
                 setSong(newSong);
-              } else {
-                window.electron.sendAlert("Section has as no name");
-                setNewSectionName(newSectionName.trim());
               }
             }}
           >
@@ -244,7 +245,7 @@ const EditSongModalSectionList:
           console.log(newSong);
           setSong(newSong);
         }} />
-      </div>
+      </div >
     )
   }
 
@@ -309,7 +310,7 @@ const EditSongModalSectionEditor:
               className="edit-song-modal-setion-editor-save-button"
               onClick={() => {
                 const newSection = structuredClone(openSection);
-                const currentMaxId = Math.max(...openSection.verses.map(s => s.id));
+                const currentMaxId = openSection.verses.length == 0 ? 0 : Math.max(...openSection.verses.map(s => s.id));
                 newSection.verses = parseVerses(currentMaxId, textareaContent.current);
                 const newSections = structuredClone(song.sections)
                 newSections.splice(

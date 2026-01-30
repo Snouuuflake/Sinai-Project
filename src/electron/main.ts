@@ -18,12 +18,17 @@ import { DISPLAYS } from "../shared/constants.js";
 import * as fs from "fs";
 import { parseSong, logSong, stringifySong } from "./parser.js";
 
+// handling unhandled rejected promises
 process.on('unhandledRejection', (error: Error) => {
   console.error('Unhandled rejection in main process:', error);
   // Show dialog to user instead of crashing
   dialog.showErrorBox('Error', error.message);
 });
 
+// FIXME: handle files by serving their b64 contents- 
+// browser caches images such that opening a new image
+// with the same name and path as one already loaded
+// shows the old image
 protocol.registerSchemesAsPrivileged([
   {
     scheme: 'local-file',
@@ -37,41 +42,77 @@ protocol.registerSchemesAsPrivileged([
   }
 ]);
 
-
+/**
+ * Class that stores all of the state for the app.
+ * Stores things like open files (media), the
+ * order the user has them in (setlist), what
+ * media's controls are being shown (openMedia),
+ * what is being projected (liveElements), etc.
+ * Has methods for updating this data safely (not
+ * updating when invalid data is sent). Does not
+ * send IPC state update messages (so as to not
+ * have to define this class after the main window
+ * is created or have it reference a global
+ * variable).
+ */
 class AppState {
+  // order (by id) of media in the UIWindow setlist
   #setlist: number[] = [];
+  // set of all media (files, songs, images, etc) loaded by the user
   #media: Map<number, Media> = new Map();
+  // for generating unique id's for each media loaded
   #mediaIdCounter: number = 0;
+  // id of media being viewed in main UI window controls
   #openMedia: number | null = null;
+  // elements being projected
   #liveElements: Array<LiveElementIdentifier | null> = Array.from({ length: DISPLAYS }, (_x) => null);
   constructor() {
   }
+  // returns copy of this.#media
   get media(): Map<number, Media> {
     return new Map(this.#media);
   }
+  // returns setlist as serializable media identiers (no value) for sending to ui browser window
   getUIStateSetlist(): SerializedMediaIdentifier[] {
     return this.#setlist.map(id => this.#media.get(id)!.toSerializedMediaIdentifier(id));
   }
+  // returns openMedia as serializable media for sending to ui browser window
   getUIStateOpenMedia(): SerializedMediaWithId | null {
     if (this.#openMedia === null) return null;
     return this.#media.get(this.#openMedia)!
       .toSerializedMediaWithId(this.#openMedia);
   }
+  // returns copy of live elements (already serializable)
   getUIStateLiveElements(): Array<LiveElementIdentifier | null> {
     return [...this.#liveElements];
   }
+  // returns liveElements as serializable live elements for projection in display windows
+  // handles undefined array item by just sending null (which is valid, means project nothing)
   getDisplayStateLiveElement(displayId: number): SerializedLiveElement | null {
     const le = this.#liveElements[displayId] ?? null;
     if (le === null) return null;
     return this.#media.get(le.id)?.toSerializedLiveElement(le.id, le.element) ?? null;
   }
+  /**
+    * sets song of media song in media
+    * song is maybe the only media that will be edited by the user
+    * @throws if id doesn't exist or is not MediaSong
+    */
   setSongMediaSong(id: number, song: Song) {
     const targetMedia = this.#media.get(id);
-    if (targetMedia instanceof MediaSong) {
-      targetMedia.value.song = song;
-      targetMedia.name = song.properties.title;
+    if (targetMedia === undefined) {
+      throw new Error("setSongMediaSong: invalid id")
     }
+    if (!(targetMedia instanceof MediaSong)) {
+      throw new Error("setSongMediaSong: targetMedia not instance of MediaSong")
+    }
+    targetMedia.value.song = song;
+    targetMedia.name = song.properties.title;
   }
+  /**
+   * sets openMedia
+   * @throws if id not in media
+   */
   setOpenMedia(id: number | null) {
     if (id == null) {
       this.#openMedia = null;
@@ -85,6 +126,7 @@ class AppState {
   /**
    * @param index display window index to set 
    * @param id media id of new live media
+   * @throws if invalid display index or live element id invalid
    */
   setLiveElement(index: number, liveElementIdentifier: LiveElementIdentifier | null) {
     if (index < 0 || index >= DISPLAYS) {
@@ -104,6 +146,7 @@ class AppState {
   /**
    * @param id id of media to be moved 
    * @param index index isnide setlist to put it's id 
+   * @throws throws if id not in setlist or media or if invalid index
    */
   moveSetlistMedia(id: number, index: number) {
     if (this.#setlist.indexOf(id) == -1) {
@@ -130,6 +173,7 @@ class AppState {
   }
   /**
    * @param id id of item to remove 
+   * @throws throws if id not in setlist or in media
    */
   deleteMedia(id: number) {
     if (this.#setlist.indexOf(id) == -1) {
@@ -150,6 +194,9 @@ class AppState {
 let uiWindow: BrowserWindow;
 const displayWindows: BrowserWindow[] = []
 
+/**
+ * creates a display window and pushes it to displayWindows
+ */
 function createDisplayWindow(displayId: number) {
   const displayWindow = new BrowserWindow({
     title: `Sinai Project: Display Window ${displayId + 1}`,
@@ -184,18 +231,16 @@ function createDisplayWindow(displayId: number) {
 
 const appState = new AppState();
 
-// appState.addConfigEntry(new ConfigEntryPath("display", "logo", false));
-// appState.addConfigCategoryListener({ category: "ui", callback: console.log });
-//
-ipcMain.on("new-display-window", (_event, id: number) => {
-  createDisplayWindow(id);
-});
 
 /* ------- ui ipc ------- */
 function alertMessageBox(message: string) {
   if (uiWindow)
     dialog.showMessageBox(uiWindow, { message: message, });
 }
+
+ipcMain.on("new-display-window", (_event, id: number) => {
+  createDisplayWindow(id);
+});
 
 ipcMain.on("alert", (_event, message: string) => {
   alertMessageBox(message);
@@ -314,7 +359,7 @@ ipcMain.on("add-songs", (_event) => {
               }
             );
           })
-        })).then(results => { updateUISetlist() });
+        })).then(_results => { updateUISetlist() });
     }
   )
 });
@@ -352,7 +397,12 @@ ipcMain.on("create-song", (_event, title: string, author: string) => {
 })
 
 ipcMain.on("replace-song", (_event, id: number, song: Song) => {
-  appState.setSongMediaSong(id, song);
+  try {
+    appState.setSongMediaSong(id, song);
+  } catch (e) {
+    if (e instanceof Error)
+      alertMessageBox(`Error replacing song: {id} {song.properties.title}\n{err.message}`);
+  }
   updateUIOpenMedia();
   updateUISetlist();
 });
@@ -385,8 +435,6 @@ ipcMain.on("save-song", (_event, id: number) => {
     }
   });
 });
-
-/* ------- */
 
 ipcMain.on("set-open-media", (_event, id: number | null) => {
   try {
@@ -443,10 +491,6 @@ app.on("ready", () => {
     uiWindow.loadFile(path.join(app.getAppPath(), "/dist-ui/index.html"));
     uiWindow.webContents.openDevTools();
   }
-});
-
-
-app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {

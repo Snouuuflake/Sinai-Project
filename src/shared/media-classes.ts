@@ -29,7 +29,6 @@ type SongPropertiesType = {
 type Song = {
   properties: SongPropertiesType;
   sections: Array<SongSection>;
-  // notes: SongNote[];
   elementOrder: number[];
 }
 
@@ -104,9 +103,6 @@ class MediaImage extends Media {
       path: path,
     };
   }
-  /**
-   * @returns this.id
-  */
   toSerializedLiveElement(id: number, element: number): SerializedLiveElement {
     return {
       id: id,
@@ -151,6 +147,10 @@ const decodeVerseId =
     verse: id % SECTION_MULTIPLIER
   });
 
+// live elements keep the id of the media they come from
+// the element value should be unique within the media
+// element has an arbitrary value, can encode whatever data
+// is needed, such as the above pair of functions
 type LiveElementIdentifier = {
   id: number;
   element: number;

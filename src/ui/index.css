@@ -1,9 +1,4 @@
-/*html, body {
-  transform: translateZ(0); 
-    will-change: transform;
-    overflow-x: hidden;       
-}*/
-
+/* -- blink animation setup ------------ */
 :root {
   --blink-opacity: 1;
   --blink-transparent-blend: 0%;
@@ -18,6 +13,13 @@
 
 body {
   animation: blink 0.7s step-start 0s infinite;
+}
+/* ------------------------------------- */
+
+@font-face {
+  font-family: "atk";
+  src: url("./assets/AtkinsonHyperlegibleNext-VariableFont_wght.ttf");
+  font-style: normal;
 }
 
 :root {
@@ -86,12 +88,7 @@ body {
   background-color: var(--background);
 }
 
-@font-face {
-  font-family: "atk";
-  src: url("./assets/AtkinsonHyperlegibleNext-VariableFont_wght.ttf");
-  font-style: normal;
-}
-
+/* because the icons package */
 *:not(svg):not(svg *) {
   font-family: "atk", Arial;
   zoom: reset;

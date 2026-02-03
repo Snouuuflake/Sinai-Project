@@ -33,7 +33,7 @@ contextBridge.exposeInMainWorld("electron", {
   onUIStateUpdateSetlist: makeIpcOn("ui-state-update-setlist"),
   onUIStateUpdateOpenMedia: makeIpcOn("ui-state-update-open-media"),
   onUIStateUpdateLiveElements: makeIpcOn("ui-state-update-live-elements"),
-  onUIStateUpdateConfig: makeIpcOn("ui-state-update-config"),
+  onUIStateUpdateDisplayConfig: makeIpcOn("ui-state-update-display-config"),
   sendUIStateRequest: makeIpcSend("ui-state-request"),
   sendNewDisplayWindow: makeIpcSend("new-display-window"),
   sendSetOpenMedia: makeIpcSend("set-open-media"),

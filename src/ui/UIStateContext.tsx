@@ -11,7 +11,6 @@ type UIStateContextType = {
   setlist: SerializedMediaIdentifier[];
   openMedia: SerializedMediaWithId | null;
   liveElements: Array<LiveElementIdentifier | null>;
-  config: SerializedConfigEntry[];
 }
 
 
@@ -24,7 +23,6 @@ export const UIStateContextProvider:
     const [liveElements, setLiveElements] = useState<
       Array<LiveElementIdentifier | null>
     >(Array.from({ length: DISPLAYS }, (_x) => null));
-    const [config, setConfig] = useState<SerializedConfigEntry[]>([]);
 
 
     useEffect(() => {
@@ -49,8 +47,8 @@ export const UIStateContextProvider:
     }, [])
 
     useEffect(() => {
-      const remover = window.electron.onUIStateUpdateConfig(
-        (newValue: SerializedConfigEntry[]) => { setConfig(newValue) }
+      const remover = window.electron.onUIStateUpdateDisplayConfig(
+        console.log
       );
       return remover;
     }, [])
@@ -60,7 +58,7 @@ export const UIStateContextProvider:
     }, [])
 
     return <UIStateContext.Provider
-      value={{ setlist, openMedia, liveElements, config }}>
+      value={{ setlist, openMedia, liveElements }}>
       {children}
     </UIStateContext.Provider >
   };

@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, dialog, protocol, net } from "electron";
+import { DISPLAYS } from "../shared/constants.js";
 import { pathToFileURL } from "url";
 import path from "path";
 import { isDev } from "./util.js";
@@ -14,9 +15,10 @@ import {
   MediaSong,
   Song,
 } from "../shared/media-classes.js";
-import { DISPLAYS } from "../shared/constants.js";
+import { ConfigTypesKey, MainDisplayConfigEntry } from "../shared/config-classes.js";
 import * as fs from "fs";
 import { parseSong, logSong, stringifySong } from "./parser.js";
+import Main from "electron/main";
 
 // handling unhandled rejected promises
 process.on('unhandledRejection', (error: Error) => {
@@ -67,6 +69,24 @@ class AppState {
   // elements being projected
   #liveElements: Array<LiveElementIdentifier | null> = Array.from({ length: DISPLAYS }, (_x) => null);
   constructor() {
+  }
+  // INFO: dc ------------------------------
+  #dc: MainDisplayConfigEntry<ConfigTypesKey>[] = [];
+  #findAssertNewDcEntryId(id: string) {
+    const findRes = this.#dc.find(x => x.id === id);
+    if (!findRes)
+      throw new Error("getSerializedDcEntry: invalid id");
+    return findRes;
+  }
+  addDcEntry(entry: MainDisplayConfigEntry<ConfigTypesKey>) {
+    this.#findAssertNewDcEntryId(entry.id);
+    this.#dc.push(entry);
+  }
+  updateDcEntry(id: string, index: number, value: unknown) {
+    this.#findAssertNewDcEntryId(id).setCurEntry(index, value);
+  }
+  getSerializedDc() {
+    return this.#dc.map(x => x.toSerialized());
   }
   // returns copy of this.#media
   get media(): Map<number, Media> {
@@ -194,6 +214,14 @@ class AppState {
 let uiWindow: BrowserWindow;
 const displayWindows: BrowserWindow[] = []
 
+const appState = new AppState();
+
+appState.addDcEntry(new MainDisplayConfigEntry("bold", "boolean", false));
+// FIXME: tmp
+ipcMain.on("dc-state-request", (_event) => {
+  appState.getSerializedDc();
+})
+
 /**
  * creates a display window and pushes it to displayWindows
  */
@@ -229,7 +257,6 @@ function createDisplayWindow(displayId: number) {
   return displayWindow;
 }
 
-const appState = new AppState();
 
 
 /* ------- ui ipc ------- */

@@ -87,6 +87,9 @@ class AppState {
   updateDcEntry(id: string, index: number, value: unknown) {
     this.#findAssertNewDcEntryId(id).setCurEntry(index, value);
   }
+  resetDcEntry(id: string, index: number) {
+    this.#findAssertNewDcEntryId(id).reinitEntry(index);
+  }
   getSerializedDc() {
     return this.#dc.map(x => x.toSerialized());
   }
@@ -218,8 +221,11 @@ const displayWindows: BrowserWindow[] = []
 
 const appState = new AppState();
 
-appState.addDcEntry(new MainDisplayConfigEntry("bold", "boolean", false));
 appState.addDcEntry(new MainDisplayConfigEntry("background-color", "hexcolor", "#000000"));
+appState.addDcEntry(new MainDisplayConfigEntry("font-size", "nnumber", 30));
+appState.addDcEntry(new MainDisplayConfigEntry("bold", "boolean", false));
+appState.addDcEntry(new MainDisplayConfigEntry("text-color", "hexcolor", "#FFFFFF"));
+
 function updateUIDisplayConfig() {
   sendToUIWindow("ui-update-display-config",
     appState.getSerializedDc()
@@ -232,6 +238,16 @@ ipcMain.on("ui-display-config-request", (_event) => {
 ipcMain.on("ui-set-display-config-entry", (_event, id, index, value) => {
   try {
     appState.updateDcEntry(id, index, value);
+    updateUIDisplayConfig();
+  } catch (err) {
+    if (err instanceof Error) {
+      alertMessageBox(err.message);
+    }
+  }
+});
+ipcMain.on("ui-reset-display-config-entry", (_event, id, index) => {
+  try {
+    appState.resetDcEntry(id, index);
     updateUIDisplayConfig();
   } catch (err) {
     if (err instanceof Error) {

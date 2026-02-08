@@ -10,6 +10,7 @@ import {
 import { useModal } from "../ModalContext";
 import { UIDisplayConfigStateContextProvider, useUIDisplayConfigState } from "../UIDisplayConfigStateContext";
 import { useEffect, useState } from "react";
+import { RotateCw, X } from "lucide-react";
 
 const ConfigInputBoolean = ({
   id,
@@ -31,7 +32,6 @@ const ConfigInputBoolean = ({
         window.electron.sendUISetDisplayConfigEntry(id, index, !cur);
       }}
     >
-      {isInit ? "(i)" : ""}
       {cur ? "True" : "False"}
     </button>
   </div>
@@ -58,6 +58,9 @@ const ConfigInputHexcolor = ({
     }
     setIsValid(hasValidInput);
   }, [inputValue])
+  useEffect(() => {
+    setInputValue(cur ?? "");
+  }, [cur])
 
   if (cur === null) {
     return <>null</>
@@ -65,13 +68,43 @@ const ConfigInputHexcolor = ({
 
   return <div className="config-input-content">
     <input
-      style={{ backgroundColor: isValid ? "green" : "red" }}
+      className="config-input-hexcolor-input"
+      style={isValid ?
+        {
+          backgroundColor: inputValue,
+          color:
+            (parseInt(inputValue.slice(1, 3), 16) * 0.299 + parseInt(inputValue.slice(3, 5), 16) * 0.587 + parseInt(inputValue.slice(5, 7), 16) * 0.114) > 186 ? '#000' : '#fff'
+        }
+        :
+        {
+          backgroundImage: "repeating-linear-gradient(45deg, #FF000080 0, #FF000080 5px, transparent 5px, transparent 10px)",
+        }
+      }
       value={inputValue}
       onChange={(e) => {
         setInputValue(e.target.value)
       }}
     />
   </div>
+}
+
+const ConfigInputResetButton = ({
+  id,
+  index,
+  isInit,
+}: {
+  id: string,
+  index: number,
+  isInit: boolean
+}): React.ReactElement => {
+  return <button
+    className="config-input-reset-button"
+    onClick={() => {
+      window.electron.sendUIResetDisplayConfigEntry(id, index);
+    }}
+  >
+    <RotateCw size={13} style={isInit ? { color: "var(--gray-70)" } : {}} />
+  </button>;
 }
 
 const ConfigInput = ({
@@ -90,8 +123,8 @@ const ConfigInput = ({
   title: string,
 }): React.ReactElement => {
   return (
-    <div className="config-input" style={isInit ? { opacity: "80%" } : {}}>
-      <h3 className="config-input-title">{title}</h3>
+    <div className="config-input" style={cur === null ? { opacity: "50%", pointerEvents: "none" } : {}}>
+      <div className="config-input-title">{title}</div>
       {
         type === "boolean" ?
           <ConfigInputBoolean
@@ -111,42 +144,46 @@ const ConfigInput = ({
             :
             <></>
       }
+      <ConfigInputResetButton
+        id={id}
+        index={index}
+        isInit={isInit}
+      />
     </div>
-  )    // case "hexcolor":
-  //   return <div>
-  //     <h2>hexcolor</h2>
-  //     <div>{id}</div>
-  //     {
-  //       cur === null ?
-  //         <div>null!</div>
-  //         :
-  //         <>
-  //           <div>{type}</div>
-  //           <div>{cur}</div>
-  //           <div>{isInit ? "init" : "notinit"}</div>
-  //         </>
-  //     }
-  //   </div>;
+  );
 }
 
 const SettingsButtonModal: React.FC<{}> = ({ }) => {
   const { hideModal } = useModal();
   const { config } = useUIDisplayConfigState();
   return (
-    <div style={{ backgroundColor: "pink" }}>
-      <button onClick={(e) => hideModal()}>x</button>
-      <h1>Display Config</h1>
-      <div>
+    <div className="settings-button-modal">
+      <div className="settings-button-modal-header-container">
+        <h1 className="settings-button-modal-title">Settings</h1>
+        <button
+          className="settings-button-modal-exit-button hi-1-button"
+          onClick={(e) => hideModal()}
+        >
+          <X />
+        </button>
+      </div>
+      <div style={{ background: "red" }}>
+        controls
+      </div>
+      <div className="settings-button-modal-content">
         {config.map(entry => (
-          <ConfigInput
-            key={entry.id}
-            type={entry.type}
-            id={entry.id}
-            cur={entry.cur[0]}
-            isInit={entry.isInit[0]}
-            index={0}
-            title={entry.title}
-          />
+          typeof entry === "string" ?
+            <h3 className="config-heading">{entry}</h3>
+            :
+            <ConfigInput
+              key={entry.id}
+              type={entry.type}
+              id={entry.id}
+              cur={entry.cur[0]}
+              isInit={entry.isInit[0]}
+              index={0}
+              title={entry.title}
+            />
         ))}
       </div>
     </div >
@@ -164,6 +201,7 @@ const SettingsButton: React.FC<{}> = ({ }) => {
         }
       }
     >
+      Settings
     </button>
   )
 }

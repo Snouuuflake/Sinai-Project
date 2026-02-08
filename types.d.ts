@@ -10,6 +10,7 @@ declare global {
       onUIUpdateDisplayConfig: (callback: (newValue: cc.SerializedDisplayConfigEntry[]) => void) => () => void;
       sendUIStateRequest: () => void;
       sendUISetDisplayConfigEntry: (id: string, index: number, value: any) => void;
+      sendUIResetDisplayConfigEntry: (id: string, index: number) => void;
       sendUIDisplayConfigRequest: () => void;
       sendNewDisplayWindow: (displayId: number) => void;
       sendSetOpenMedia: (id: number) => void;

@@ -1,14 +1,84 @@
+.settings-button-modal {
+  --header-height: 40px;
+  background-color: var(--gray-95);
+  height: 90vh;
+  width: 90vw;
+  max-width: 600px;
+  padding: 10px;
+  box-sizing: border-box;
+  border-radius: var(--main-container-br);
+  border: 2px solid var(--fg);
+
+  display: grid;
+  grid-template-areas: "header" "selector" "conent";
+  grid-template-rows: var(--header-height) auto 1fr;
+  gap: 5px;
+}
+
+.settings-button-modal-header-container {
+  display: grid;
+  grid-template-areas: "title exit";
+  grid-template-columns: 1fr var(--header-height);
+  max-height: 100%;
+  align-items: center;
+  gap: 5px;
+}
+
+.settings-button-modal-exit-button {
+  padding: 0;
+  align-self: center;
+  justify-self: center;
+  display: grid;
+  height: 80%;
+  width:  80%;
+  align-items: center;
+  justify-items: center;
+  border-radius: 50%;
+}
+
+.settings-button-modal-title {
+  margin: 0;
+  font-size: 25px;
+  grid-template-columns: 1fr, var(--header-height);
+}
+
+.settings-button-modal-content {
+
+}
+
+.config-heading {
+  margin: 0;
+}
 .config-input {
-  background-color: lightgreen;
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+}
+.config-input-reset-button {
+  background-color: transparent;
+}
+.config-input-reset-button:hover {
+  background-color: transparent;
+  color: color-mix(in srgb, var(--fg), var(--background) 50%);
+}
+.config-input-reset-button:active {
+  background-color: transparent;
+  color: var(--hi-1);
 }
 .config-input-content {
-  outline: 1px solid red;
+  /* outline: 1px solid red; */
+  width: 100%;
 }
 .config-input-title {
   padding: 0;
   margin: 0;
-  outline: 1px solid blue;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* outline: 1px solid blue; */
 }
 .config-input-boolean-button  {
-  width: 100%
+  width: 100%;
+  font-weight: normal;
+}
+.config-input-hexcolor-input {
+  width: 100%;
 }

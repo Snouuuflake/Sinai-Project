@@ -7,6 +7,8 @@ import {
   SerializedDisplayConfigEntry
 } from "../shared/config-classes";
 
+type UIDisplayConfigType = (UIDisplayConfigEntry<ConfigTypesKey> | string)[];
+
 
 class UIDisplayConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T> {
   // null will disable controls incase no value is given from main
@@ -34,25 +36,28 @@ class UIDisplayConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T> 
 }
 
 class UIDisplayConfig {
-  #config: UIDisplayConfigEntry<ConfigTypesKey>[] = [];
+  #config: UIDisplayConfigType = [];
   constructor() {
   }
   addEntry(entry: UIDisplayConfigEntry<ConfigTypesKey>) {
-    const findRes = this.#config.find(x => x.id === entry.id);
+    const findRes = this.#config.find(x => (typeof x === "object") && x.id === entry.id);
     if (findRes)
       throw new Error("addEntry: id already exists");
     this.#config.push(entry);
   }
+  addHeading(heading: string) {
+    this.#config.push(heading);
+  }
   updateFromSerialized(serializedConfig: SerializedDisplayConfigEntry[]) {
     serializedConfig.forEach(sentry => {
-      const foundConfigEntry = this.#config.find(x => x.id === sentry.id);
+      const foundConfigEntry = this.#config.filter(x => x instanceof UIDisplayConfigEntry).find((x) => x.id === sentry.id);
       if (foundConfigEntry === undefined)
         throw new Error("Attempt to write to non-existant config entry from main to UI");
       console.log(sentry)
       foundConfigEntry.set(sentry.cur, sentry.isInit)
     })
   }
-  get config(): readonly UIDisplayConfigEntry<ConfigTypesKey>[] {
+  get config(): readonly (UIDisplayConfigEntry<ConfigTypesKey> | string)[] {
     return this.#config;
   }
 }
@@ -60,7 +65,7 @@ class UIDisplayConfig {
 
 
 type UIDisplayConfigStateContextType = {
-  config: readonly UIDisplayConfigEntry<ConfigTypesKey>[];
+  config: readonly (UIDisplayConfigEntry<ConfigTypesKey> | string)[];
 }
 
 export const UIDisplayConfigStateContext = createContext<UIDisplayConfigStateContextType | null>(null);
@@ -69,12 +74,14 @@ export const UIDisplayConfigStateContextProvider: React.FC<{ children: React.Rea
   const displayConfigRef = useRef<UIDisplayConfig | null>(null);
   if (displayConfigRef.current === null) {
     displayConfigRef.current = new UIDisplayConfig();
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("bold", "boolean", "Bold Text"));
+    displayConfigRef.current.addHeading("General");
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("background-color", "hexcolor", "Background Color"));
+    displayConfigRef.current.addHeading("Text");
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("bold", "boolean", "Bold Text"));
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("test", "hexcolor", "test"));
   }
 
-  const [config, setConfig] = useState<readonly UIDisplayConfigEntry<ConfigTypesKey>[]>(displayConfigRef.current.config);
+  const [config, setConfig] = useState<(readonly (UIDisplayConfigEntry<ConfigTypesKey> | string)[])>(displayConfigRef.current.config);
 
   useEffect(() => {
     const remover = window.electron.onUIUpdateDisplayConfig(
@@ -86,9 +93,7 @@ export const UIDisplayConfigStateContextProvider: React.FC<{ children: React.Rea
           console.error(err)
           console.log(newconfig)
         }
-        console.log(displayConfigRef.current!.config)
         setConfig([...displayConfigRef.current!.config]);
-        console.log(displayConfigRef.current!.config)
       }
     );
     window.electron.sendUIDisplayConfigRequest();

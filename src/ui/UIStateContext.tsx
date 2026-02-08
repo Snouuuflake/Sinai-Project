@@ -4,7 +4,6 @@ import {
   SerializedMediaIdentifier,
   SerializedMediaWithId,
   LiveElementIdentifier,
-  SerializedConfigEntry,
 } from "../shared/media-classes";
 
 type UIStateContextType = {
@@ -42,13 +41,6 @@ export const UIStateContextProvider:
     useEffect(() => {
       const remover = window.electron.onUIStateUpdateLiveElements(
         (newValue: Array<LiveElementIdentifier | null>) => { setLiveElements(newValue) }
-      );
-      return remover;
-    }, [])
-
-    useEffect(() => {
-      const remover = window.electron.onUIStateUpdateDisplayConfig(
-        console.log
       );
       return remover;
     }, [])

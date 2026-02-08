@@ -79,7 +79,9 @@ class AppState {
     return findRes;
   }
   addDcEntry(entry: MainDisplayConfigEntry<ConfigTypesKey>) {
-    this.#findAssertNewDcEntryId(entry.id);
+    const findRes = this.#dc.find(x => x.id === entry.id);
+    if (findRes)
+      throw new Error("addDcEntry: id already exists");
     this.#dc.push(entry);
   }
   updateDcEntry(id: string, index: number, value: unknown) {
@@ -217,10 +219,26 @@ const displayWindows: BrowserWindow[] = []
 const appState = new AppState();
 
 appState.addDcEntry(new MainDisplayConfigEntry("bold", "boolean", false));
+appState.addDcEntry(new MainDisplayConfigEntry("background-color", "hexcolor", "#000000"));
+function updateUIDisplayConfig() {
+  sendToUIWindow("ui-update-display-config",
+    appState.getSerializedDc()
+  )
+}
 // FIXME: tmp
-ipcMain.on("dc-state-request", (_event) => {
-  appState.getSerializedDc();
-})
+ipcMain.on("ui-display-config-request", (_event) => {
+  updateUIDisplayConfig();
+});
+ipcMain.on("ui-set-display-config-entry", (_event, id, index, value) => {
+  try {
+    appState.updateDcEntry(id, index, value);
+    updateUIDisplayConfig();
+  } catch (err) {
+    if (err instanceof Error) {
+      alertMessageBox(err.message);
+    }
+  }
+});
 
 /**
  * creates a display window and pushes it to displayWindows
@@ -230,7 +248,7 @@ function createDisplayWindow(displayId: number) {
     title: `Sinai Project: Display Window ${displayId + 1}`,
     webPreferences: {
       preload: path.join(app.getAppPath(),
-        isDev() ? "." : "..",
+        isDev() ? "" : "..",
         "dist-electron/electron/preload.cjs"
       ),
     },

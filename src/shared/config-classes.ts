@@ -1,4 +1,4 @@
-import { DISPLAYS } from "./constants";
+import { DISPLAYS } from "./constants.js";
 // class DisplayConfig {
 //
 // }
@@ -81,20 +81,21 @@ type DisplayConfigTypeBaseTypeMap = {
   // pnumber: number;
   // hexcolor: string
   boolean: boolean;
+  hexcolor: string;
 };
 const configTypes: { [T in ConfigTypesKey]: ConfigType<T> } = {
   boolean: {
     typeName: "boolean",
     validator: (value) => (typeof value === "boolean"),
-  }
+  },
   // pnumber: {
   //   typeName: "pnumber",
   //   validator: (value): value is number => (typeof value === "number") && isFinite(value) && value > 0
   // },
-  // hexcolor: {
-  //   typeName: "hexcolor",
-  //   validator: (value): value is string => (typeof value === "string") && (value.match(/#[0-9a-fA-F]{6}/) !== null)
-  // }
+  hexcolor: {
+    typeName: "hexcolor",
+    validator: (value): value is string => (typeof value === "string") && (value.match(/#[0-9a-fA-F]{6}/) !== null)
+  }
 } as const;
 
 class ConfigEntryBase<T extends ConfigTypesKey> {
@@ -148,6 +149,7 @@ class MainDisplayConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T
   }
 }
 
+
 type SerializedDisplayConfigEntry = {
   id: string;
   type: string;
@@ -155,7 +157,13 @@ type SerializedDisplayConfigEntry = {
   isInit: boolean[];
 }
 
-export { MainDisplayConfigEntry };
+export {
+  ConfigEntryBase,
+  MainDisplayConfigEntry,
+  configTypes,
+};
 export type {
-  ConfigTypesKey
+  ConfigTypesKey,
+  ConfigTypePrimitiveType,
+  SerializedDisplayConfigEntry,
 }

@@ -6,18 +6,22 @@ import { ModalContextProvider } from "./ModalContext";
 import "./App.css";
 
 import AppContainer from "./AppContainer";
+import { UIDisplayConfigStateContextProvider } from "./UIDisplayConfigStateContext";
 
 function App() {
   return (
-    <UIStateContextProvider>
-      <ModalContextProvider>
-        <ContextMenuContextProvider>
-          <ThemeContextProvider>
-            <AppContainer />
-          </ThemeContextProvider>
-        </ContextMenuContextProvider>
-      </ModalContextProvider>
-    </UIStateContextProvider>
+
+    <UIDisplayConfigStateContextProvider>
+      <UIStateContextProvider>
+        <ModalContextProvider>
+          <ContextMenuContextProvider>
+            <ThemeContextProvider>
+              <AppContainer />
+            </ThemeContextProvider>
+          </ContextMenuContextProvider>
+        </ModalContextProvider>
+      </UIStateContextProvider>
+    </UIDisplayConfigStateContextProvider>
   );
 }
 

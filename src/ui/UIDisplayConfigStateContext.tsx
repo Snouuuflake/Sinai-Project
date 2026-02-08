@@ -51,10 +51,16 @@ class UIDisplayConfig {
   updateFromSerialized(serializedConfig: SerializedDisplayConfigEntry[]) {
     serializedConfig.forEach(sentry => {
       const foundConfigEntry = this.#config.filter(x => x instanceof UIDisplayConfigEntry).find((x) => x.id === sentry.id);
-      if (foundConfigEntry === undefined)
-        throw new Error("Attempt to write to non-existant config entry from main to UI");
-      console.log(sentry)
-      foundConfigEntry.set(sentry.cur, sentry.isInit)
+      // yes, this is stupid
+      try {
+        if (foundConfigEntry === undefined)
+          throw new Error(`Attempt to write to non-existant config entry from main to UI (id: ${sentry.id})`);
+        console.log(sentry)
+        foundConfigEntry.set(sentry.cur, sentry.isInit);
+      } catch (err) {
+        if (err instanceof Error)
+          window.electron.sendAlert(err.message);
+      }
     })
   }
   get config(): readonly (UIDisplayConfigEntry<ConfigTypesKey> | string)[] {

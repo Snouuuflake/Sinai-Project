@@ -1,38 +1,10 @@
-import { useState, useEffect } from "react";
-import { SerializedLiveElement } from "../shared/media-classes";
-
-import DisplayImage from "./DisplayImage";
-import DisplayText from "./DisplayText";
-
+import Body from "./Body";
+import { DisplayConfigStateContextProvider } from "./DisplaySettingsContext";
 
 const App: React.FC<{}> = ({ }) => {
-  const params = new URLSearchParams(window.location.search);
-  const DISPLAY_ID = parseInt(params.get('displayId') || '0');
-  console.log("DISPLAY_ID", DISPLAY_ID);
-  const [liveElement, setLiveElement] = useState<SerializedLiveElement | null>(null);
-
-  useEffect(() => {
-    const remover = window.electron.onDisplayStateUpdateLiveElement(
-      (displayId, newValue) => {
-        if (displayId === DISPLAY_ID) {
-          console.log(newValue);
-          setLiveElement(newValue);
-        }
-      }
-    );
-    return remover;
-  }, []);
-
-  return <div className="app">
-    {
-      liveElement === null ?
-        <></> :
-        liveElement.type === "text" ?
-          <DisplayText liveElement={liveElement} /> :
-          liveElement.type === "image" ?
-            <DisplayImage liveElement={liveElement} /> : ""
-    }
-  </div>
+  return <DisplayConfigStateContextProvider>
+    <Body />
+  </DisplayConfigStateContextProvider>
 }
 
 export default App;

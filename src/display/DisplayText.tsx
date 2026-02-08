@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { LiveElementTextValue, SerializedLiveElement } from "../shared/media-classes"
+import { useDisplayConfigState } from "./DisplaySettingsContext";
 
 const AutoScaleText: React.FC<{
   children: React.ReactNode;
@@ -98,19 +99,25 @@ const AutoScaleText: React.FC<{
 
 const DisplayText: React.FC<{ liveElement: SerializedLiveElement }> =
   ({ liveElement }) => {
-    return <div className="display-text">
-      <AutoScaleText
-        minSize={1}
-        maxSize={200}
-        step={1}
+    const { configHash } = useDisplayConfigState();
+    return (
+      <div
+        className="display-text"
+        style={{ fontWeight: configHash.get("bold") as boolean ? "bold" : "normal" }}
       >
-        {
-          (liveElement.value as LiveElementTextValue).lines.map(
-            (l, i, a) => <div className="text-line">{l}</div>
-          )
-        }
-      </AutoScaleText>
-    </div>
+        <AutoScaleText
+          minSize={1}
+          maxSize={200}
+          step={1}
+        >
+          {
+            (liveElement.value as LiveElementTextValue).lines.map(
+              (l, i, a) => <div className="text-line">{l}</div>
+            )
+          }
+        </AutoScaleText>
+      </div>
+    )
   }
 
 export default DisplayText;

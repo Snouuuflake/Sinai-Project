@@ -5,7 +5,6 @@
 }
 * {
   font-family: "atk", Arial;
-  font-weight: bold;
   padding: 0;
   margin: 0;
   box-sizing: border-box;
@@ -21,7 +20,7 @@ body {
   width: 100%;
   overflow: hidden;
 }
-.app {
+.body {
   height: 100%;
   width: 100%;
   display: grid;

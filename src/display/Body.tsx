@@ -1,0 +1,45 @@
+import { useEffect, useState } from "react";
+import { useDisplayConfigState } from "./DisplaySettingsContext";
+import { SerializedLiveElement } from "../shared/media-classes";
+import DisplayText from "./DisplayText";
+import DisplayImage from "./DisplayImage";
+
+const Body: React.FC<{}> = () => {
+  const { DISPLAY_ID, configHash } = useDisplayConfigState();
+  const [liveElement, setLiveElement] = useState<SerializedLiveElement | null>(null);
+
+  useEffect(() => {
+    const remover = window.electron.onDisplayStateUpdateLiveElement(
+      (displayId, newValue) => {
+        if (displayId === DISPLAY_ID) {
+          console.log(newValue);
+          setLiveElement(newValue);
+        }
+      }
+    );
+    return remover;
+  }, []);
+
+  return <div className="body" style={{ backgroundColor: configHash.get("background-color") as string }}>
+
+    {/* {[...configHash].map(([k, v]) => { */}
+    {/*   return <div> */}
+    {/*     {k}: {JSON.stringify(v)} */}
+    {/*   </div> */}
+    {/* })} */}
+
+    {
+      liveElement === null ?
+        <></> :
+        liveElement.type === "text" ?
+          <DisplayText liveElement={liveElement} /> :
+          liveElement.type === "image" ?
+            <DisplayImage liveElement={liveElement} /> :
+            <></>
+    }
+
+  </div>
+
+};
+
+export default Body;

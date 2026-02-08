@@ -230,6 +230,9 @@ function updateUIDisplayConfig() {
   sendToUIWindow("ui-update-display-config",
     appState.getSerializedDc()
   )
+  sendToDisplayWinows("ui-update-display-config",
+    appState.getSerializedDc()
+  )
 }
 // FIXME: tmp
 ipcMain.on("ui-display-config-request", (_event) => {

@@ -90,7 +90,7 @@ const ConfigInput = ({
   title: string,
 }): React.ReactElement => {
   return (
-    <div className="config-input">
+    <div className="config-input" style={isInit ? { opacity: "80%" } : {}}>
       <h3 className="config-input-title">{title}</h3>
       {
         type === "boolean" ?

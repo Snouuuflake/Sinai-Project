@@ -71,6 +71,7 @@ export const UIDisplayConfigStateContextProvider: React.FC<{ children: React.Rea
     displayConfigRef.current = new UIDisplayConfig();
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("bold", "boolean", "Bold Text"));
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("background-color", "hexcolor", "Background Color"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("test", "hexcolor", "test"));
   }
 
   const [config, setConfig] = useState<readonly UIDisplayConfigEntry<ConfigTypesKey>[]>(displayConfigRef.current.config);

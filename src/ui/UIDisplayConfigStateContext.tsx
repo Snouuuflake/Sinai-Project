@@ -49,6 +49,7 @@ class UIDisplayConfig {
     this.#config.push(heading);
   }
   updateFromSerialized(serializedConfig: SerializedDisplayConfigEntry[]) {
+    const errors: Error[] = [];
     serializedConfig.forEach(sentry => {
       const foundConfigEntry = this.#config.filter(x => x instanceof UIDisplayConfigEntry).find((x) => x.id === sentry.id);
       // yes, this is stupid
@@ -59,9 +60,11 @@ class UIDisplayConfig {
         foundConfigEntry.set(sentry.cur, sentry.isInit);
       } catch (err) {
         if (err instanceof Error)
-          window.electron.sendAlert(err.message);
+          errors.push(err);
       }
     })
+    if (errors.length > 0)
+      window.electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
   }
   get config(): readonly (UIDisplayConfigEntry<ConfigTypesKey> | string)[] {
     return this.#config;
@@ -84,7 +87,8 @@ export const UIDisplayConfigStateContextProvider: React.FC<{ children: React.Rea
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("background-color", "hexcolor", "Background Color"));
     displayConfigRef.current.addHeading("Text");
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("bold", "boolean", "Bold Text"));
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("test", "hexcolor", "test"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("font-size", "nnumber", "Font Size"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-color", "hexcolor", "Text Color"));
   }
 
   const [config, setConfig] = useState<(readonly (UIDisplayConfigEntry<ConfigTypesKey> | string)[])>(displayConfigRef.current.config);

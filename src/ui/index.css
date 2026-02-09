@@ -93,7 +93,12 @@ body {
   font-family: "atk", Arial;
   zoom: reset;
   color: var(--text-color);
-  outline-color: var(--hi-1-base);
+}
+
+input:focus,
+input:focus-visible {
+    box-shadow: none;
+    outline: 2px solid var(--hi-1-base);
 }
 
 *::-webkit-scrollbar {

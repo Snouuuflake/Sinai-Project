@@ -48,9 +48,9 @@ class DisplayConfig {
         if (err instanceof Error)
           errors.push(err);
       }
-      if (errors.length > 0)
-        window.electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim())
     })
+    if (errors.length > 0)
+      window.electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
   }
   get config(): readonly DisplayConfigEntry<ConfigTypesKey>[] {
     return this.#config;
@@ -78,7 +78,10 @@ export const DisplayConfigStateContextProvider: React.FC<{ children: React.React
   if (displayConfigRef.current === null) {
     displayConfigRef.current = new DisplayConfig();
     displayConfigRef.current.addEntry(new DisplayConfigEntry("background-color", "hexcolor", "#000000"));
+    displayConfigRef.current.addEntry(new DisplayConfigEntry("font-size", "nnumber", 30));
     displayConfigRef.current.addEntry(new DisplayConfigEntry("bold", "boolean", false));
+    displayConfigRef.current.addEntry(new DisplayConfigEntry("text-color", "hexcolor", "#FFFFFF"));
+
   }
 
   const [configHash, setConfigHash] = useState<Map<string, ConfigTypePrimitiveType<ConfigTypesKey>>>(displayConfigRef.current.configHash);

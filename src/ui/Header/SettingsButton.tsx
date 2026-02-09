@@ -88,6 +88,57 @@ const ConfigInputHexcolor = ({
   </div>
 }
 
+const ConfigInputNnumber = ({
+  id,
+  index,
+  cur,
+  isInit,
+}: {
+  id: string,
+  index: number,
+  cur: ConfigTypePrimitiveType<"nnumber"> | null,
+  isInit: boolean
+}): React.ReactElement => {
+  const [inputValue, setInputValue] = useState<string>(JSON.stringify(cur) ?? "");
+  const [isValid, setIsValid] = useState<boolean>(configTypes["nnumber"].validator(inputValue));
+
+  useEffect(() => {
+    const numberValue = parseInt(inputValue);
+    const hasValidInput = configTypes["nnumber"].validator(numberValue);
+    if (hasValidInput) {
+      window.electron.sendUISetDisplayConfigEntry(id, index, numberValue);
+    }
+    setIsValid(hasValidInput);
+  }, [inputValue])
+
+  useEffect(() => {
+    setInputValue(JSON.stringify(cur) ?? "");
+  }, [cur])
+
+  if (cur === null) {
+    return <>null</>
+  }
+
+
+  return <div className="config-input-content">
+    <input
+      className="config-input-nnumber-input"
+      type="number"
+      min="0"
+      value={inputValue}
+      onChange={(e) => { setInputValue(e.target.value) }}
+      style={isValid ?
+        {
+        }
+        :
+        {
+          backgroundImage: "repeating-linear-gradient(45deg, #FF000080 0, #FF000080 5px, transparent 5px, transparent 10px)",
+        }
+      }
+    />
+  </div>
+}
+
 const ConfigInputResetButton = ({
   id,
   index,
@@ -142,7 +193,15 @@ const ConfigInput = ({
               isInit={isInit}
             />
             :
-            <></>
+            type === "nnumber" ?
+              <ConfigInputNnumber
+                id={id}
+                index={index}
+                cur={cur as ConfigTypePrimitiveType<"nnumber"> | null}
+                isInit={isInit}
+              />
+              :
+              <></>
       }
       <ConfigInputResetButton
         id={id}

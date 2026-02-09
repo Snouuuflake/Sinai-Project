@@ -103,11 +103,14 @@ const DisplayText: React.FC<{ liveElement: SerializedLiveElement }> =
     return (
       <div
         className="display-text"
-        style={{ fontWeight: configHash.get("bold") as boolean ? "bold" : "normal" }}
+        style={{
+          fontWeight: configHash.get("bold") as boolean ? "bold" : "normal",
+          color: configHash.get("text-color") as string
+        }}
       >
         <AutoScaleText
           minSize={1}
-          maxSize={200}
+          maxSize={(configHash.get("font-size") as number) > 1 ? configHash.get("font-size") as number : 2}
           step={1}
         >
           {

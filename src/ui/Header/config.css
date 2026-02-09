@@ -43,7 +43,9 @@
 }
 
 .settings-button-modal-content {
-
+  display: grid;
+  align-items: center;
+  gap: 0;
 }
 
 .config-heading {
@@ -52,6 +54,7 @@
 .config-input {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
+  align-items: center;
 }
 .config-input-reset-button {
   background-color: transparent;
@@ -81,4 +84,12 @@
 }
 .config-input-hexcolor-input {
   width: 100%;
+}
+.config-input-nnumber-input {
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }

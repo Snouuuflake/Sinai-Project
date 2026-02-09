@@ -7,10 +7,10 @@ function makeIpcSend(channel: string) {
     ipcRenderer.send(channel, ...args);
   };
 }
-function makeIpcInvoke(channel: string) {
+function makeIpcInvoke<T>(channel: string): (...args: any[]) => Promise<T> {
   return (...args: any[]) => {
     console.log("ipc invoke:", channel, ...args);
-    ipcRenderer.invoke(channel, ...args)
+    return ipcRenderer.invoke(channel, ...args)
   };
 }
 function makeIpcOn(channel: string) {
@@ -50,6 +50,8 @@ contextBridge.exposeInMainWorld("electron", {
   sendSaveSong: makeIpcSend("save-song"),
 
   onDisplayStateUpdateLiveElement: makeIpcOn("display-state-update-live-elements"),
+
+  invokeDisplayGetInitLiveElement: makeIpcInvoke("invoke-display-get-init-live-element"),
 
   sendAlert: makeIpcSend("alert"),
 });

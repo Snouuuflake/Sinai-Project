@@ -25,6 +25,9 @@ declare global {
 
       onDisplayStateUpdateLiveElement: (callback: (displayId: number, newValue: SerializedLiveElement | null) => void) => () => void;
 
+      invokeDisplayGetInitLiveElement: (index: number) => Promise<mc.SerializedLiveElement | null>;
+
+
       sendAlert: (message: string) => void;
     };
   }

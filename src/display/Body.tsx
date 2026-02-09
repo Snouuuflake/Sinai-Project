@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDisplayConfigState } from "./DisplaySettingsContext";
 import { SerializedLiveElement } from "../shared/media-classes";
 import DisplayText from "./DisplayText";
@@ -7,6 +7,8 @@ import DisplayImage from "./DisplayImage";
 const Body: React.FC<{}> = () => {
   const { DISPLAY_ID, configHash } = useDisplayConfigState();
   const [liveElement, setLiveElement] = useState<SerializedLiveElement | null>(null);
+  const hasRequestedLiveState = useRef<boolean>(false);
+
 
   useEffect(() => {
     const remover = window.electron.onDisplayStateUpdateLiveElement(
@@ -17,6 +19,12 @@ const Body: React.FC<{}> = () => {
         }
       }
     );
+    if (!hasRequestedLiveState.current)
+      window.electron.invokeDisplayGetInitLiveElement(DISPLAY_ID).then(le => {
+        hasRequestedLiveState.current = true;
+        console.log(le);
+        setLiveElement(le);
+      })
     return remover;
   }, []);
 

@@ -353,6 +353,10 @@ function updateDisplayLiveElement(displayId: number) {
   );
 }
 
+// so that windows automatically start displaying upon creation
+ipcMain.handle("invoke-display-get-init-live-element", (_e, displayIndex) => {
+  return appState.getDisplayStateLiveElement(displayIndex);
+})
 
 /* on setlist operations */
 ipcMain.on("add-images", (_event) => {
@@ -518,6 +522,7 @@ ipcMain.on("set-live-element", (_event, displayId: number, liveElementIdentifier
     if (e instanceof Error) alertMessageBox(e.message);
   }
 })
+
 
 
 app.on("ready", () => {

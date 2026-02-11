@@ -47,9 +47,9 @@ body {
   --background: black;
   --bg: var(--background);
   --gray-95: hsl(0 0% 5%);
-  --gray-90: hsl(0 0% 10%);
-  --gray-85: hsl(0 0% 15%);
-  --gray-80: hsl(0 0% 20%);
+  --gray-90: hsl(0 0% 15%);
+  --gray-85: hsl(0 0% 18%);
+  --gray-80: hsl(0 0% 25%);
   --gray-70: hsl(0 0% 30%);
   --gray-60: hsl(0 0% 40%);
   --gray-50: hsl(0 0% 50%);
@@ -75,9 +75,9 @@ body {
   --gray-50: hsl(0 0% 50%);
   --gray-60: hsl(0 0% 60%);
   --gray-70: hsl(0 0% 70%);
-  --gray-80: hsl(0 0% 80%);
-  --gray-85: hsl(0 0% 85%);
-  --gray-90: hsl(0 0% 90%);
+  --gray-80: hsl(0 0% 77%);
+  --gray-85: hsl(0 0% 82%);
+  --gray-90: hsl(0 0% 88%);
   --gray-95: hsl(0 0% 95%);
 
   --hi-1: color-mix(in oklch, var(--hi-1-base), black 5%);
@@ -95,10 +95,9 @@ body {
   color: var(--text-color);
 }
 
-input:focus,
-input:focus-visible {
-    box-shadow: none;
-    outline: 2px solid var(--hi-1-base);
+:is(input, button, select, textarea):is(:focus, :focus-visible) {
+  box-shadow: none;
+  outline: 2px solid var(--hi-1-base);
 }
 
 *::-webkit-scrollbar {

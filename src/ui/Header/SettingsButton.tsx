@@ -8,9 +8,10 @@ import {
 } from "../../shared/config-classes";
 
 import { useModal } from "../ModalContext";
-import { UIDisplayConfigStateContextProvider, useUIDisplayConfigState } from "../UIDisplayConfigStateContext";
+import { useConfigState } from "../ConfigStateContext";
 import { useEffect, useState } from "react";
 import { RotateCw, X } from "lucide-react";
+import { DISPLAYS } from "../../shared/constants";
 
 const ConfigInputBoolean = ({
   id,
@@ -93,11 +94,13 @@ const ConfigInputNnumber = ({
   index,
   cur,
   isInit,
+  isDisplay
 }: {
   id: string,
   index: number,
   cur: ConfigTypePrimitiveType<"nnumber"> | null,
-  isInit: boolean
+  isInit: boolean,
+  isDisplay: boolean,
 }): React.ReactElement => {
   const [inputValue, setInputValue] = useState<string>(JSON.stringify(cur) ?? "");
   const [isValid, setIsValid] = useState<boolean>(configTypes["nnumber"].validator(inputValue));
@@ -106,7 +109,11 @@ const ConfigInputNnumber = ({
     const numberValue = parseInt(inputValue);
     const hasValidInput = configTypes["nnumber"].validator(numberValue);
     if (hasValidInput) {
-      window.electron.sendUISetDisplayConfigEntry(id, index, numberValue);
+      if (isDisplay) {
+        window.electron.sendUISetDisplayConfigEntry(id, index, numberValue);
+      } else {
+        window.electron.sendUISetGeneralConfigEntry(id, numberValue);
+      }
     }
     setIsValid(hasValidInput);
   }, [inputValue])
@@ -169,7 +176,7 @@ const ConfigInput = ({
   type: ConfigTypesKey,
   id: string,
   index: number,
-  cur: ConfigTypePrimitiveType<ConfigTypesKey> | null,
+  cur: (ConfigTypePrimitiveType<ConfigTypesKey> | null),
   isInit: boolean
   title: string,
 }): React.ReactElement => {
@@ -181,7 +188,7 @@ const ConfigInput = ({
           <ConfigInputBoolean
             id={id}
             index={index}
-            cur={cur as ConfigTypePrimitiveType<"boolean"> | null}
+            cur={cur as (ConfigTypePrimitiveType<"boolean"> | null)}
             isInit={isInit}
           />
           :
@@ -189,7 +196,7 @@ const ConfigInput = ({
             <ConfigInputHexcolor
               id={id}
               index={index}
-              cur={cur as ConfigTypePrimitiveType<"hexcolor"> | null}
+              cur={cur as (ConfigTypePrimitiveType<"hexcolor"> | null)}
               isInit={isInit}
             />
             :
@@ -197,7 +204,7 @@ const ConfigInput = ({
               <ConfigInputNnumber
                 id={id}
                 index={index}
-                cur={cur as ConfigTypePrimitiveType<"nnumber"> | null}
+                cur={cur as (ConfigTypePrimitiveType<"nnumber"> | null)}
                 isInit={isInit}
               />
               :
@@ -214,7 +221,8 @@ const ConfigInput = ({
 
 const SettingsButtonModal: React.FC<{}> = ({ }) => {
   const { hideModal } = useModal();
-  const { config } = useUIDisplayConfigState();
+  const { displayConfig, generalConfig } = useConfigState();
+  const [menuSelection, useMenuSelection] = useState<string>("general");
   return (
     <div className="settings-button-modal">
       <div className="settings-button-modal-header-container">
@@ -227,23 +235,51 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
         </button>
       </div>
       <div style={{ background: "red" }}>
-        controls
+        <select
+          value={menuSelection}
+          onChange={e => useMenuSelection(e.target.value)}
+        >
+          <option value="general">Apple</option>
+          {
+            Array.from({ length: DISPLAYS }, (_, i) => (
+              <option value={i}>Display {i + 1}</option>
+            ))
+          }
+        </select>
       </div>
       <div className="settings-button-modal-content">
-        {config.map(entry => (
-          typeof entry === "string" ?
-            <h3 className="config-heading">{entry}</h3>
+        {
+          menuSelection === "general" ?
+            generalConfig.map(entry =>
+              typeof entry === "string" ?
+                <h3 className="config-heading">{entry}</h3>
+                :
+                <ConfigInput
+                  key={entry.id}
+                  type={entry.type}
+                  id={entry.id}
+                  cur={entry.cur}
+                  isInit={entry.isInit}
+                  index={parseInt(menuSelection)}
+                  title={entry.title}
+                />
+            )
             :
-            <ConfigInput
-              key={entry.id}
-              type={entry.type}
-              id={entry.id}
-              cur={entry.cur[0]}
-              isInit={entry.isInit[0]}
-              index={0}
-              title={entry.title}
-            />
-        ))}
+            displayConfig.map(entry => (
+              typeof entry === "string" ?
+                <h3 className="config-heading">{entry}</h3>
+                :
+                <ConfigInput
+                  key={entry.id}
+                  type={entry.type}
+                  id={entry.id}
+                  cur={entry.cur[parseInt(menuSelection)]}
+                  isInit={entry.isInit[parseInt(menuSelection)]}
+                  index={parseInt(menuSelection)}
+                  title={entry.title}
+                />
+            ))
+        }
       </div>
     </div >
   )

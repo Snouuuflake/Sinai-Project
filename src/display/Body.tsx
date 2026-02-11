@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useDisplayConfigState } from "./DisplaySettingsContext";
+import { useDisplayConfigState } from "./DisplayConfigStateContext";
 import { SerializedLiveElement } from "../shared/media-classes";
 import DisplayText from "./DisplayText";
 import DisplayImage from "./DisplayImage";

@@ -6,12 +6,12 @@ import { ModalContextProvider } from "./ModalContext";
 import "./App.css";
 
 import AppContainer from "./AppContainer";
-import { UIDisplayConfigStateContextProvider } from "./UIDisplayConfigStateContext";
+import { ConfigStateContextProvider } from "./ConfigStateContext";
 
 function App() {
   return (
 
-    <UIDisplayConfigStateContextProvider>
+    <ConfigStateContextProvider>
       <UIStateContextProvider>
         <ModalContextProvider>
           <ContextMenuContextProvider>
@@ -21,7 +21,7 @@ function App() {
           </ContextMenuContextProvider>
         </ModalContextProvider>
       </UIStateContextProvider>
-    </UIDisplayConfigStateContextProvider>
+    </ConfigStateContextProvider>
   );
 }
 

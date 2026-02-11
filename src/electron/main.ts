@@ -15,10 +15,43 @@ import {
   MediaSong,
   Song,
 } from "../shared/media-classes.js";
-import { ConfigTypesKey, MainDisplayConfigEntry } from "../shared/config-classes.js";
+import { ConfigEntryBase, ConfigTypePrimitiveType, ConfigTypesKey, SerializedDisplayConfigEntry } from "../shared/config-classes.js";
 import * as fs from "fs";
 import { parseSong, logSong, stringifySong } from "./parser.js";
-import Main from "electron/main";
+
+class MainDisplayConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T> {
+  #init: ConfigTypePrimitiveType<T>;
+  #cur: ConfigTypePrimitiveType<T>[];
+  constructor(id: string, type: T, init: ConfigTypePrimitiveType<T>) {
+    super(id, type);
+    this.assertType(init);
+    this.#init = init;
+    this.#cur = Array.from({ length: DISPLAYS }, () => this.#init);
+  }
+  get cur(): ConfigTypePrimitiveType<T>[] {
+    return [...this.#cur];
+  }
+  setCurEntry(index: number, value: unknown) {
+    this.assertType(value);
+    if (index >= DISPLAYS)
+      throw new Error(`MainConfigEntry.setCurEntry "${this.id}" > no. of displays`);
+    this.#cur[index] = value;
+  }
+  reinitEntry(index: number) {
+    if (index >= DISPLAYS)
+      throw new Error(`MainConfigEntry.reinitEntry "${this.id}" > no. of displays`);
+    this.#cur[index] = this.#init;
+  }
+  toSerialized(): SerializedDisplayConfigEntry {
+    return {
+      id: this.id,
+      type: this.type,
+      cur: this.#cur,
+      isInit: this.#cur.map(x => x === this.#init)
+    }
+  }
+}
+
 
 // handling unhandled rejected promises
 process.on('unhandledRejection', (error: Error) => {

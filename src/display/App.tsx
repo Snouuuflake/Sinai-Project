@@ -1,5 +1,5 @@
 import Body from "./Body";
-import { DisplayConfigStateContextProvider } from "./DisplaySettingsContext";
+import { DisplayConfigStateContextProvider } from "./DisplayConfigStateContext";
 
 const App: React.FC<{}> = ({ }) => {
   return <DisplayConfigStateContextProvider>

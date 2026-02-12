@@ -33,6 +33,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
   --br-small: 3px;
+  --br-med: 7px;
   --hi-1-base: #ff0065ff;
   --hi-2-base: #00dbffff;
 
@@ -119,6 +120,10 @@ body {
   background-clip: padding-box;  
 }
 
+select, ::picker(select) {
+  appearance: base-select;
+}
+
 body {
   margin: 0;
   padding: 8px;
@@ -135,7 +140,7 @@ button {
   background-color: var(--gray-90);
   /* border: 2px solid var(--gray-40); */
   border: none;
-  border-radius: 7px;
+  border-radius: var(--br-med);
   font-size: 12pt;
   font-weight: bold;
   cursor: pointer;

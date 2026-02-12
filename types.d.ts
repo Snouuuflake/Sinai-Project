@@ -7,17 +7,24 @@ declare global {
       onUIStateUpdateSetlist: (callback: (newValue: mc.SerializedMediaIdentifier[]) => void) => () => void;
       onUIStateUpdateOpenMedia: (callback: (newValue: mc.SerializedMediaWithId) => void) => () => void;
       onUIStateUpdateLiveElements: (callback: (newValue: Array<mc.LiveElementIdentifier | null>) => void) => () => void;
-      onUIUpdateDisplayConfig: (callback: (newValue: cc.SerializedDisplayConfigEntry[]) => void) => () => void;
       sendUIStateRequest: () => void;
-      sendUISetDisplayConfigEntry: (id: string, index: number, value: any) => void;
-      sendUIResetDisplayConfigEntry: (id: string, index: number) => void;
+
+      onUIUpdateDisplayConfig: (callback: (newValue: cc.SerializedDisplayConfigEntry[]) => void) => () => void;
       sendUIDisplayConfigRequest: () => void;
+      sendUISetDisplayConfigEntry: (id: string, displayId: number, value: any) => void;
+      sendUIResetDisplayConfigEntry: (id: string, displayId: number) => void;
+
+      onUIUpdateGeneralConfig: (callback: (newValue: cc.SerializedGeneralConfigEntry[]) => void) => () => void;
+      sendUIGeneralConfigRequest: () => void;
+      sendUISetGeneralConfigEntry: (id: string, value: any) => void;
+      sendUIResetGeneralConfigEntry: (id: string) => void;
+
       sendNewDisplayWindow: (displayId: number) => void;
       sendSetOpenMedia: (id: number) => void;
-      sendSetLiveElement: (displayIndex: number, liveElementIdentifier: mc.LiveElementIdentifier | null) => void;
+      sendSetLiveElement: (displayId: number, liveElementIdentifier: mc.LiveElementIdentifier | null) => void;
       sendAddImages: () => void;
       sendAddSongs: () => void;
-      sendMoveMedia: (id: number, index: number) => void;
+      sendMoveMedia: (id: number, displayId: number) => void;
       sendDeleteMedia: (id: number) => void;
       sendCreateSong: (title: string, author: string) => void;
       sendReplaceSong: (id: number, song: Song) => void;
@@ -25,7 +32,7 @@ declare global {
 
       onDisplayStateUpdateLiveElement: (callback: (displayId: number, newValue: SerializedLiveElement | null) => void) => () => void;
 
-      invokeDisplayGetInitLiveElement: (index: number) => Promise<mc.SerializedLiveElement | null>;
+      invokeDisplayGetInitLiveElement: (displayId: number) => Promise<mc.SerializedLiveElement | null>;
 
 
       sendAlert: (message: string) => void;

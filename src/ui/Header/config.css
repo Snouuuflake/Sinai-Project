@@ -42,14 +42,35 @@
   grid-template-columns: 1fr, var(--header-height);
 }
 
+.settings-button-modal-select {
+  height: auto;
+  font-size: 15px;
+  border-radius: var(--br-med);
+  border: 2px solid var(--gray-70);
+  background-color: var(--bg);
+}
+.settings-button-modal-select::picker(select) {
+  background-color: var(--bg);
+  border-radius: var(--br-med);
+}
+.settings-button-modal-select *::checkmark {
+  display: none;
+}
+
 .settings-button-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.settings-button-modal-controls {
   display: grid;
-  align-items: center;
-  gap: 0;
+  padding: 10px;
 }
 
 .config-heading {
   margin: 0;
+  padding: 0;
 }
 .config-input {
   display: grid;

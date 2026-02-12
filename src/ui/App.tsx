@@ -13,13 +13,13 @@ function App() {
 
     <ConfigStateContextProvider>
       <UIStateContextProvider>
-        <ModalContextProvider>
-          <ContextMenuContextProvider>
-            <ThemeContextProvider>
+        <ThemeContextProvider>
+          <ModalContextProvider>
+            <ContextMenuContextProvider>
               <AppContainer />
-            </ThemeContextProvider>
-          </ContextMenuContextProvider>
-        </ModalContextProvider>
+            </ContextMenuContextProvider>
+          </ModalContextProvider>
+        </ThemeContextProvider>
       </UIStateContextProvider>
     </ConfigStateContextProvider>
   );

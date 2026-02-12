@@ -81,6 +81,7 @@ class UIDisplayConfig implements UIConfig {
 
 type UIGeneralConfigType = (UIGeneralConfigEntry<ConfigTypesKey> | string)[];
 type ReadonlyUIGeneralConfigType = readonly (UIGeneralConfigEntry<ConfigTypesKey> | string)[];
+type GeneralConfigMap = Map<string, ConfigTypePrimitiveType<ConfigTypesKey> | null>;
 
 class UIGeneralConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T> {
   // null will disable controls incase no value is given from main
@@ -138,11 +139,15 @@ class UIGeneralConfig implements UIConfig {
   get config(): ReadonlyUIGeneralConfigType {
     return this.#config;
   }
+  get map(): Map<string, ConfigTypePrimitiveType<ConfigTypesKey> | null> {
+    return new Map(this.#config.filter(x => x instanceof UIGeneralConfigEntry).map(x => [x.id, x.cur]))
+  }
 }
 
 type ConfigStateContextType = {
   displayConfig: ReadonlyUIDisplayConfigType;
   generalConfig: ReadonlyUIGeneralConfigType;
+  generalConfigMap: GeneralConfigMap;
 }
 
 export const ConfigStateContext = createContext<ConfigStateContextType | null>(null);
@@ -161,13 +166,6 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
 
   const [displayConfig, setDisplayConfig] = useState<ReadonlyUIDisplayConfigType>(displayConfigRef.current.config);
 
-  const generalConfigRef = useRef<UIGeneralConfig | null>(null);
-  if (generalConfigRef.current === null) {
-    generalConfigRef.current = new UIGeneralConfig();
-    generalConfigRef.current.addEntry(new UIGeneralConfigEntry("dark-theme", "boolean", "Dark Theme"));
-  }
-
-  const [generalConfig, setGeneralConfig] = useState<ReadonlyUIGeneralConfigType>(generalConfigRef.current.config);
 
   useEffect(() => {
     const remover = window.electron.onUIUpdateDisplayConfig(
@@ -186,8 +184,35 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
     return remover;
   }, [])
 
+  const generalConfigRef = useRef<UIGeneralConfig | null>(null);
+  if (generalConfigRef.current === null) {
+    generalConfigRef.current = new UIGeneralConfig();
+    generalConfigRef.current.addEntry(new UIGeneralConfigEntry("dark-theme", "boolean", "Dark Theme"));
+  }
+
+  const [generalConfig, setGeneralConfig] = useState<ReadonlyUIGeneralConfigType>(generalConfigRef.current.config);
+  const [generalConfigMap, setGeneralConfigMap] = useState<GeneralConfigMap>(generalConfigRef.current.map);
+
+  useEffect(() => {
+    const remover = window.electron.onUIUpdateGeneralConfig(
+      (newconfig: SerializedGeneralConfigEntry[]) => {
+        // this is safe, right?
+        try {
+          generalConfigRef.current!.updateFromSerialized(newconfig);
+        } catch (err) {
+          console.error(err)
+          console.log(newconfig)
+        }
+        setGeneralConfig([...generalConfigRef.current!.config]);
+        setGeneralConfigMap(generalConfigRef.current!.map);
+      }
+    );
+    window.electron.sendUIGeneralConfigRequest();
+    return remover;
+  }, [])
+
   return <ConfigStateContext.Provider
-    value={{ displayConfig, generalConfig }}>
+    value={{ displayConfig, generalConfig, generalConfigMap }}>
     {children}
   </ConfigStateContext.Provider >
 };

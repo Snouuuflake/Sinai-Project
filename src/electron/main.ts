@@ -15,9 +15,10 @@ import {
   MediaSong,
   Song,
 } from "../shared/media-classes.js";
-import { ConfigEntryBase, ConfigTypePrimitiveType, ConfigTypesKey, SerializedDisplayConfigEntry } from "../shared/config-classes.js";
+import { ConfigEntryBase, ConfigTypePrimitiveType, ConfigTypesKey, SerializedDisplayConfigEntry, SerializedGeneralConfigEntry } from "../shared/config-classes.js";
 import * as fs from "fs";
 import { parseSong, logSong, stringifySong } from "./parser.js";
+
 
 class MainDisplayConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T> {
   #init: ConfigTypePrimitiveType<T>;
@@ -31,11 +32,11 @@ class MainDisplayConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T
   get cur(): ConfigTypePrimitiveType<T>[] {
     return [...this.#cur];
   }
-  setCurEntry(index: number, value: unknown) {
+  setCurEntry(displayId: number, value: unknown) {
     this.assertType(value);
-    if (index >= DISPLAYS)
+    if (displayId >= DISPLAYS)
       throw new Error(`MainConfigEntry.setCurEntry "${this.id}" > no. of displays`);
-    this.#cur[index] = value;
+    this.#cur[displayId] = value;
   }
   reinitEntry(index: number) {
     if (index >= DISPLAYS)
@@ -52,6 +53,34 @@ class MainDisplayConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T
   }
 }
 
+class MainGeneralConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T> {
+  #init: ConfigTypePrimitiveType<T>;
+  #cur: ConfigTypePrimitiveType<T>;
+  constructor(id: string, type: T, init: ConfigTypePrimitiveType<T>) {
+    super(id, type);
+    this.assertType(init);
+    this.#init = init;
+    this.#cur = this.#init;
+  }
+  get cur(): ConfigTypePrimitiveType<T> {
+    return this.#cur;
+  }
+  set cur(value: unknown) {
+    this.assertType(value);
+    this.#cur = value;
+  }
+  reinitEntry() {
+    this.#cur = this.#init;
+  }
+  toSerialized(): SerializedGeneralConfigEntry {
+    return {
+      id: this.id,
+      type: this.type,
+      cur: this.#cur,
+      isInit: this.#cur === this.#init,
+    }
+  }
+}
 
 // handling unhandled rejected promises
 process.on('unhandledRejection', (error: Error) => {
@@ -105,26 +134,49 @@ class AppState {
   }
   // INFO: dc ------------------------------
   #dc: MainDisplayConfigEntry<ConfigTypesKey>[] = [];
-  #findAssertNewDcEntryId(id: string) {
+  #findAssertDcEntry(id: string) {
     const findRes = this.#dc.find(x => x.id === id);
     if (!findRes)
-      throw new Error("getSerializedDcEntry: invalid id");
+      throw new Error(`dc entry id ${id} doesn't exist`);
     return findRes;
   }
   addDcEntry(entry: MainDisplayConfigEntry<ConfigTypesKey>) {
     const findRes = this.#dc.find(x => x.id === entry.id);
     if (findRes)
-      throw new Error("addDcEntry: id already exists");
+      throw new Error("dc entry id already exists");
     this.#dc.push(entry);
   }
   updateDcEntry(id: string, index: number, value: unknown) {
-    this.#findAssertNewDcEntryId(id).setCurEntry(index, value);
+    this.#findAssertDcEntry(id).setCurEntry(index, value);
   }
   resetDcEntry(id: string, index: number) {
-    this.#findAssertNewDcEntryId(id).reinitEntry(index);
+    this.#findAssertDcEntry(id).reinitEntry(index);
   }
   getSerializedDc() {
     return this.#dc.map(x => x.toSerialized());
+  }
+  // INFO: gc ------------------------------
+  #gc: MainGeneralConfigEntry<ConfigTypesKey>[] = [];
+  #findAssertGcEntry(id: string) {
+    const findRes = this.#gc.find(x => x.id === id);
+    if (!findRes)
+      throw new Error(`gc entry id ${id} doesn't exist`);
+    return findRes;
+  }
+  addGcEntry(entry: MainGeneralConfigEntry<ConfigTypesKey>) {
+    const findRes = this.#gc.find(x => x.id === entry.id);
+    if (findRes)
+      throw new Error("addgcEntry: id already exists");
+    this.#gc.push(entry);
+  }
+  updateGcEntry(id: string, value: unknown) {
+    this.#findAssertGcEntry(id).cur = value;
+  }
+  resetGcEntry(id: string) {
+    this.#findAssertGcEntry(id).reinitEntry();
+  }
+  getSerializedGc() {
+    return this.#gc.map(x => x.toSerialized());
   }
   // returns copy of this.#media
   get media(): Map<number, Media> {
@@ -259,38 +311,9 @@ appState.addDcEntry(new MainDisplayConfigEntry("font-size", "nnumber", 30));
 appState.addDcEntry(new MainDisplayConfigEntry("bold", "boolean", false));
 appState.addDcEntry(new MainDisplayConfigEntry("text-color", "hexcolor", "#FFFFFF"));
 
-function updateUIDisplayConfig() {
-  sendToUIWindow("ui-update-display-config",
-    appState.getSerializedDc()
-  )
-  sendToDisplayWinows("ui-update-display-config",
-    appState.getSerializedDc()
-  )
-}
-// FIXME: tmp
-ipcMain.on("ui-display-config-request", (_event) => {
-  updateUIDisplayConfig();
-});
-ipcMain.on("ui-set-display-config-entry", (_event, id, index, value) => {
-  try {
-    appState.updateDcEntry(id, index, value);
-    updateUIDisplayConfig();
-  } catch (err) {
-    if (err instanceof Error) {
-      alertMessageBox(err.message);
-    }
-  }
-});
-ipcMain.on("ui-reset-display-config-entry", (_event, id, index) => {
-  try {
-    appState.resetDcEntry(id, index);
-    updateUIDisplayConfig();
-  } catch (err) {
-    if (err instanceof Error) {
-      alertMessageBox(err.message);
-    }
-  }
-});
+appState.addGcEntry(new MainGeneralConfigEntry("dark-theme", "boolean", false));
+
+
 
 /**
  * creates a display window and pushes it to displayWindows
@@ -328,6 +351,63 @@ function createDisplayWindow(displayId: number) {
 }
 
 
+function updateUIDisplayConfig() {
+  sendToUIWindow("ui-update-display-config",
+    appState.getSerializedDc()
+  )
+}
+ipcMain.on("ui-display-config-request", (_event) => {
+  updateUIDisplayConfig();
+});
+ipcMain.on("ui-set-display-config-entry", (_event, id, index, value) => {
+  try {
+    appState.updateDcEntry(id, index, value);
+    updateUIDisplayConfig();
+  } catch (err) {
+    if (err instanceof Error) {
+      alertMessageBox(err.message);
+    }
+  }
+});
+ipcMain.on("ui-reset-display-config-entry", (_event, id, index) => {
+  try {
+    appState.resetDcEntry(id, index);
+    updateUIDisplayConfig();
+  } catch (err) {
+    if (err instanceof Error) {
+      alertMessageBox(err.message);
+    }
+  }
+});
+
+function updateUIGeneralConfig() {
+  sendToUIWindow("ui-update-general-config",
+    appState.getSerializedGc()
+  )
+}
+ipcMain.on("ui-general-config-request", (_event) => {
+  updateUIGeneralConfig();
+});
+ipcMain.on("ui-set-general-config-entry", (_event, id, value) => {
+  try {
+    appState.updateGcEntry(id, value);
+    updateUIGeneralConfig();
+  } catch (err) {
+    if (err instanceof Error) {
+      alertMessageBox(err.message);
+    }
+  }
+});
+ipcMain.on("ui-reset-general-config-entry", (_event, id) => {
+  try {
+    appState.resetGcEntry(id);
+    updateUIGeneralConfig();
+  } catch (err) {
+    if (err instanceof Error) {
+      alertMessageBox(err.message);
+    }
+  }
+});
 
 /* ------- ui ipc ------- */
 function alertMessageBox(message: string) {

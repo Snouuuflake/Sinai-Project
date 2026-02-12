@@ -1,10 +1,8 @@
 import "./config.css"
 import {
-  ConfigEntryBase,
   ConfigTypePrimitiveType,
   ConfigTypesKey,
   configTypes,
-  SerializedDisplayConfigEntry
 } from "../../shared/config-classes";
 
 import { useModal } from "../ModalContext";
@@ -14,15 +12,11 @@ import { RotateCw, X } from "lucide-react";
 import { DISPLAYS } from "../../shared/constants";
 
 const ConfigInputBoolean = ({
-  id,
-  index,
   cur,
-  isInit,
+  onSubmit
 }: {
-  id: string,
-  index: number,
   cur: ConfigTypePrimitiveType<"boolean"> | null,
-  isInit: boolean
+  onSubmit: (newVaulue: ConfigTypePrimitiveType<"boolean">) => void
 }): React.ReactElement => {
   if (cur === null) {
     return <>null</>
@@ -30,7 +24,7 @@ const ConfigInputBoolean = ({
   return <div className="config-input-content">
     <button className="config-input-boolean-button"
       onClick={() => {
-        window.electron.sendUISetDisplayConfigEntry(id, index, !cur);
+        onSubmit(!cur);
       }}
     >
       {cur ? "True" : "False"}
@@ -39,15 +33,11 @@ const ConfigInputBoolean = ({
 }
 
 const ConfigInputHexcolor = ({
-  id,
-  index,
   cur,
-  isInit,
+  onSubmit
 }: {
-  id: string,
-  index: number,
   cur: ConfigTypePrimitiveType<"hexcolor"> | null,
-  isInit: boolean
+  onSubmit: (newVaulue: ConfigTypePrimitiveType<"hexcolor">) => void
 }): React.ReactElement => {
   const [inputValue, setInputValue] = useState<string>(cur ?? "");
   const [isValid, setIsValid] = useState<boolean>(configTypes["hexcolor"].validator(inputValue));
@@ -55,7 +45,7 @@ const ConfigInputHexcolor = ({
   useEffect(() => {
     const hasValidInput = configTypes["hexcolor"].validator(inputValue);
     if (hasValidInput) {
-      window.electron.sendUISetDisplayConfigEntry(id, index, inputValue);
+      onSubmit(inputValue);
     }
     setIsValid(hasValidInput);
   }, [inputValue])
@@ -90,17 +80,11 @@ const ConfigInputHexcolor = ({
 }
 
 const ConfigInputNnumber = ({
-  id,
-  index,
   cur,
-  isInit,
-  isDisplay
+  onSubmit
 }: {
-  id: string,
-  index: number,
   cur: ConfigTypePrimitiveType<"nnumber"> | null,
-  isInit: boolean,
-  isDisplay: boolean,
+  onSubmit: (newVaulue: ConfigTypePrimitiveType<"nnumber">) => void
 }): React.ReactElement => {
   const [inputValue, setInputValue] = useState<string>(JSON.stringify(cur) ?? "");
   const [isValid, setIsValid] = useState<boolean>(configTypes["nnumber"].validator(inputValue));
@@ -109,11 +93,7 @@ const ConfigInputNnumber = ({
     const numberValue = parseInt(inputValue);
     const hasValidInput = configTypes["nnumber"].validator(numberValue);
     if (hasValidInput) {
-      if (isDisplay) {
-        window.electron.sendUISetDisplayConfigEntry(id, index, numberValue);
-      } else {
-        window.electron.sendUISetGeneralConfigEntry(id, numberValue);
-      }
+      onSubmit(numberValue);
     }
     setIsValid(hasValidInput);
   }, [inputValue])
@@ -135,8 +115,7 @@ const ConfigInputNnumber = ({
       value={inputValue}
       onChange={(e) => { setInputValue(e.target.value) }}
       style={isValid ?
-        {
-        }
+        {}
         :
         {
           backgroundImage: "repeating-linear-gradient(45deg, #FF000080 0, #FF000080 5px, transparent 5px, transparent 10px)",
@@ -147,18 +126,16 @@ const ConfigInputNnumber = ({
 }
 
 const ConfigInputResetButton = ({
-  id,
-  index,
   isInit,
+  onReset,
 }: {
-  id: string,
-  index: number,
   isInit: boolean
+  onReset: () => void;
 }): React.ReactElement => {
   return <button
     className="config-input-reset-button"
     onClick={() => {
-      window.electron.sendUIResetDisplayConfigEntry(id, index);
+      onReset();
     }}
   >
     <RotateCw size={13} style={isInit ? { color: "var(--gray-70)" } : {}} />
@@ -168,52 +145,61 @@ const ConfigInputResetButton = ({
 const ConfigInput = ({
   type,
   id,
-  index,
+  displayId,
   cur,
   isInit,
   title,
+  isDisplay,
 }: {
   type: ConfigTypesKey,
   id: string,
-  index: number,
+  displayId: number,
   cur: (ConfigTypePrimitiveType<ConfigTypesKey> | null),
   isInit: boolean
   title: string,
+  isDisplay: boolean
 }): React.ReactElement => {
+  const onSubmit = (value: any) => {
+    if (isDisplay) {
+      window.electron.sendUISetDisplayConfigEntry(id, displayId, value);
+    } else {
+      window.electron.sendUISetGeneralConfigEntry(id, value);
+    }
+  }
+  const onReset = () => {
+    if (isDisplay) {
+      window.electron.sendUIResetDisplayConfigEntry(id, displayId);
+    } else {
+      window.electron.sendUIResetGeneralConfigEntry(id);
+    }
+  }
   return (
     <div className="config-input" style={cur === null ? { opacity: "50%", pointerEvents: "none" } : {}}>
       <div className="config-input-title">{title}</div>
       {
         type === "boolean" ?
           <ConfigInputBoolean
-            id={id}
-            index={index}
             cur={cur as (ConfigTypePrimitiveType<"boolean"> | null)}
-            isInit={isInit}
+            onSubmit={onSubmit}
           />
           :
           type === "hexcolor" ?
             <ConfigInputHexcolor
-              id={id}
-              index={index}
               cur={cur as (ConfigTypePrimitiveType<"hexcolor"> | null)}
-              isInit={isInit}
+              onSubmit={onSubmit}
             />
             :
             type === "nnumber" ?
               <ConfigInputNnumber
-                id={id}
-                index={index}
                 cur={cur as (ConfigTypePrimitiveType<"nnumber"> | null)}
-                isInit={isInit}
+                onSubmit={onSubmit}
               />
               :
               <></>
       }
       <ConfigInputResetButton
-        id={id}
-        index={index}
         isInit={isInit}
+        onReset={onReset}
       />
     </div>
   );
@@ -234,15 +220,16 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
           <X />
         </button>
       </div>
-      <div style={{ background: "red" }}>
+      <div className="settings-button-modal-controls">
         <select
+          className="settings-button-modal-select"
           value={menuSelection}
           onChange={e => useMenuSelection(e.target.value)}
         >
-          <option value="general">Apple</option>
+          <option value="general">General</option>
           {
             Array.from({ length: DISPLAYS }, (_, i) => (
-              <option value={i}>Display {i + 1}</option>
+              <option value={i} key={i}>Display {i + 1}</option>
             ))
           }
         </select>
@@ -260,8 +247,9 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
                   id={entry.id}
                   cur={entry.cur}
                   isInit={entry.isInit}
-                  index={parseInt(menuSelection)}
+                  displayId={parseInt(menuSelection)}
                   title={entry.title}
+                  isDisplay={false}
                 />
             )
             :
@@ -275,8 +263,9 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
                   id={entry.id}
                   cur={entry.cur[parseInt(menuSelection)]}
                   isInit={entry.isInit[parseInt(menuSelection)]}
-                  index={parseInt(menuSelection)}
+                  displayId={parseInt(menuSelection)}
                   title={entry.title}
+                  isDisplay={true}
                 />
             ))
         }

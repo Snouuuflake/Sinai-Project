@@ -10,6 +10,8 @@ type DisplayConfigTypeBaseTypeMap = {
   boolean: boolean;
   hexcolor: string;
   nnumber: number;
+  string: string;
+  path: string
 };
 const configTypes: { [T in ConfigTypesKey]: ConfigType<T> } = {
   boolean: {
@@ -23,6 +25,14 @@ const configTypes: { [T in ConfigTypesKey]: ConfigType<T> } = {
   nnumber: {
     typeName: "nnumber",
     validator: (value): value is number => (typeof value === "number") && (value >= 0)
+  },
+  string: {
+    typeName: "string",
+    validator: (value): value is string => (typeof value === "string")
+  },
+  path: {
+    typeName: "path",
+    validator: (value): value is string => (typeof value === "string")
   }
 } as const;
 

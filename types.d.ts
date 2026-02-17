@@ -13,11 +13,13 @@ declare global {
       sendUIDisplayConfigRequest: () => void;
       sendUISetDisplayConfigEntry: (id: string, displayId: number, value: any) => void;
       sendUIResetDisplayConfigEntry: (id: string, displayId: number) => void;
+      sendDisplayConfigInputPath: (id: string, displayId: number) => void;
 
       onUIUpdateGeneralConfig: (callback: (newValue: cc.SerializedGeneralConfigEntry[]) => void) => () => void;
       sendUIGeneralConfigRequest: () => void;
       sendUISetGeneralConfigEntry: (id: string, value: any) => void;
       sendUIResetGeneralConfigEntry: (id: string) => void;
+      sendGeneralConfigInputPath: (id: string) => void;
 
       sendNewDisplayWindow: (displayId: number) => void;
       sendSetOpenMedia: (id: number) => void;

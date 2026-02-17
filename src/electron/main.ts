@@ -20,6 +20,20 @@ import * as fs from "fs";
 import { parseSong, logSong, stringifySong } from "./parser.js";
 
 
+const FILTERS = {
+  "Images": {
+    name: "Images",
+    extensions: [
+      "apng", "gif", "ico", "cur", "jpg", "jpeg", "jfif", "pjpeg", "pjp", "png", "svg",
+    ]
+  },
+  "Songs": {
+    name: "Songs",
+    extensions: ["sinai", "txt", "mss"]
+  }
+} as const
+
+
 class MainDisplayConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T> {
   #init: ConfigTypePrimitiveType<T>;
   #cur: ConfigTypePrimitiveType<T>[];
@@ -132,7 +146,37 @@ class AppState {
   #liveElements: Array<LiveElementIdentifier | null> = Array.from({ length: DISPLAYS }, (_x) => null);
   constructor() {
   }
-  // INFO: dc ------------------------------
+  // INFO: configs -------------------------
+  readConfigFile() {
+    fs.readFile(getConfigPath(), { encoding: "utf8" }, (err, data) => {
+      if (err) {
+        alertMessageBox(err.message);
+        return;
+      }
+      const { dc, gc }: { dc: SerializedDisplayConfigEntry[], gc: SerializedGeneralConfigEntry[] } = JSON.parse(data);
+      console.log(dc, gc);
+      dc.forEach(entry => {
+        entry.cur.forEach((cur, i) => {
+          if (i < DISPLAYS) {
+            this.updateDcEntry(entry.id, i, cur);
+          }
+        });
+      });
+      gc.forEach(entry => this.updateGcEntry(entry.id, entry.cur));
+    });
+  }
+  writeConfigFile() {
+    const data = JSON.stringify({
+      dc: this.#dc.map(entry => entry.toSerialized()),
+      gc: this.#gc.map(entry => entry.toSerialized()),
+    });
+    fs.writeFile(getConfigPath(), data, { encoding: "utf8" }, (err) => {
+      if (err) {
+        alertMessageBox(err.message);
+      }
+    });
+  }
+  //       INFO: dc ------------------------------
   #dc: MainDisplayConfigEntry<ConfigTypesKey>[] = [];
   #findAssertDcEntry(id: string) {
     const findRes = this.#dc.find(x => x.id === id);
@@ -148,14 +192,16 @@ class AppState {
   }
   updateDcEntry(id: string, index: number, value: unknown) {
     this.#findAssertDcEntry(id).setCurEntry(index, value);
+    this.writeConfigFile();
   }
   resetDcEntry(id: string, index: number) {
     this.#findAssertDcEntry(id).reinitEntry(index);
+    this.writeConfigFile();
   }
   getSerializedDc() {
     return this.#dc.map(x => x.toSerialized());
   }
-  // INFO: gc ------------------------------
+  //       INFO: gc ------------------------------
   #gc: MainGeneralConfigEntry<ConfigTypesKey>[] = [];
   #findAssertGcEntry(id: string) {
     const findRes = this.#gc.find(x => x.id === id);
@@ -171,9 +217,11 @@ class AppState {
   }
   updateGcEntry(id: string, value: unknown) {
     this.#findAssertGcEntry(id).cur = value;
+    this.writeConfigFile();
   }
   resetGcEntry(id: string) {
     this.#findAssertGcEntry(id).reinitEntry();
+    this.writeConfigFile();
   }
   getSerializedGc() {
     return this.#gc.map(x => x.toSerialized());
@@ -307,12 +355,33 @@ const displayWindows: BrowserWindow[] = []
 const appState = new AppState();
 
 appState.addDcEntry(new MainDisplayConfigEntry("background-color", "hexcolor", "#000000"));
+appState.addDcEntry(new MainDisplayConfigEntry("background-image", "path", ""))
+
 appState.addDcEntry(new MainDisplayConfigEntry("font-size", "nnumber", 30));
+appState.addDcEntry(new MainDisplayConfigEntry("font", "string", ""));
 appState.addDcEntry(new MainDisplayConfigEntry("bold", "boolean", false));
 appState.addDcEntry(new MainDisplayConfigEntry("text-color", "hexcolor", "#FFFFFF"));
 
 appState.addGcEntry(new MainGeneralConfigEntry("dark-theme", "boolean", false));
 
+
+if (fs.existsSync(getConfigPath())) {
+  console.log(fs.readFileSync(getConfigPath(), { encoding: "utf8" }));
+  appState.readConfigFile();
+} else {
+  try {
+    fs.writeFileSync(
+      getConfigPath(),
+      JSON.stringify({
+        dc: [],
+        gc: []
+      }),
+      { encoding: "utf8" },
+    );
+  } catch (err) {
+    if (err instanceof Error) { alertMessageBox(err.message) }
+  }
+}
 
 
 /**
@@ -356,6 +425,23 @@ function updateUIDisplayConfig() {
     appState.getSerializedDc()
   )
 }
+function imageDialog(): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    dialog.showOpenDialog(uiWindow, {
+      title: "Add Media Images",
+      filters: [
+        FILTERS["Images"] as any
+      ],
+      properties: ["openFile"]
+    }).then(
+      result => {
+        if (result.canceled) reject();
+        resolve(result.filePaths[0]);
+      }
+    )
+  })
+}
+
 ipcMain.on("ui-display-config-request", (_event) => {
   updateUIDisplayConfig();
 });
@@ -378,6 +464,16 @@ ipcMain.on("ui-reset-display-config-entry", (_event, id, index) => {
       alertMessageBox(err.message);
     }
   }
+});
+
+ipcMain.on("ui-display-config-input-path", (_event, id, displayId) => {
+  imageDialog().then(
+    res => {
+      appState.updateDcEntry(id, displayId, res);
+      updateUIDisplayConfig();
+    },
+    (reason) => { }
+  );
 });
 
 function updateUIGeneralConfig() {
@@ -407,6 +503,16 @@ ipcMain.on("ui-reset-general-config-entry", (_event, id) => {
       alertMessageBox(err.message);
     }
   }
+});
+
+ipcMain.on("ui-general-config-input-path", (_event, id, displayId) => {
+  imageDialog().then(
+    res => {
+      appState.updateGcEntry(id, res);
+      updateUIGeneralConfig();
+    },
+    (reason) => { }
+  );
 });
 
 /* ------- ui ipc ------- */
@@ -478,11 +584,7 @@ ipcMain.on("add-images", (_event) => {
   dialog.showOpenDialog(uiWindow, {
     title: "Add Media Images",
     filters: [
-      {
-        name: "Images", extensions: [
-          "apng", "gif", "ico", "cur", "jpg", "jpeg", "jfif", "pjpeg", "pjp", "png", "svg",
-        ]
-      },
+      FILTERS["Images"] as any
     ],
     properties: ["openFile", "multiSelections"]
   }).then(
@@ -504,9 +606,7 @@ ipcMain.on("add-songs", (_event) => {
   dialog.showOpenDialog(uiWindow, {
     title: "Add Media Songs",
     filters: [
-      {
-        name: "Songs", extensions: ["sinai", "txt", "mss"]
-      }
+      FILTERS["Songs"] as any
     ],
     properties: ["openFile", "multiSelections"]
   }).then(

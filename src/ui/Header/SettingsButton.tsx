@@ -8,7 +8,7 @@ import {
 import { useModal } from "../ModalContext";
 import { useConfigState } from "../ConfigStateContext";
 import { useEffect, useState } from "react";
-import { RotateCw, X } from "lucide-react";
+import { FilePlusCorner, RotateCw, X } from "lucide-react";
 import { DISPLAYS } from "../../shared/constants";
 
 const ConfigInputBoolean = ({
@@ -76,6 +76,51 @@ const ConfigInputHexcolor = ({
         setInputValue(e.target.value)
       }}
     />
+  </div>
+}
+
+const ConfigInputString = ({
+  cur,
+  onSubmit
+}: {
+  cur: ConfigTypePrimitiveType<"string"> | null,
+  onSubmit: (newVaulue: ConfigTypePrimitiveType<"string">) => void
+}): React.ReactElement => {
+  if (cur === null) {
+    return <>null</>
+  }
+
+  return <div className="config-input-content">
+    <input
+      className="config-input-string-input"
+      value={cur}
+      onChange={(e) => {
+        onSubmit(e.target.value);
+      }}
+    />
+  </div>
+}
+
+const ConfigInputPath = ({
+  cur,
+  onSubmit
+}: {
+  cur: ConfigTypePrimitiveType<"path"> | null,
+  onSubmit: () => void
+}): React.ReactElement => {
+  if (cur === null) {
+    return <>null</>
+  }
+
+  return <div className="config-input-content">
+    <button className="config-input-path-button"
+      onClick={() => {
+        onSubmit()
+      }}
+    >
+      <div className="config-input-path-button-text">{cur?.replace(/.*(\/|\\)/, "") ?? ""}</div>
+      <FilePlusCorner size={14} className="config-input-path-icon" />
+    </button>
   </div>
 }
 
@@ -195,7 +240,19 @@ const ConfigInput = ({
                 onSubmit={onSubmit}
               />
               :
-              <></>
+              type === "path" ?
+                <ConfigInputPath
+                  cur={cur as (ConfigTypePrimitiveType<"path"> | null)}
+                  onSubmit={() => {
+                    if (isDisplay) {
+                      window.electron.sendDisplayConfigInputPath(id, displayId);
+                    } else {
+                      window.electron.sendGeneralConfigInputPath(id);
+                    }
+                  }}
+                />
+                :
+                <></>
       }
       <ConfigInputResetButton
         isInit={isInit}

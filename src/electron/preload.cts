@@ -39,11 +39,13 @@ contextBridge.exposeInMainWorld("electron", {
   sendUIDisplayConfigRequest: makeIpcSend("ui-display-config-request"),
   sendUISetDisplayConfigEntry: makeIpcSend("ui-set-display-config-entry"),
   sendUIResetDisplayConfigEntry: makeIpcSend("ui-reset-display-config-entry"),
+  sendDisplayConfigInputPath: makeIpcSend("ui-display-config-input-path"),
 
   onUIUpdateGeneralConfig: makeIpcOn("ui-update-general-config"),
   sendUIGeneralConfigRequest: makeIpcSend("ui-general-config-request"),
   sendUISetGeneralConfigEntry: makeIpcSend("ui-set-general-config-entry"),
   sendUIResetGeneralConfigEntry: makeIpcSend("ui-reset-general-config-entry"),
+  sendGeneralConfigInputPath: makeIpcSend("ui-general-config-input-path"),
 
   sendNewDisplayWindow: makeIpcSend("new-display-window"),
   sendSetOpenMedia: makeIpcSend("set-open-media"),

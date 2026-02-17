@@ -61,11 +61,17 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
+  overflow-y: scroll;
 }
 
 .settings-button-modal-controls {
   display: grid;
   padding: 10px;
+}
+
+.settings-button-modal-content :is(input,button) {
+  height: 30px;
+  font-size: 14px;
 }
 
 .config-heading {
@@ -91,6 +97,8 @@
 .config-input-content {
   /* outline: 1px solid red; */
   width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 .config-input-title {
   padding: 0;
@@ -106,7 +114,26 @@
 .config-input-hexcolor-input {
   width: 100%;
 }
+.config-input-string-input {
+  width: 100%;
+}
 .config-input-nnumber-input {
+}
+.config-input-path-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+.config-input-path-button-text {
+  flex-grow: 1;
+  font-weight: normal;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.config-input-path-icon {
+  min-width: 14px;
 }
 
 input[type="number"]::-webkit-inner-spin-button,

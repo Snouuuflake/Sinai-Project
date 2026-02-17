@@ -89,6 +89,7 @@ body {
   background-color: var(--background);
 }
 
+
 /* because the icons package */
 *:not(svg):not(svg *) {
   font-family: "atk", Arial;
@@ -98,6 +99,9 @@ body {
 
 :is(input, button, select, textarea):is(:focus, :focus-visible) {
   box-shadow: none;
+}
+
+:is(input, button, select, textarea):focus-visible {
   outline: 2px solid var(--hi-1-base);
 }
 
@@ -113,7 +117,7 @@ body {
 }
 
 *::-webkit-scrollbar-button {
-  /* display: none; */
+  display: none;
   background-color: var(--gray-50);
   border: 4px solid transparent;
   border-radius: 8px;

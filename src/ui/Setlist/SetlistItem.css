@@ -109,7 +109,14 @@
 .setlist-item:hover {
   background-color: transparent;
   color: color-mix(in srgb, var(--gray-70), var(--hi-1));
-
+}
+.setlist-item:focus-visible {
+  outline: none;
+}
+.setlist-item:focus-visible .setlist-item-id-container  {
+  /* outline: 2px solid var(--hi-1-base) */
+  background-color: color-mix(in srgb, var(--hi-1-base), transparent 50%);
+  color: var(--bg);
 }
 .setlist-item:active {
   /* background-color: transparent; */

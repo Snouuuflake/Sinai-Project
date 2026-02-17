@@ -30,7 +30,7 @@ const Body: React.FC<{}> = () => {
 
   return <div className="body" style={{
     backgroundColor: configHash.get("background-color") as string,
-    backgroundImage: `url("media:///${(configHash.get("background-image") as string).replaceAll("\\", "/")}")`
+    backgroundImage: `url("localfile:///${(configHash.get("background-image") as string).replaceAll("\\", "/")}")`
   }}>
 
     {/* {[...configHash].map(([k, v]) => { */}

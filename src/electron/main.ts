@@ -766,12 +766,11 @@ app.on("ready", () => {
       );
       fileUrl = "";
     }
-    console.log("local-file: fileUrl = ", fileUrl.toString());
     return net.fetch(fileUrl);
   });
 
   app.whenReady().then(() => {
-    protocol.handle('media', request => {
+    protocol.handle('localfile', request => {
       const pathToMedia = new URL(request.url).pathname
       return net.fetch(`file://${pathToMedia}`)
     })

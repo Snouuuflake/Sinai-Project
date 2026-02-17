@@ -365,14 +365,26 @@ const displayWindows: BrowserWindow[] = []
 
 const appState = new AppState();
 
+// dc
+//   general
+
 appState.addDcEntry(new MainDisplayConfigEntry("background-color", "hexcolor", "#000000"));
 appState.addDcEntry(new MainDisplayConfigEntry("background-image", "path", ""))
 
+//   text
 appState.addDcEntry(new MainDisplayConfigEntry("font-size", "nnumber", 30));
 appState.addDcEntry(new MainDisplayConfigEntry("font", "string", ""));
 appState.addDcEntry(new MainDisplayConfigEntry("bold", "boolean", false));
 appState.addDcEntry(new MainDisplayConfigEntry("text-color", "hexcolor", "#FFFFFF"));
 
+appState.addDcEntry(new MainDisplayConfigEntry("text-margin-top", "nnumber", 0));
+appState.addDcEntry(new MainDisplayConfigEntry("text-margin-bottom", "nnumber", 0));
+appState.addDcEntry(new MainDisplayConfigEntry("text-margin-left", "nnumber", 0));
+appState.addDcEntry(new MainDisplayConfigEntry("text-margin-right", "nnumber", 0));
+
+appState.addDcEntry(new MainDisplayConfigEntry("text-background-color", "hexcolor", "#00000000"));
+
+// gc
 appState.addGcEntry(new MainGeneralConfigEntry("dark-theme", "boolean", false));
 
 

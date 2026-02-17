@@ -20,7 +20,7 @@ const configTypes: { [T in ConfigTypesKey]: ConfigType<T> } = {
   },
   hexcolor: {
     typeName: "hexcolor",
-    validator: (value): value is string => (typeof value === "string") && (value.match(/#[0-9a-fA-F]{6}$/) !== null)
+    validator: (value): value is string => (typeof value === "string") && (value.match(/#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/) !== null)
   },
   nnumber: {
     typeName: "nnumber",

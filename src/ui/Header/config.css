@@ -102,7 +102,6 @@
   width: 100%;
   min-width: 0;
   /* overflow: hidden; */
-  padding-right: 2px;
 }
 .config-input-title {
   padding: 0;
@@ -121,7 +120,27 @@
 .config-input-string-input {
   width: 100%;
 }
+.config-input-nnumber-content {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+}
 .config-input-nnumber-input {
+}
+.config-input-nnumber-pm-button {
+  background-color: transparent;
+}
+.config-input-nnumber-pm-button {
+  background-color: transparent;
+  display: grid;
+  align-items: center;
+}
+.config-input-nnumber-pm-button:hover {
+  background-color: transparent;
+  color: color-mix(in srgb, var(--fg), var(--background) 50%);
+}
+.config-input-nnumber-pm-button:active {
+  background-color: transparent;
+  color: var(--hi-1);
 }
 .config-input-path-button {
   width: 100%;

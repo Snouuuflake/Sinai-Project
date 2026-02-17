@@ -164,6 +164,13 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("font", "string", "Font"));
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("bold", "boolean", "Bold Text"));
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-color", "hexcolor", "Text Color"));
+
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-top", "nnumber", "Top Margin"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-bottom", "nnumber", "Bottom Margin"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-left", "nnumber", "Left Margin"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-right", "nnumber", "Right Margin"));
+
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-background-color", "hexcolor", "Text Background Color"));
   }
 
   const [displayConfig, setDisplayConfig] = useState<ReadonlyUIDisplayConfigType>(displayConfigRef.current.config);

@@ -8,7 +8,7 @@ import {
 import { useModal } from "../ModalContext";
 import { useConfigState } from "../ConfigStateContext";
 import { useEffect, useState } from "react";
-import { FilePlusCorner, RotateCw, X } from "lucide-react";
+import { FilePlusCorner, Minus, Plus, RotateCw, X } from "lucide-react";
 import { DISPLAYS } from "../../shared/constants";
 
 const ConfigInputBoolean = ({
@@ -152,7 +152,7 @@ const ConfigInputNnumber = ({
   }
 
 
-  return <div className="config-input-content">
+  return <div className="config-input-content config-input-nnumber-content">
     <input
       className="config-input-nnumber-input"
       type="number"
@@ -167,6 +167,26 @@ const ConfigInputNnumber = ({
         }
       }
     />
+    <button className="config-input-nnumber-pm-button"
+      onClick={() => {
+        if (cur !== null) {
+          onSubmit(cur + 1);
+        }
+      }}
+    >
+      <Plus size={16} />
+    </button>
+    <button className="config-input-nnumber-pm-button"
+      onClick={() => {
+        if (cur === null)
+          return;
+        if (cur > 0) {
+          onSubmit(cur - 1);
+        }
+      }}
+    >
+      <Minus size={16} />
+    </button>
   </div>
 }
 

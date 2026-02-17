@@ -52,6 +52,7 @@
 .settings-button-modal-select::picker(select) {
   background-color: var(--bg);
   border-radius: var(--br-med);
+  border: 2px solid var(--gray-70);
 }
 .settings-button-modal-select *::checkmark {
   display: none;
@@ -85,6 +86,8 @@
 }
 .config-input-reset-button {
   background-color: transparent;
+  display: grid;
+  align-items: center;
 }
 .config-input-reset-button:hover {
   background-color: transparent;
@@ -98,7 +101,8 @@
   /* outline: 1px solid red; */
   width: 100%;
   min-width: 0;
-  overflow: hidden;
+  /* overflow: hidden; */
+  padding-right: 2px;
 }
 .config-input-title {
   padding: 0;

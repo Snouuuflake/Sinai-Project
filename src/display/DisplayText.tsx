@@ -77,7 +77,8 @@ const AutoScaleText: React.FC<{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        boxSizing: "border-box"
+        boxSizing: "border-box",
+        fontFamily: "inherit"
       }}
     >
       <div
@@ -89,6 +90,7 @@ const AutoScaleText: React.FC<{
           textAlign: 'center',
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',
+          fontFamily: "inherit"
         }}
       >
         {children}
@@ -105,7 +107,8 @@ const DisplayText: React.FC<{ liveElement: SerializedLiveElement }> =
         className="display-text"
         style={{
           fontWeight: configHash.get("bold") as boolean ? "bold" : "normal",
-          color: configHash.get("text-color") as string
+          color: configHash.get("text-color") as string,
+          fontFamily: configHash.get("font") as string,
         }}
       >
         <AutoScaleText

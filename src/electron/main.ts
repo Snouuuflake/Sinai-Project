@@ -120,6 +120,17 @@ protocol.registerSchemesAsPrivileged([
   }
 ]);
 
+
+protocol.registerSchemesAsPrivileged([{
+  scheme: 'media',
+  privileges: {
+    secure: true,
+    supportFetchAPI: true,
+    bypassCSP: true,
+    stream: true
+  }
+}])
+
 /**
  * Class that stores all of the state for the app.
  * Stores things like open files (media), the
@@ -420,8 +431,11 @@ function createDisplayWindow(displayId: number) {
 }
 
 
-function updateUIDisplayConfig() {
+function updateDisplayConfig() {
   sendToUIWindow("ui-update-display-config",
+    appState.getSerializedDc()
+  )
+  sendToDisplayWinows("display-update-display-config",
     appState.getSerializedDc()
   )
 }
@@ -443,12 +457,12 @@ function imageDialog(): Promise<string> {
 }
 
 ipcMain.on("ui-display-config-request", (_event) => {
-  updateUIDisplayConfig();
+  updateDisplayConfig();
 });
 ipcMain.on("ui-set-display-config-entry", (_event, id, index, value) => {
   try {
     appState.updateDcEntry(id, index, value);
-    updateUIDisplayConfig();
+    updateDisplayConfig();
   } catch (err) {
     if (err instanceof Error) {
       alertMessageBox(err.message);
@@ -458,7 +472,7 @@ ipcMain.on("ui-set-display-config-entry", (_event, id, index, value) => {
 ipcMain.on("ui-reset-display-config-entry", (_event, id, index) => {
   try {
     appState.resetDcEntry(id, index);
-    updateUIDisplayConfig();
+    updateDisplayConfig();
   } catch (err) {
     if (err instanceof Error) {
       alertMessageBox(err.message);
@@ -470,7 +484,7 @@ ipcMain.on("ui-display-config-input-path", (_event, id, displayId) => {
   imageDialog().then(
     res => {
       appState.updateDcEntry(id, displayId, res);
-      updateUIDisplayConfig();
+      updateDisplayConfig();
     },
     (reason) => { }
   );
@@ -755,6 +769,13 @@ app.on("ready", () => {
     console.log("local-file: fileUrl = ", fileUrl.toString());
     return net.fetch(fileUrl);
   });
+
+  app.whenReady().then(() => {
+    protocol.handle('media', request => {
+      const pathToMedia = new URL(request.url).pathname
+      return net.fetch(`file://${pathToMedia}`)
+    })
+  })
 
   uiWindow = new BrowserWindow({
     title: `Sinai Project`,

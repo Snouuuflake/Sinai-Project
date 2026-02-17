@@ -252,7 +252,13 @@ const ConfigInput = ({
                   }}
                 />
                 :
-                <></>
+                type === "string" ?
+                  <ConfigInputString
+                    cur={cur as (ConfigTypePrimitiveType<"string"> | null)}
+                    onSubmit={onSubmit}
+                  />
+                  :
+                  <></>
       }
       <ConfigInputResetButton
         isInit={isInit}

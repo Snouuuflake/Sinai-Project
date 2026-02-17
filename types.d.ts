@@ -33,6 +33,7 @@ declare global {
       sendSaveSong: (id: number) => void;
 
       onDisplayStateUpdateLiveElement: (callback: (displayId: number, newValue: SerializedLiveElement | null) => void) => () => void;
+      onDisplayUpdateDisplayConfig: (callback: (newValue: cc.SerializedDisplayConfigEntry[]) => void) => () => void;
 
       invokeDisplayGetInitLiveElement: (displayId: number) => Promise<mc.SerializedLiveElement | null>;
 

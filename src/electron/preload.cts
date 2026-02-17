@@ -59,6 +59,7 @@ contextBridge.exposeInMainWorld("electron", {
   sendSaveSong: makeIpcSend("save-song"),
 
   onDisplayStateUpdateLiveElement: makeIpcOn("display-state-update-live-elements"),
+  onDisplayUpdateDisplayConfig: makeIpcOn("display-update-display-config"),
 
   invokeDisplayGetInitLiveElement: makeIpcInvoke("invoke-display-get-init-live-element"),
 

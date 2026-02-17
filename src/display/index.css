@@ -26,19 +26,20 @@ body {
   display: grid;
   place-items: center;
   overflow: hidden;
+  background-size: cover;
+  background-position: center;
 }
 
 .display-text {
   height: 100%;
   width: 100%;
-  padding-left: 5vw;
-  padding-right: 5vw;
-  padding-top: 5vh;
-  padding-bottom: 5vh;
   overflow: hidden;
 }
 .display-text .text-line {
-  padding: 0.2em;
+  padding: 0.2em 0;
+}
+.text-line {
+  font-family: inherit;
 }
 
 .display-image {

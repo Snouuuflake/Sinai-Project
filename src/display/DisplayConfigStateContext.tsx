@@ -78,16 +78,19 @@ export const DisplayConfigStateContextProvider: React.FC<{ children: React.React
   if (displayConfigRef.current === null) {
     displayConfigRef.current = new DisplayConfig();
     displayConfigRef.current.addEntry(new DisplayConfigEntry("background-color", "hexcolor", "#000000"));
+    displayConfigRef.current.addEntry(new DisplayConfigEntry("background-image", "path", ""));
+
     displayConfigRef.current.addEntry(new DisplayConfigEntry("font-size", "nnumber", 30));
     displayConfigRef.current.addEntry(new DisplayConfigEntry("bold", "boolean", false));
     displayConfigRef.current.addEntry(new DisplayConfigEntry("text-color", "hexcolor", "#FFFFFF"));
+    displayConfigRef.current.addEntry(new DisplayConfigEntry("font", "string", "Arial"));
 
   }
 
   const [configHash, setConfigHash] = useState<Map<string, ConfigTypePrimitiveType<ConfigTypesKey>>>(displayConfigRef.current.configHash);
 
   useEffect(() => {
-    const remover = window.electron.onUIUpdateDisplayConfig(
+    const remover = window.electron.onDisplayUpdateDisplayConfig(
       (newconfig: SerializedDisplayConfigEntry[]) => {
         // this is safe, right?
         try {

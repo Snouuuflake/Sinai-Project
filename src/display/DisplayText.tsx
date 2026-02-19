@@ -11,6 +11,7 @@ const AutoScaleText: React.FC<{
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState<number>(minSize);
+  const { configHash } = useDisplayConfigState();
 
   useEffect(() => {
     const container = containerRef.current;
@@ -68,34 +69,52 @@ const AutoScaleText: React.FC<{
   }, [children, minSize, maxSize, step]);
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxSizing: "border-box",
-        fontFamily: "inherit"
-      }}
-    >
+    <div style={{
+      all: "unset",
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxSizing: "border-box",
+      fontFamily: "inherit",
+      paddingTop: configHash.get("text-margin-top") as number + "vh",
+      paddingBottom: configHash.get("text-margin-bottom") as number + "vh",
+      paddingLeft: configHash.get("text-margin-left") as number + "vh",
+      paddingRight: configHash.get("text-margin-right") as number + "vh",
+    }}>
       <div
-        ref={contentRef}
+        ref={containerRef}
         style={{
-          fontSize: `${fontSize}px`,
-          maxWidth: '100%',
-          maxHeight: '100%',
-          textAlign: 'center',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
-          fontFamily: "inherit"
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxSizing: "border-box",
+          fontFamily: "inherit",
+          backgroundColor: configHash.get("text-background-color") as string,
         }}
       >
-        {children}
+        <div
+          ref={contentRef}
+          style={{
+            fontSize: `${fontSize}px`,
+            maxWidth: '100%',
+            maxHeight: '100%',
+            textAlign: 'center',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            boxSizing: "border-box",
+            fontFamily: "inherit"
+          }}
+        >
+          {children}
+        </div>
       </div>
-    </div>
+    </div >
   );
 };
 

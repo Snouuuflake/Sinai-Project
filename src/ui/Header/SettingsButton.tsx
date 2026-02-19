@@ -62,13 +62,16 @@ const ConfigInputHexcolor = ({
       className="config-input-hexcolor-input"
       style={isValid ?
         {
-          backgroundColor: inputValue,
           color:
-            (parseInt(inputValue.slice(1, 3), 16) * 0.299 + parseInt(inputValue.slice(3, 5), 16) * 0.587 + parseInt(inputValue.slice(5, 7), 16) * 0.114) > 186 ? '#000' : '#fff'
+            (parseInt(inputValue.slice(1, 3), 16) * 0.299 + parseInt(inputValue.slice(3, 5), 16) * 0.587 + parseInt(inputValue.slice(5, 7), 16) * 0.114) > 186 ? '#000' : '#fff',
+          backgroundPosition: "0px 0px, 7px 7px",
+          backgroundSize: "14px 14px",
+          backgroundImage: `linear-gradient(${inputValue}, ${inputValue}), linear-gradient(45deg, #bbbbbb 25%, transparent 25%, transparent 75%, #bbbbbb 75%, #bbbbbb 100%),linear-gradient(45deg, #bbbbbb 25%, white 25%, white 75%, #bbbbbb 75%, #bbbbbb 100%)`,
+          textShadow: `${(parseInt(inputValue.slice(1, 3), 16) * 0.299 + parseInt(inputValue.slice(3, 5), 16) * 0.587 + parseInt(inputValue.slice(5, 7), 16) * 0.114) > 186 ? '#fff' : '#000'} 0 0 5px`
         }
         :
         {
-          backgroundImage: "repeating-linear-gradient(45deg, #FF000080 0, #FF000080 5px, transparent 5px, transparent 10px)",
+          backgroundImage: "repeating-linear-gradient(45deg, #FF000080 0, #FF000080 5px, var(--gray-90) 5px, var(--gray-90) 10px)",
         }
       }
       value={inputValue}

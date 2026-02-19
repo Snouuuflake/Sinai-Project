@@ -371,6 +371,8 @@ const appState = new AppState();
 appState.addDcEntry(new MainDisplayConfigEntry("background-color", "hexcolor", "#000000"));
 appState.addDcEntry(new MainDisplayConfigEntry("background-image", "path", ""))
 
+appState.addDcEntry(new MainDisplayConfigEntry("transition-duration", "nnumber", 300));
+
 //   text
 appState.addDcEntry(new MainDisplayConfigEntry("font-size", "nnumber", 30));
 appState.addDcEntry(new MainDisplayConfigEntry("font", "string", ""));

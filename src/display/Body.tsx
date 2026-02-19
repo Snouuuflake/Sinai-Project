@@ -60,8 +60,22 @@ const Body: React.FC<{}> = () => {
     backgroundColor: configHash.get("background-color") as string,
     backgroundImage: `url("localfile:///${(configHash.get("background-image") as string).replaceAll("\\", "/")}")`
   }}>
-    <LiveElement key={JSON.stringify(curLiveElement) + "cur"} liveElement={curLiveElement} className="animation-fade-in" />
-    <LiveElement key={JSON.stringify(prevLiveElement) + "prev"} liveElement={prevLiveElement} className="animation-fade-out" />
+    <style>
+      {
+        `
+.animation-in {
+animation-name: fade-in;
+animation-duration: ${configHash.get("transition-duration") as number}ms;
+}
+.animation-out {
+animation-name: fade-out;
+animation-duration: ${configHash.get("transition-duration") as number}ms;
+}
+`
+      }
+    </style>
+    <LiveElement key={JSON.stringify(curLiveElement) + "cur"} liveElement={curLiveElement} className="animation-in" />
+    <LiveElement key={JSON.stringify(prevLiveElement) + "prev"} liveElement={prevLiveElement} className="animation-out" />
   </div>
 
 };

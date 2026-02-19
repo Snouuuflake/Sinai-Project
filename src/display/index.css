@@ -37,6 +37,9 @@ body {
   position: absolute;
   top: 0;
   left: 0;
+
+  animation-duration: inherit;
+  animation-fill-mode: forwards;
 }
 .display-text {
 }
@@ -69,14 +72,9 @@ body {
   /* 100% {top: 110vh} */
 }
 
-.animation-fade-in {
-  animation-name: fade-in;
-  animation-duration: 400ms;
-  animation-fill-mode: forwards;
-}
+.animation-in {
 
-.animation-fade-out {
-  animation-name: fade-out;
-  animation-duration: 400ms;
-  animation-fill-mode: forwards;
+}
+.animation-out {
+
 }

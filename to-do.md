@@ -1,5 +1,5 @@
 # for v0.1.0
-- [ ] fade transition (ideally with support for other transitions)
+- [X] fade transition (ideally with support for other transitions)
 - [ ] logo
 
 # for v1.0.0
@@ -10,4 +10,4 @@
 
 # other stuff
 - [ ] video playback
-- [ ] pdf
+- [ ] pdf supprt

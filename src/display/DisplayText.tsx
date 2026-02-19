@@ -118,12 +118,12 @@ const AutoScaleText: React.FC<{
   );
 };
 
-const DisplayText: React.FC<{ liveElement: SerializedLiveElement }> =
-  ({ liveElement }) => {
+const DisplayText: React.FC<{ liveElement: SerializedLiveElement, className: string }> =
+  ({ liveElement, className }) => {
     const { configHash } = useDisplayConfigState();
     return (
       <div
-        className="display-text"
+        className={`display-text display-element-container ${className}`}
         style={{
           fontWeight: configHash.get("bold") as boolean ? "bold" : "normal",
           color: configHash.get("text-color") as string,

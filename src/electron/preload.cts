@@ -33,6 +33,7 @@ contextBridge.exposeInMainWorld("electron", {
   onUIStateUpdateSetlist: makeIpcOn("ui-state-update-setlist"),
   onUIStateUpdateOpenMedia: makeIpcOn("ui-state-update-open-media"),
   onUIStateUpdateLiveElements: makeIpcOn("ui-state-update-live-elements"),
+  onUIStateUpdateLogo: makeIpcOn("ui-state-update-logo"),
   sendUIStateRequest: makeIpcSend("ui-state-request"),
 
   onUIUpdateDisplayConfig: makeIpcOn("ui-update-display-config"),
@@ -50,6 +51,7 @@ contextBridge.exposeInMainWorld("electron", {
   sendNewDisplayWindow: makeIpcSend("new-display-window"),
   sendSetOpenMedia: makeIpcSend("set-open-media"),
   sendSetLiveElement: makeIpcSend("set-live-element"),
+  sendSetLogo: makeIpcSend("set-logo"),
   sendAddImages: makeIpcSend("add-images"),
   sendAddSongs: makeIpcSend("add-songs"),
   sendMoveMedia: makeIpcSend("move-media"),
@@ -59,9 +61,10 @@ contextBridge.exposeInMainWorld("electron", {
   sendSaveSong: makeIpcSend("save-song"),
 
   onDisplayStateUpdateLiveElement: makeIpcOn("display-state-update-live-elements"),
+  onDisplayStateUpdateLogo: makeIpcOn("display-state-update-logo"),
   onDisplayUpdateDisplayConfig: makeIpcOn("display-update-display-config"),
 
-  invokeDisplayGetInitLiveElement: makeIpcInvoke("invoke-display-get-init-live-element"),
+  invokeDisplayGetInitLiveState: makeIpcInvoke("invoke-display-get-init-live-state"),
 
   sendAlert: makeIpcSend("alert"),
 });

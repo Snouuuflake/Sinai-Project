@@ -174,6 +174,11 @@ interface SerializedLiveElement {
   value: any;
 }
 
+type SerializedLiveState = {
+  liveElement: SerializedLiveElement | null;
+  logo: boolean;
+}
+
 
 
 type SerializedDisplayConfigEntry = {
@@ -183,6 +188,7 @@ type SerializedDisplayConfigEntry = {
   defaultValue: any;
   values: any[];
 }
+
 
 export {
   Media,
@@ -210,4 +216,6 @@ export type {
   Song,
 
   SerializedDisplayConfigEntry as SerializedConfigEntry,
+
+  SerializedLiveState,
 };

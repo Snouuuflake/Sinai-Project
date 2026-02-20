@@ -14,6 +14,7 @@ import {
   SerializedMediaWithId,
   MediaSong,
   Song,
+  SerializedLiveState,
 } from "../shared/media-classes.js";
 import { ConfigEntryBase, ConfigTypePrimitiveType, ConfigTypesKey, SerializedDisplayConfigEntry, SerializedGeneralConfigEntry } from "../shared/config-classes.js";
 import * as fs from "fs";
@@ -155,6 +156,8 @@ class AppState {
   #openMedia: number | null = null;
   // elements being projected
   #liveElements: Array<LiveElementIdentifier | null> = Array.from({ length: DISPLAYS }, (_x) => null);
+  // logo on or off for each display
+  #logo: boolean[] = Array.from({ length: DISPLAYS }, (_x) => false);
   constructor() {
   }
   // INFO: configs -------------------------
@@ -293,24 +296,39 @@ class AppState {
     this.#openMedia = id;
   }
   /**
-   * @param index display window index to set 
+   * @param displayIndex display window index to set 
    * @param id media id of new live media
    * @throws if invalid display index or live element id invalid
    */
-  setLiveElement(index: number, liveElementIdentifier: LiveElementIdentifier | null) {
-    if (index < 0 || index >= DISPLAYS) {
+  setLiveElement(displayIndex: number, liveElementIdentifier: LiveElementIdentifier | null) {
+    if (displayIndex < 0 || displayIndex >= DISPLAYS) {
       throw new Error("setLiveElements: index is invalid");
     }
     if (liveElementIdentifier === null) {
-      this.#liveElements[index] = null;
+      this.#liveElements[displayIndex] = null;
       return;
     }
     if (!this.#media.get(liveElementIdentifier.id)) {
       throw new Error("setLiveElements: id not in this.#media");
     }
-    this.#liveElements[index] = liveElementIdentifier;
+    this.#liveElements[displayIndex] = liveElementIdentifier;
     console.log("setLiveElement result", this.#liveElements);
     return;
+  }
+  getLogo(): readonly boolean[] {
+    return this.#logo as readonly boolean[];
+  }
+  getLogoEntry(displayIndex: number): boolean {
+    if (displayIndex < 0 || displayIndex >= DISPLAYS) {
+      throw new Error("getLogo: index is invalid");
+    }
+    return this.#logo[displayIndex];
+  }
+  setLogo(displayIndex: number, logoIsVisible: boolean) {
+    if (displayIndex < 0 || displayIndex >= DISPLAYS) {
+      throw new Error("setLogo: index is invalid");
+    }
+    this.#logo[displayIndex] = logoIsVisible
   }
   /**
    * @param id id of media to be moved 
@@ -372,6 +390,8 @@ appState.addDcEntry(new MainDisplayConfigEntry("background-color", "hexcolor", "
 appState.addDcEntry(new MainDisplayConfigEntry("background-image", "path", ""))
 
 appState.addDcEntry(new MainDisplayConfigEntry("transition-duration", "nnumber", 300));
+
+appState.addDcEntry(new MainDisplayConfigEntry("logo-path", "path", ""));
 
 //   text
 appState.addDcEntry(new MainDisplayConfigEntry("font-size", "nnumber", 30));
@@ -574,11 +594,16 @@ function updateUILiveElements() {
   sendToUIWindow("ui-state-update-live-elements", appState.getUIStateLiveElements());
 }
 
+function updateUILogo() {
+  sendToUIWindow("ui-state-update-logo", appState.getLogo())
+}
+
 
 function updateAllUI() {
   updateUISetlist();
   updateUIOpenMedia();
   updateUILiveElements();
+  updateUILogo();
 }
 
 ipcMain.on("ui-state-request", (_event) => { updateAllUI(); });
@@ -592,17 +617,29 @@ function sendToDisplayWinows(channel: string, ...args: any[]) {
   })
 }
 
-function updateDisplayLiveElement(displayId: number) {
+function updateDisplayLiveElement(displayIndex: number) {
   sendToDisplayWinows(
     "display-state-update-live-elements",
-    displayId,
-    appState.getDisplayStateLiveElement(displayId)
+    displayIndex,
+    appState.getDisplayStateLiveElement(displayIndex)
   );
 }
 
+function updateDisplayLogo(displayIndex: number) {
+  sendToDisplayWinows(
+    "display-state-update-logo",
+    displayIndex,
+    appState.getLogoEntry(displayIndex)
+  )
+}
+
+
 // so that windows automatically start displaying upon creation
-ipcMain.handle("invoke-display-get-init-live-element", (_e, displayIndex) => {
-  return appState.getDisplayStateLiveElement(displayIndex);
+ipcMain.handle("invoke-display-get-init-live-state", (_e, displayIndex): SerializedLiveState => {
+  return {
+    liveElement: appState.getDisplayStateLiveElement(displayIndex),
+    logo: appState.getLogoEntry(displayIndex),
+  }
 })
 
 /* on setlist operations */
@@ -763,6 +800,16 @@ ipcMain.on("set-live-element", (_event, displayId: number, liveElementIdentifier
     if (e instanceof Error) alertMessageBox(e.message);
   }
 })
+
+ipcMain.on("set-logo", (_event, displayIndex: number, logo: boolean) => {
+  try {
+    appState.setLogo(displayIndex, logo);
+    updateUILogo();
+    updateDisplayLogo(displayIndex);
+  } catch (e) {
+    if (e instanceof Error) alertMessageBox(e.message);
+  }
+});
 
 
 

@@ -7,6 +7,7 @@ declare global {
       onUIStateUpdateSetlist: (callback: (newValue: mc.SerializedMediaIdentifier[]) => void) => () => void;
       onUIStateUpdateOpenMedia: (callback: (newValue: mc.SerializedMediaWithId) => void) => () => void;
       onUIStateUpdateLiveElements: (callback: (newValue: Array<mc.LiveElementIdentifier | null>) => void) => () => void;
+      onUIStateUpdateLogo: (callback: (newValue: Array<boolean>) => void) => () => void;
       sendUIStateRequest: () => void;
 
       onUIUpdateDisplayConfig: (callback: (newValue: cc.SerializedDisplayConfigEntry[]) => void) => () => void;
@@ -24,6 +25,7 @@ declare global {
       sendNewDisplayWindow: (displayId: number) => void;
       sendSetOpenMedia: (id: number) => void;
       sendSetLiveElement: (displayId: number, liveElementIdentifier: mc.LiveElementIdentifier | null) => void;
+      sendSetLogo: (displayId: number, logo: boolean) => void;
       sendAddImages: () => void;
       sendAddSongs: () => void;
       sendMoveMedia: (id: number, displayId: number) => void;
@@ -34,8 +36,9 @@ declare global {
 
       onDisplayStateUpdateLiveElement: (callback: (displayId: number, newValue: SerializedLiveElement | null) => void) => () => void;
       onDisplayUpdateDisplayConfig: (callback: (newValue: cc.SerializedDisplayConfigEntry[]) => void) => () => void;
+      onDisplayStateUpdateLogo: (callback: (displayId: number, newValue: boolean) => void) => () => void;
 
-      invokeDisplayGetInitLiveElement: (displayId: number) => Promise<mc.SerializedLiveElement | null>;
+      invokeDisplayGetInitLiveState: (displayId: number) => Promise<SerializedLiveState>;
 
 
       sendAlert: (message: string) => void;

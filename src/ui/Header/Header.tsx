@@ -1,5 +1,6 @@
 import "./Header.css"
 import Logo from "./Logo";
+import LogoButton from "./LogoButton";
 import NewDisplayWindowButton from "./NewDisplayWindowButton";
 import SettingsButton from "./SettingsButton";
 
@@ -10,6 +11,7 @@ const Header: React.FC<{}> = ({ }) => {
       {/* {b("Logo")} */}
       <SettingsButton />
       <NewDisplayWindowButton />
+      <LogoButton />
     </div>
   </div>
 }

@@ -3,6 +3,18 @@ import { useDisplayConfigState } from "./DisplayConfigStateContext";
 import { SerializedLiveElement } from "../shared/media-classes";
 import DisplayText from "./DisplayText";
 import DisplayImage from "./DisplayImage";
+import { formatSrcPath } from "./util";
+
+const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
+  const { configHash } = useDisplayConfigState();
+  console.log(logoIsVisible)
+  // logo only has fade animation i think that's reasonable
+  return <div className={`display-logo display-element-container ${logoIsVisible ? "logo-animation-in" : "logo-animation-out"}`}>
+    <img className="logo-img" src={
+      `localfile://${formatSrcPath(configHash.get("logo-path") as string)}`
+    } />
+  </div>
+}
 
 const LiveElement: React.FC<{
   liveElement: SerializedLiveElement | null
@@ -23,11 +35,13 @@ const LiveElement: React.FC<{
 const Body: React.FC<{}> = () => {
   const { DISPLAY_ID, configHash } = useDisplayConfigState();
   const [curLiveElement, setCurLiveElement] = useState<SerializedLiveElement | null>(null);
+  const [prevLiveElement, setPrevLiveElement] = useState<SerializedLiveElement | null>(null);
   const hasRequestedLiveState = useRef<boolean>(false);
+
+  const [logoIsVisible, setLogoIsVisible] = useState<boolean>(false);
 
   const curLiveElementRef = useRef<SerializedLiveElement | null>(null);
 
-  const [prevLiveElement, setPrevLiveElement] = useState<SerializedLiveElement | null>(null);
 
   useEffect(() => {
     const remover = window.electron.onDisplayStateUpdateLiveElement(
@@ -46,35 +60,45 @@ const Body: React.FC<{}> = () => {
       }
     );
     if (!hasRequestedLiveState.current)
-      window.electron.invokeDisplayGetInitLiveElement(DISPLAY_ID).then(le => {
+      window.electron.invokeDisplayGetInitLiveState(DISPLAY_ID).then(le => {
         hasRequestedLiveState.current = true;
-        curLiveElementRef.current = le;
-        setCurLiveElement(le);
+        curLiveElementRef.current = le.liveElement;
+        setCurLiveElement(le.liveElement);
+        setLogoIsVisible(le.logoIsVisible);
       })
     return remover;
   }, []);
   useEffect(() => {
-  }, [curLiveElement])
+    const remover = window.electron.onDisplayStateUpdateLogo(
+      (displayId, logo) => {
+        if (displayId === DISPLAY_ID)
+          setLogoIsVisible(logo);
+      }
+    );
+    return remover;
+  }, [])
 
   return <div className="body" style={{
     backgroundColor: configHash.get("background-color") as string,
-    backgroundImage: `url("localfile:///${(configHash.get("background-image") as string).replaceAll("\\", "/")}")`
+    backgroundImage: `url("localfile://${formatSrcPath(configHash.get("background-image") as string)}")`
   }}>
     <style>
       {
         `
+:root {
+--transition-duration: ${configHash.get("transition-duration") as number}ms;
+}
 .animation-in {
 animation-name: fade-in;
-animation-duration: ${configHash.get("transition-duration") as number}ms;
 }
 .animation-out {
 animation-name: fade-out;
-animation-duration: ${configHash.get("transition-duration") as number}ms;
 }
 `
       }
     </style>
-    <LiveElement key={JSON.stringify(curLiveElement) + "cur"} liveElement={curLiveElement} className="animation-in" />
+    <Logo logoIsVisible={logoIsVisible} />
+    <LiveElement key={JSON.stringify(curLiveElement) + "cur"} liveElement={curLiveElement} className={logoIsVisible ? "animation-out" : "animation-in"} />
     <LiveElement key={JSON.stringify(prevLiveElement) + "prev"} liveElement={prevLiveElement} className="animation-out" />
   </div>
 

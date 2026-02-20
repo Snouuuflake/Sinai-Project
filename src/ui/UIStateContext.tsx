@@ -10,6 +10,7 @@ type UIStateContextType = {
   setlist: SerializedMediaIdentifier[];
   openMedia: SerializedMediaWithId | null;
   liveElements: Array<LiveElementIdentifier | null>;
+  logo: boolean[];
 }
 
 
@@ -23,6 +24,7 @@ export const UIStateContextProvider:
       Array<LiveElementIdentifier | null>
     >(Array.from({ length: DISPLAYS }, (_x) => null));
 
+    const [logo, setLogo] = useState<boolean[]>(Array.from({ length: DISPLAYS }, (_x) => false));
 
     useEffect(() => {
       const remover = window.electron.onUIStateUpdateSetlist(
@@ -46,11 +48,18 @@ export const UIStateContextProvider:
     }, [])
 
     useEffect(() => {
+      const remover = window.electron.onUIStateUpdateLogo(
+        (newValue: Array<boolean>) => { setLogo(newValue) }
+      );
+      return remover;
+    }, [])
+
+    useEffect(() => {
       window.electron.sendUIStateRequest();
     }, [])
 
     return <UIStateContext.Provider
-      value={{ setlist, openMedia, liveElements }}>
+      value={{ setlist, openMedia, liveElements, logo }}>
       {children}
     </UIStateContext.Provider >
   };

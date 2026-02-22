@@ -10,7 +10,10 @@ function makeIpcSend(channel: string) {
 function makeIpcInvoke<T>(channel: string): (...args: any[]) => Promise<T> {
   return (...args: any[]) => {
     console.log("ipc invoke:", channel, ...args);
-    return ipcRenderer.invoke(channel, ...args)
+    return (ipcRenderer.invoke(channel, ...args) as Promise<T>).then((res) => {
+      console.log("ipc invoke response:", channel, res);
+      return res;
+    })
   };
 }
 function makeIpcOn(channel: string) {

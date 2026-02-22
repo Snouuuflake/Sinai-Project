@@ -7,12 +7,24 @@ import { formatSrcPath } from "./util";
 
 const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
   const { configHash } = useDisplayConfigState();
-  console.log(logoIsVisible)
+  const logoHasBeenVisible = useRef<boolean>(logoIsVisible);
+
+  if (logoIsVisible)
+    logoHasBeenVisible.current = true;
+
+  const src = formatSrcPath(configHash.get("logo-path") as string);
   // logo only has fade animation i think that's reasonable
-  return <div className={`display-logo display-element-container ${logoIsVisible ? "logo-animation-in" : "logo-animation-out"}`}>
-    <img className="logo-img" src={
-      `localfile://${formatSrcPath(configHash.get("logo-path") as string)}`
-    } />
+  return <div
+    className={`display-logo display-element-container ${logoIsVisible ? "logo-animation-in" : "logo-animation-out"}`}
+  >
+    <img className="logo-img"
+      style={{
+        height: `${configHash.get("logo-size") as number}vh`,
+        opacity: logoHasBeenVisible.current && src !== "/" ? "100%" : "0", // "/" for avoiding error icon on empty src
+      }}
+      src={
+        `localfile://${src}`
+      } />
   </div>
 }
 
@@ -64,7 +76,7 @@ const Body: React.FC<{}> = () => {
         hasRequestedLiveState.current = true;
         curLiveElementRef.current = le.liveElement;
         setCurLiveElement(le.liveElement);
-        setLogoIsVisible(le.logoIsVisible);
+        setLogoIsVisible(le.logo);
       })
     return remover;
   }, []);
@@ -77,6 +89,7 @@ const Body: React.FC<{}> = () => {
     );
     return remover;
   }, [])
+
 
   return <div className="body" style={{
     backgroundColor: configHash.get("background-color") as string,
@@ -98,8 +111,12 @@ animation-name: fade-out;
       }
     </style>
     <Logo logoIsVisible={logoIsVisible} />
-    <LiveElement key={JSON.stringify(curLiveElement) + "cur"} liveElement={curLiveElement} className={logoIsVisible ? "animation-out" : "animation-in"} />
-    <LiveElement key={JSON.stringify(prevLiveElement) + "prev"} liveElement={prevLiveElement} className="animation-out" />
+    <div
+      className={`live-elements-container ${logoIsVisible ? "animation-out" : "animation-in"}`}
+    >
+      <LiveElement key={JSON.stringify(curLiveElement) + "cur"} liveElement={curLiveElement} className={"animation-in"} />
+      <LiveElement key={JSON.stringify(prevLiveElement) + "prev"} liveElement={prevLiveElement} className="animation-out" />
+    </div>
   </div>
 
 };

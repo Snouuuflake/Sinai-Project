@@ -40,9 +40,8 @@
 
 .header-button:hover {
   /* border-color: var(--hi-1); */
-  background-color: color-mix(in srgb, var(--gray-90), var(--hi-1))
 }
 
 .header-button:active {
-  background-color: var(--hi-1)
+  /* background-color: var(--hi-1) */
 }

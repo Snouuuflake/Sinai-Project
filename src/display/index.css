@@ -41,11 +41,18 @@ body {
   animation-duration: inherit;
   animation-fill-mode: forwards;
 }
+.live-elements-container {
+  all: unset;
+  animation-duration: inherit;
+  animation-fill-mode: forwards;
+  overflow: hidden;
+}
 .display-logo{
+  display: grid;
+  align-items: center;
+  justify-content: center;
 }
 .logo-img {
-  height: 100vh;
-  width: 100vw;
   object-fit: contain;
 }
 .display-text {

@@ -150,10 +150,10 @@ button {
   cursor: pointer;
 }
 button:hover {
-  background-color: color-mix(in srgb, var(--gray-90), var(--hi-1))
+  background-color: color-mix(in srgb, var(--gray-90), var(--fg) 20%)
 }
 button:active {
-  background-color: var(--hi-1)
+  background-color: color-mix(in srgb, var(--gray-90), var(--fg) 60%)
 }
 
 

@@ -161,6 +161,7 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("background-image", "path", "Background Image"));
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("transition-duration", "nnumber", "Transition duration (ms)"));
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("logo-path", "path", "Logo image"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("logo-size", "nnumber", "Logo size (%)"));
     displayConfigRef.current.addHeading("Text");
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("font-size", "nnumber", "Font Size"));
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("font", "string", "Font"));

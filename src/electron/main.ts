@@ -392,6 +392,7 @@ appState.addDcEntry(new MainDisplayConfigEntry("background-image", "path", ""))
 appState.addDcEntry(new MainDisplayConfigEntry("transition-duration", "nnumber", 300));
 
 appState.addDcEntry(new MainDisplayConfigEntry("logo-path", "path", ""));
+appState.addDcEntry(new MainDisplayConfigEntry("logo-size", "nnumber", 50));
 
 //   text
 appState.addDcEntry(new MainDisplayConfigEntry("font-size", "nnumber", 30));

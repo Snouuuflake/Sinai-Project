@@ -82,6 +82,7 @@ export const DisplayConfigStateContextProvider: React.FC<{ children: React.React
 
     displayConfigRef.current.addEntry(new DisplayConfigEntry("transition-duration", "nnumber", 0));
     displayConfigRef.current.addEntry(new DisplayConfigEntry("logo-path", "path", ""));
+    displayConfigRef.current.addEntry(new DisplayConfigEntry("logo-size", "nnumber", 50));
 
     displayConfigRef.current.addEntry(new DisplayConfigEntry("font-size", "nnumber", 30));
     displayConfigRef.current.addEntry(new DisplayConfigEntry("bold", "boolean", false));

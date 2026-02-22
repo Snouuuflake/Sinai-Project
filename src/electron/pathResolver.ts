@@ -11,11 +11,19 @@ function getPreloadPath(): string {
 }
 
 function getConfigPath(): string {
-  return path.join(
-    app.getAppPath(),
-    isDev() ? "." : "..",
-    "config.json",
-  );
+  if (isDev()) {
+    return path.join(
+      app.getAppPath(),
+      "./config.json"
+    );
+  }
+  else {
+
+    return path.join(
+      process.resourcesPath,
+      "extraResources"
+    );
+  }
 }
 
 export { getConfigPath, getPreloadPath }

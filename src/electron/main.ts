@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, dialog, protocol, net } from "electron";
+import { DISPLAYS } from "../shared/constants.js";
 import { pathToFileURL } from "url";
 import path from "path";
 import { isDev } from "./util.js";
@@ -13,10 +14,88 @@ import {
   SerializedMediaWithId,
   MediaSong,
   Song,
+  SerializedLiveState,
 } from "../shared/media-classes.js";
-import { DISPLAYS } from "../shared/constants.js";
+import { ConfigEntryBase, ConfigTypePrimitiveType, ConfigTypesKey, SerializedDisplayConfigEntry, SerializedGeneralConfigEntry } from "../shared/config-classes.js";
 import * as fs from "fs";
 import { parseSong, logSong, stringifySong } from "./parser.js";
+
+
+const FILTERS = {
+  "Images": {
+    name: "Images",
+    extensions: [
+      "apng", "gif", "ico", "cur", "jpg", "jpeg", "jfif", "pjpeg", "pjp", "png", "svg",
+    ]
+  },
+  "Songs": {
+    name: "Songs",
+    extensions: ["sinai", "txt", "mss"]
+  }
+} as const
+
+
+class MainDisplayConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T> {
+  #init: ConfigTypePrimitiveType<T>;
+  #cur: ConfigTypePrimitiveType<T>[];
+  constructor(id: string, type: T, init: ConfigTypePrimitiveType<T>) {
+    super(id, type);
+    this.assertType(init);
+    this.#init = init;
+    this.#cur = Array.from({ length: DISPLAYS }, () => this.#init);
+  }
+  get cur(): ConfigTypePrimitiveType<T>[] {
+    return [...this.#cur];
+  }
+  setCurEntry(displayId: number, value: unknown) {
+    this.assertType(value);
+    if (displayId >= DISPLAYS)
+      throw new Error(`MainConfigEntry.setCurEntry "${this.id}" > no. of displays`);
+    this.#cur[displayId] = value;
+  }
+  reinitEntry(index: number) {
+    if (index >= DISPLAYS)
+      throw new Error(`MainConfigEntry.reinitEntry "${this.id}" > no. of displays`);
+    this.#cur[index] = this.#init;
+  }
+  toSerialized(): SerializedDisplayConfigEntry {
+    return {
+      id: this.id,
+      type: this.type,
+      cur: this.#cur,
+      isInit: this.#cur.map(x => x === this.#init)
+    }
+  }
+}
+
+class MainGeneralConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T> {
+  #init: ConfigTypePrimitiveType<T>;
+  #cur: ConfigTypePrimitiveType<T>;
+  constructor(id: string, type: T, init: ConfigTypePrimitiveType<T>) {
+    super(id, type);
+    this.assertType(init);
+    this.#init = init;
+    this.#cur = this.#init;
+  }
+  get cur(): ConfigTypePrimitiveType<T> {
+    return this.#cur;
+  }
+  set cur(value: unknown) {
+    this.assertType(value);
+    this.#cur = value;
+  }
+  reinitEntry() {
+    this.#cur = this.#init;
+  }
+  toSerialized(): SerializedGeneralConfigEntry {
+    return {
+      id: this.id,
+      type: this.type,
+      cur: this.#cur,
+      isInit: this.#cur === this.#init,
+    }
+  }
+}
 
 // handling unhandled rejected promises
 process.on('unhandledRejection', (error: Error) => {
@@ -42,6 +121,17 @@ protocol.registerSchemesAsPrivileged([
   }
 ]);
 
+
+protocol.registerSchemesAsPrivileged([{
+  scheme: 'media',
+  privileges: {
+    secure: true,
+    supportFetchAPI: true,
+    bypassCSP: true,
+    stream: true
+  }
+}])
+
 /**
  * Class that stores all of the state for the app.
  * Stores things like open files (media), the
@@ -66,7 +156,89 @@ class AppState {
   #openMedia: number | null = null;
   // elements being projected
   #liveElements: Array<LiveElementIdentifier | null> = Array.from({ length: DISPLAYS }, (_x) => null);
+  // logo on or off for each display
+  #logo: boolean[] = Array.from({ length: DISPLAYS }, (_x) => false);
   constructor() {
+  }
+  // INFO: configs -------------------------
+  readConfigFile() {
+    fs.readFile(getConfigPath(), { encoding: "utf8" }, (err, data) => {
+      if (err) {
+        alertMessageBox(err.message);
+        return;
+      }
+      const { dc, gc }: { dc: SerializedDisplayConfigEntry[], gc: SerializedGeneralConfigEntry[] } = JSON.parse(data);
+      console.log(dc, gc);
+      dc.forEach(entry => {
+        entry.cur.forEach((cur, i) => {
+          if (i < DISPLAYS) {
+            this.updateDcEntry(entry.id, i, cur);
+          }
+        });
+      });
+      gc.forEach(entry => this.updateGcEntry(entry.id, entry.cur));
+    });
+  }
+  writeConfigFile() {
+    const data = JSON.stringify({
+      dc: this.#dc.map(entry => entry.toSerialized()),
+      gc: this.#gc.map(entry => entry.toSerialized()),
+    });
+    fs.writeFile(getConfigPath(), data, { encoding: "utf8" }, (err) => {
+      if (err) {
+        alertMessageBox(err.message);
+      }
+    });
+  }
+  //       INFO: dc ------------------------------
+  #dc: MainDisplayConfigEntry<ConfigTypesKey>[] = [];
+  #findAssertDcEntry(id: string) {
+    const findRes = this.#dc.find(x => x.id === id);
+    if (!findRes)
+      throw new Error(`dc entry id ${id} doesn't exist`);
+    return findRes;
+  }
+  addDcEntry(entry: MainDisplayConfigEntry<ConfigTypesKey>) {
+    const findRes = this.#dc.find(x => x.id === entry.id);
+    if (findRes)
+      throw new Error("dc entry id already exists");
+    this.#dc.push(entry);
+  }
+  updateDcEntry(id: string, index: number, value: unknown) {
+    this.#findAssertDcEntry(id).setCurEntry(index, value);
+    this.writeConfigFile();
+  }
+  resetDcEntry(id: string, index: number) {
+    this.#findAssertDcEntry(id).reinitEntry(index);
+    this.writeConfigFile();
+  }
+  getSerializedDc() {
+    return this.#dc.map(x => x.toSerialized());
+  }
+  //       INFO: gc ------------------------------
+  #gc: MainGeneralConfigEntry<ConfigTypesKey>[] = [];
+  #findAssertGcEntry(id: string) {
+    const findRes = this.#gc.find(x => x.id === id);
+    if (!findRes)
+      throw new Error(`gc entry id ${id} doesn't exist`);
+    return findRes;
+  }
+  addGcEntry(entry: MainGeneralConfigEntry<ConfigTypesKey>) {
+    const findRes = this.#gc.find(x => x.id === entry.id);
+    if (findRes)
+      throw new Error("addgcEntry: id already exists");
+    this.#gc.push(entry);
+  }
+  updateGcEntry(id: string, value: unknown) {
+    this.#findAssertGcEntry(id).cur = value;
+    this.writeConfigFile();
+  }
+  resetGcEntry(id: string) {
+    this.#findAssertGcEntry(id).reinitEntry();
+    this.writeConfigFile();
+  }
+  getSerializedGc() {
+    return this.#gc.map(x => x.toSerialized());
   }
   // returns copy of this.#media
   get media(): Map<number, Media> {
@@ -124,24 +296,39 @@ class AppState {
     this.#openMedia = id;
   }
   /**
-   * @param index display window index to set 
+   * @param displayIndex display window index to set 
    * @param id media id of new live media
    * @throws if invalid display index or live element id invalid
    */
-  setLiveElement(index: number, liveElementIdentifier: LiveElementIdentifier | null) {
-    if (index < 0 || index >= DISPLAYS) {
+  setLiveElement(displayIndex: number, liveElementIdentifier: LiveElementIdentifier | null) {
+    if (displayIndex < 0 || displayIndex >= DISPLAYS) {
       throw new Error("setLiveElements: index is invalid");
     }
     if (liveElementIdentifier === null) {
-      this.#liveElements[index] = null;
+      this.#liveElements[displayIndex] = null;
       return;
     }
     if (!this.#media.get(liveElementIdentifier.id)) {
       throw new Error("setLiveElements: id not in this.#media");
     }
-    this.#liveElements[index] = liveElementIdentifier;
+    this.#liveElements[displayIndex] = liveElementIdentifier;
     console.log("setLiveElement result", this.#liveElements);
     return;
+  }
+  getLogo(): readonly boolean[] {
+    return this.#logo as readonly boolean[];
+  }
+  getLogoEntry(displayIndex: number): boolean {
+    if (displayIndex < 0 || displayIndex >= DISPLAYS) {
+      throw new Error("getLogo: index is invalid");
+    }
+    return this.#logo[displayIndex];
+  }
+  setLogo(displayIndex: number, logoIsVisible: boolean) {
+    if (displayIndex < 0 || displayIndex >= DISPLAYS) {
+      throw new Error("setLogo: index is invalid");
+    }
+    this.#logo[displayIndex] = logoIsVisible
   }
   /**
    * @param id id of media to be moved 
@@ -194,6 +381,55 @@ class AppState {
 let uiWindow: BrowserWindow;
 const displayWindows: BrowserWindow[] = []
 
+const appState = new AppState();
+
+// dc
+//   general
+
+appState.addDcEntry(new MainDisplayConfigEntry("background-color", "hexcolor", "#000000"));
+appState.addDcEntry(new MainDisplayConfigEntry("background-image", "path", ""))
+
+appState.addDcEntry(new MainDisplayConfigEntry("transition-duration", "nnumber", 300));
+
+appState.addDcEntry(new MainDisplayConfigEntry("logo-path", "path", ""));
+appState.addDcEntry(new MainDisplayConfigEntry("logo-size", "nnumber", 50));
+
+//   text
+appState.addDcEntry(new MainDisplayConfigEntry("font-size", "nnumber", 30));
+appState.addDcEntry(new MainDisplayConfigEntry("font", "string", ""));
+appState.addDcEntry(new MainDisplayConfigEntry("bold", "boolean", false));
+appState.addDcEntry(new MainDisplayConfigEntry("text-color", "hexcolor", "#FFFFFF"));
+
+appState.addDcEntry(new MainDisplayConfigEntry("text-margin-top", "nnumber", 0));
+appState.addDcEntry(new MainDisplayConfigEntry("text-margin-bottom", "nnumber", 0));
+appState.addDcEntry(new MainDisplayConfigEntry("text-margin-left", "nnumber", 0));
+appState.addDcEntry(new MainDisplayConfigEntry("text-margin-right", "nnumber", 0));
+
+appState.addDcEntry(new MainDisplayConfigEntry("text-background-color", "hexcolor", "#00000000"));
+
+// gc
+appState.addGcEntry(new MainGeneralConfigEntry("dark-theme", "boolean", false));
+
+
+if (fs.existsSync(getConfigPath())) {
+  console.log(fs.readFileSync(getConfigPath(), { encoding: "utf8" }));
+  appState.readConfigFile();
+} else {
+  try {
+    fs.writeFileSync(
+      getConfigPath(),
+      JSON.stringify({
+        dc: [],
+        gc: []
+      }),
+      { encoding: "utf8" },
+    );
+  } catch (err) {
+    if (err instanceof Error) { alertMessageBox(err.message) }
+  }
+}
+
+
 /**
  * creates a display window and pushes it to displayWindows
  */
@@ -202,7 +438,7 @@ function createDisplayWindow(displayId: number) {
     title: `Sinai Project: Display Window ${displayId + 1}`,
     webPreferences: {
       preload: path.join(app.getAppPath(),
-        isDev() ? "." : "..",
+        isDev() ? "" : "..",
         "dist-electron/electron/preload.cjs"
       ),
     },
@@ -213,6 +449,10 @@ function createDisplayWindow(displayId: number) {
   displayWindow.on("close", () => {
     displayWindows.splice(displayWindows.indexOf(displayWindow), 1);
   })
+  displayWindow.webContents.addListener("before-input-event", (_event, input) => {
+    if (input.type === "keyDown" && input.control && input.key === "i")
+      displayWindow.webContents.openDevTools();
+  })
 
   if (isDev()) {
     displayWindow.loadURL(`http://localhost:5124?displayId=${displayId}`);
@@ -222,15 +462,114 @@ function createDisplayWindow(displayId: number) {
       path.join(app.getAppPath(), "/dist-display/index.html"),
       { query: { displayId: displayId.toString() } }
     );
-    displayWindow.webContents.openDevTools();
   }
 
   displayWindows.push(displayWindow);
   return displayWindow;
 }
 
-const appState = new AppState();
 
+function updateDisplayConfig() {
+  sendToUIWindow("ui-update-display-config",
+    appState.getSerializedDc()
+  )
+  sendToDisplayWinows("display-update-display-config",
+    appState.getSerializedDc()
+  )
+}
+function imageDialog(): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    dialog.showOpenDialog(uiWindow, {
+      title: "Add Media Images",
+      filters: [
+        FILTERS["Images"] as any
+      ],
+      properties: ["openFile"]
+    }).then(
+      result => {
+        if (result.canceled) reject();
+        resolve(result.filePaths[0]);
+      }
+    )
+  })
+}
+
+ipcMain.on("ui-open-devtools", (_event) => {
+  if (uiWindow)
+    uiWindow.webContents.openDevTools();
+})
+ipcMain.on("ui-display-config-request", (_event) => {
+  updateDisplayConfig();
+});
+ipcMain.on("ui-set-display-config-entry", (_event, id, index, value) => {
+  try {
+    appState.updateDcEntry(id, index, value);
+    updateDisplayConfig();
+  } catch (err) {
+    if (err instanceof Error) {
+      alertMessageBox(err.message);
+    }
+  }
+});
+ipcMain.on("ui-reset-display-config-entry", (_event, id, index) => {
+  try {
+    appState.resetDcEntry(id, index);
+    updateDisplayConfig();
+  } catch (err) {
+    if (err instanceof Error) {
+      alertMessageBox(err.message);
+    }
+  }
+});
+
+ipcMain.on("ui-display-config-input-path", (_event, id, displayId) => {
+  imageDialog().then(
+    res => {
+      appState.updateDcEntry(id, displayId, res);
+      updateDisplayConfig();
+    },
+    (reason) => { }
+  );
+});
+
+function updateUIGeneralConfig() {
+  sendToUIWindow("ui-update-general-config",
+    appState.getSerializedGc()
+  )
+}
+ipcMain.on("ui-general-config-request", (_event) => {
+  updateUIGeneralConfig();
+});
+ipcMain.on("ui-set-general-config-entry", (_event, id, value) => {
+  try {
+    appState.updateGcEntry(id, value);
+    updateUIGeneralConfig();
+  } catch (err) {
+    if (err instanceof Error) {
+      alertMessageBox(err.message);
+    }
+  }
+});
+ipcMain.on("ui-reset-general-config-entry", (_event, id) => {
+  try {
+    appState.resetGcEntry(id);
+    updateUIGeneralConfig();
+  } catch (err) {
+    if (err instanceof Error) {
+      alertMessageBox(err.message);
+    }
+  }
+});
+
+ipcMain.on("ui-general-config-input-path", (_event, id, displayId) => {
+  imageDialog().then(
+    res => {
+      appState.updateGcEntry(id, res);
+      updateUIGeneralConfig();
+    },
+    (reason) => { }
+  );
+});
 
 /* ------- ui ipc ------- */
 function alertMessageBox(message: string) {
@@ -263,11 +602,16 @@ function updateUILiveElements() {
   sendToUIWindow("ui-state-update-live-elements", appState.getUIStateLiveElements());
 }
 
+function updateUILogo() {
+  sendToUIWindow("ui-state-update-logo", appState.getLogo())
+}
+
 
 function updateAllUI() {
   updateUISetlist();
   updateUIOpenMedia();
   updateUILiveElements();
+  updateUILogo();
 }
 
 ipcMain.on("ui-state-request", (_event) => { updateAllUI(); });
@@ -281,14 +625,30 @@ function sendToDisplayWinows(channel: string, ...args: any[]) {
   })
 }
 
-function updateDisplayLiveElement(displayId: number) {
+function updateDisplayLiveElement(displayIndex: number) {
   sendToDisplayWinows(
     "display-state-update-live-elements",
-    displayId,
-    appState.getDisplayStateLiveElement(displayId)
+    displayIndex,
+    appState.getDisplayStateLiveElement(displayIndex)
   );
 }
 
+function updateDisplayLogo(displayIndex: number) {
+  sendToDisplayWinows(
+    "display-state-update-logo",
+    displayIndex,
+    appState.getLogoEntry(displayIndex)
+  )
+}
+
+
+// so that windows automatically start displaying upon creation
+ipcMain.handle("invoke-display-get-init-live-state", (_e, displayIndex): SerializedLiveState => {
+  return {
+    liveElement: appState.getDisplayStateLiveElement(displayIndex),
+    logo: appState.getLogoEntry(displayIndex),
+  }
+})
 
 /* on setlist operations */
 ipcMain.on("add-images", (_event) => {
@@ -297,11 +657,7 @@ ipcMain.on("add-images", (_event) => {
   dialog.showOpenDialog(uiWindow, {
     title: "Add Media Images",
     filters: [
-      {
-        name: "Images", extensions: [
-          "apng", "gif", "ico", "cur", "jpg", "jpeg", "jfif", "pjpeg", "pjp", "png", "svg",
-        ]
-      },
+      FILTERS["Images"] as any
     ],
     properties: ["openFile", "multiSelections"]
   }).then(
@@ -323,9 +679,7 @@ ipcMain.on("add-songs", (_event) => {
   dialog.showOpenDialog(uiWindow, {
     title: "Add Media Songs",
     filters: [
-      {
-        name: "Songs", extensions: ["sinai", "txt", "mss"]
-      }
+      FILTERS["Songs"] as any
     ],
     properties: ["openFile", "multiSelections"]
   }).then(
@@ -455,6 +809,17 @@ ipcMain.on("set-live-element", (_event, displayId: number, liveElementIdentifier
   }
 })
 
+ipcMain.on("set-logo", (_event, displayIndex: number, logo: boolean) => {
+  try {
+    appState.setLogo(displayIndex, logo);
+    updateUILogo();
+    updateDisplayLogo(displayIndex);
+  } catch (e) {
+    if (e instanceof Error) alertMessageBox(e.message);
+  }
+});
+
+
 
 app.on("ready", () => {
   protocol.handle('fetch-media', (request) => {
@@ -470,9 +835,15 @@ app.on("ready", () => {
       );
       fileUrl = "";
     }
-    console.log("local-file: fileUrl = ", fileUrl.toString());
     return net.fetch(fileUrl);
   });
+
+  app.whenReady().then(() => {
+    protocol.handle('localfile', request => {
+      const pathToMedia = new URL(request.url).pathname
+      return net.fetch(`file://${pathToMedia}`)
+    })
+  })
 
   uiWindow = new BrowserWindow({
     title: `Sinai Project`,
@@ -489,7 +860,6 @@ app.on("ready", () => {
     uiWindow.webContents.openDevTools();
   } else {
     uiWindow.loadFile(path.join(app.getAppPath(), "/dist-ui/index.html"));
-    uiWindow.webContents.openDevTools();
   }
 });
 

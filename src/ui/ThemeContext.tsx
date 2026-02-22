@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 
+import { useConfigState } from "./ConfigStateContext";
+
 type ThemeType = "light" | "dark";
 
 type ThemeContextType = {
@@ -10,19 +12,13 @@ type ThemeContextType = {
 export const ThemeContext = createContext<ThemeContextType | null>(null);
 
 export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<ThemeType>(() => {
-    const saved = localStorage.getItem("theme") as ThemeType | null;
-    if (saved) { return saved };
-    if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-      return "light";
-    } else {
-      return "dark";
-    }
-  });
+  const { generalConfigMap } = useConfigState();
+  const [theme, setTheme] = useState<ThemeType>(generalConfigMap.get("dark-theme") ?? false ? "dark" : "light");
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme])
+    const themeValue = generalConfigMap.get("dark-theme") ?? false ? "dark" : "light";
+    setTheme(themeValue);
+    document.documentElement.setAttribute("data-theme", themeValue);
+  }, [generalConfigMap.get("dark-theme")])
 
   return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>
 };

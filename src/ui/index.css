@@ -33,6 +33,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
   --br-small: 3px;
+  --br-med: 7px;
   --hi-1-base: #ff0065ff;
   --hi-2-base: #00dbffff;
 
@@ -47,9 +48,9 @@ body {
   --background: black;
   --bg: var(--background);
   --gray-95: hsl(0 0% 5%);
-  --gray-90: hsl(0 0% 10%);
-  --gray-85: hsl(0 0% 15%);
-  --gray-80: hsl(0 0% 20%);
+  --gray-90: hsl(0 0% 15%);
+  --gray-85: hsl(0 0% 18%);
+  --gray-80: hsl(0 0% 25%);
   --gray-70: hsl(0 0% 30%);
   --gray-60: hsl(0 0% 40%);
   --gray-50: hsl(0 0% 50%);
@@ -75,9 +76,9 @@ body {
   --gray-50: hsl(0 0% 50%);
   --gray-60: hsl(0 0% 60%);
   --gray-70: hsl(0 0% 70%);
-  --gray-80: hsl(0 0% 80%);
-  --gray-85: hsl(0 0% 85%);
-  --gray-90: hsl(0 0% 90%);
+  --gray-80: hsl(0 0% 77%);
+  --gray-85: hsl(0 0% 82%);
+  --gray-90: hsl(0 0% 88%);
   --gray-95: hsl(0 0% 95%);
 
   --hi-1: color-mix(in oklch, var(--hi-1-base), black 5%);
@@ -88,12 +89,20 @@ body {
   background-color: var(--background);
 }
 
+
 /* because the icons package */
 *:not(svg):not(svg *) {
   font-family: "atk", Arial;
   zoom: reset;
   color: var(--text-color);
-  outline-color: var(--hi-1-base);
+}
+
+:is(input, button, select, textarea):is(:focus, :focus-visible) {
+  box-shadow: none;
+}
+
+:is(input, button, select, textarea):focus-visible {
+  outline-color: var(--hi-1);
 }
 
 *::-webkit-scrollbar {
@@ -108,11 +117,15 @@ body {
 }
 
 *::-webkit-scrollbar-button {
-  /* display: none; */
+  display: none;
   background-color: var(--gray-50);
   border: 4px solid transparent;
   border-radius: 8px;
   background-clip: padding-box;  
+}
+
+select, ::picker(select) {
+  appearance: base-select;
 }
 
 body {
@@ -131,16 +144,16 @@ button {
   background-color: var(--gray-90);
   /* border: 2px solid var(--gray-40); */
   border: none;
-  border-radius: 7px;
+  border-radius: var(--br-med);
   font-size: 12pt;
   font-weight: bold;
   cursor: pointer;
 }
 button:hover {
-  background-color: color-mix(in srgb, var(--gray-90), var(--hi-1))
+  background-color: color-mix(in srgb, var(--gray-90), var(--fg) 20%)
 }
 button:active {
-  background-color: var(--hi-1)
+  background-color: color-mix(in srgb, var(--gray-90), var(--fg) 60%)
 }
 
 

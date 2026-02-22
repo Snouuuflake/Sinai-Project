@@ -8,7 +8,8 @@
     "dist-display"
   ],
   "extraResources": [
-    "dist-electron/electron/preload.cjs"
+    "dist-electron/electron/preload.cjs",
+    "dist-electron/electron/config.json"
   ],
   "win": {
     "target": [

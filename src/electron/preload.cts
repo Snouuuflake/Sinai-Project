@@ -7,10 +7,13 @@ function makeIpcSend(channel: string) {
     ipcRenderer.send(channel, ...args);
   };
 }
-function makeIpcInvoke(channel: string) {
+function makeIpcInvoke<T>(channel: string): (...args: any[]) => Promise<T> {
   return (...args: any[]) => {
     console.log("ipc invoke:", channel, ...args);
-    ipcRenderer.invoke(channel, ...args)
+    return (ipcRenderer.invoke(channel, ...args) as Promise<T>).then((res) => {
+      console.log("ipc invoke response:", channel, res);
+      return res;
+    })
   };
 }
 function makeIpcOn(channel: string) {
@@ -33,11 +36,27 @@ contextBridge.exposeInMainWorld("electron", {
   onUIStateUpdateSetlist: makeIpcOn("ui-state-update-setlist"),
   onUIStateUpdateOpenMedia: makeIpcOn("ui-state-update-open-media"),
   onUIStateUpdateLiveElements: makeIpcOn("ui-state-update-live-elements"),
-  onUIStateUpdateConfig: makeIpcOn("ui-state-update-config"),
+  onUIStateUpdateLogo: makeIpcOn("ui-state-update-logo"),
   sendUIStateRequest: makeIpcSend("ui-state-request"),
+
+  onUIUpdateDisplayConfig: makeIpcOn("ui-update-display-config"),
+  sendUIDisplayConfigRequest: makeIpcSend("ui-display-config-request"),
+  sendUISetDisplayConfigEntry: makeIpcSend("ui-set-display-config-entry"),
+  sendUIResetDisplayConfigEntry: makeIpcSend("ui-reset-display-config-entry"),
+  sendDisplayConfigInputPath: makeIpcSend("ui-display-config-input-path"),
+
+  onUIUpdateGeneralConfig: makeIpcOn("ui-update-general-config"),
+  sendUIGeneralConfigRequest: makeIpcSend("ui-general-config-request"),
+  sendUISetGeneralConfigEntry: makeIpcSend("ui-set-general-config-entry"),
+  sendUIResetGeneralConfigEntry: makeIpcSend("ui-reset-general-config-entry"),
+  sendGeneralConfigInputPath: makeIpcSend("ui-general-config-input-path"),
+
+  sendUIOpenDevTools: makeIpcSend("ui-open-devtools"),
+
   sendNewDisplayWindow: makeIpcSend("new-display-window"),
   sendSetOpenMedia: makeIpcSend("set-open-media"),
   sendSetLiveElement: makeIpcSend("set-live-element"),
+  sendSetLogo: makeIpcSend("set-logo"),
   sendAddImages: makeIpcSend("add-images"),
   sendAddSongs: makeIpcSend("add-songs"),
   sendMoveMedia: makeIpcSend("move-media"),
@@ -47,6 +66,10 @@ contextBridge.exposeInMainWorld("electron", {
   sendSaveSong: makeIpcSend("save-song"),
 
   onDisplayStateUpdateLiveElement: makeIpcOn("display-state-update-live-elements"),
+  onDisplayStateUpdateLogo: makeIpcOn("display-state-update-logo"),
+  onDisplayUpdateDisplayConfig: makeIpcOn("display-update-display-config"),
+
+  invokeDisplayGetInitLiveState: makeIpcInvoke("invoke-display-get-init-live-state"),
 
   sendAlert: makeIpcSend("alert"),
 });

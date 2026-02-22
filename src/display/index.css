@@ -5,7 +5,6 @@
 }
 * {
   font-family: "atk", Arial;
-  font-weight: bold;
   padding: 0;
   margin: 0;
   box-sizing: border-box;
@@ -15,31 +14,54 @@ body {
   width: 100vw;
   background: black;
   color: white;
+  overflow: hidden
 }
 #root {
   height: 100%;
   width: 100%;
   overflow: hidden;
 }
-.app {
+.body {
   height: 100%;
   width: 100%;
-  display: grid;
-  place-items: center;
+  /* display: grid; */
+  /* place-items: center; */
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+.display-element-container {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  animation-duration: inherit;
+  animation-fill-mode: forwards;
+}
+.live-elements-container {
+  all: unset;
+  animation-duration: inherit;
+  animation-fill-mode: forwards;
   overflow: hidden;
 }
-
+.display-logo{
+  display: grid;
+  align-items: center;
+  justify-content: center;
+}
+.logo-img {
+  object-fit: contain;
+}
 .display-text {
-  height: 100%;
-  width: 100%;
-  padding-left: 5vw;
-  padding-right: 5vw;
-  padding-top: 5vh;
-  padding-bottom: 5vh;
-  overflow: hidden;
 }
 .display-text .text-line {
-  padding: 0.2em;
+  padding: 0.2em 0;
+}
+.text-line {
+  font-family: inherit;
 }
 
 .display-image {
@@ -48,4 +70,34 @@ body {
   min-width: 0;
   min-height: 0;
   object-fit: contain;
+}
+
+@keyframes fade-in {
+  0% {opacity: 0;}
+  100% {opacity: 100%;}
+  /* 0% {top: -110vh} */
+  /* 100% {top: 0} */
+}
+
+@keyframes fade-out {
+  0% {opacity: 100%;}
+  100% {opacity: 0;}
+  /* 0% {top: 0} */
+  /* 100% {top: 110vh} */
+}
+
+.animation-in {
+  animation-duration: var(--transition-duration);
+}
+.animation-out {
+  animation-duration: var(--transition-duration);
+}
+
+.logo-animation-in {
+  animation-name: fade-in;
+  animation-duration: var(--transition-duration);
+}
+.logo-animation-out {
+  animation-name: fade-out;
+  animation-duration: var(--transition-duration);
 }

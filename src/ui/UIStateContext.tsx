@@ -4,14 +4,13 @@ import {
   SerializedMediaIdentifier,
   SerializedMediaWithId,
   LiveElementIdentifier,
-  SerializedConfigEntry,
 } from "../shared/media-classes";
 
 type UIStateContextType = {
   setlist: SerializedMediaIdentifier[];
   openMedia: SerializedMediaWithId | null;
   liveElements: Array<LiveElementIdentifier | null>;
-  config: SerializedConfigEntry[];
+  logo: boolean[];
 }
 
 
@@ -24,8 +23,8 @@ export const UIStateContextProvider:
     const [liveElements, setLiveElements] = useState<
       Array<LiveElementIdentifier | null>
     >(Array.from({ length: DISPLAYS }, (_x) => null));
-    const [config, setConfig] = useState<SerializedConfigEntry[]>([]);
 
+    const [logo, setLogo] = useState<boolean[]>(Array.from({ length: DISPLAYS }, (_x) => false));
 
     useEffect(() => {
       const remover = window.electron.onUIStateUpdateSetlist(
@@ -49,8 +48,8 @@ export const UIStateContextProvider:
     }, [])
 
     useEffect(() => {
-      const remover = window.electron.onUIStateUpdateConfig(
-        (newValue: SerializedConfigEntry[]) => { setConfig(newValue) }
+      const remover = window.electron.onUIStateUpdateLogo(
+        (newValue: Array<boolean>) => { setLogo(newValue) }
       );
       return remover;
     }, [])
@@ -60,7 +59,7 @@ export const UIStateContextProvider:
     }, [])
 
     return <UIStateContext.Provider
-      value={{ setlist, openMedia, liveElements, config }}>
+      value={{ setlist, openMedia, liveElements, logo }}>
       {children}
     </UIStateContext.Provider >
   };

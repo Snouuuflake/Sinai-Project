@@ -15,7 +15,7 @@
     "build:ui": "vite build --config vite.config.ui.ts",
     "build:display": "vite build --config vite.config.display.ts",
     "transpile:electron": "tsc --project src/electron/tsconfig.json",
-    "rmdist": "pwsh -Command \"if (Test-Path dist) {Remove-Item -Recurse -Force dist}\"",
+    "rmdist": "powershell -Command \"if (Test-Path dist) {Remove-Item -Recurse -Force dist}\"",
     "dist:win": "npm run rmdist && npm run build && electron-builder --win"
   },
   "dependencies": {

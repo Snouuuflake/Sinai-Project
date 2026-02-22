@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { LiveElementTextValue, SerializedLiveElement } from "../shared/media-classes"
+import { useDisplayConfigState } from "./DisplayConfigStateContext";
 
 const AutoScaleText: React.FC<{
   children: React.ReactNode;
@@ -10,6 +11,7 @@ const AutoScaleText: React.FC<{
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState<number>(minSize);
+  const { configHash } = useDisplayConfigState();
 
   useEffect(() => {
     const container = containerRef.current;
@@ -67,50 +69,80 @@ const AutoScaleText: React.FC<{
   }, [children, minSize, maxSize, step]);
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxSizing: "border-box"
-      }}
-    >
+    <div style={{
+      all: "unset",
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxSizing: "border-box",
+      fontFamily: "inherit",
+      paddingTop: configHash.get("text-margin-top") as number + "vh",
+      paddingBottom: configHash.get("text-margin-bottom") as number + "vh",
+      paddingLeft: configHash.get("text-margin-left") as number + "vh",
+      paddingRight: configHash.get("text-margin-right") as number + "vh",
+    }}>
       <div
-        ref={contentRef}
+        ref={containerRef}
         style={{
-          fontSize: `${fontSize}px`,
-          maxWidth: '100%',
-          maxHeight: '100%',
-          textAlign: 'center',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxSizing: "border-box",
+          fontFamily: "inherit",
+          backgroundColor: configHash.get("text-background-color") as string,
         }}
       >
-        {children}
+        <div
+          ref={contentRef}
+          style={{
+            fontSize: `${fontSize}px`,
+            maxWidth: '100%',
+            maxHeight: '100%',
+            textAlign: 'center',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            boxSizing: "border-box",
+            fontFamily: "inherit"
+          }}
+        >
+          {children}
+        </div>
       </div>
-    </div>
+    </div >
   );
 };
 
-const DisplayText: React.FC<{ liveElement: SerializedLiveElement }> =
-  ({ liveElement }) => {
-    return <div className="display-text">
-      <AutoScaleText
-        minSize={1}
-        maxSize={200}
-        step={1}
+const DisplayText: React.FC<{ liveElement: SerializedLiveElement, className: string }> =
+  ({ liveElement, className }) => {
+    const { configHash } = useDisplayConfigState();
+    return (
+      <div
+        className={`display-text display-element-container ${className}`}
+        style={{
+          fontWeight: configHash.get("bold") as boolean ? "bold" : "normal",
+          color: configHash.get("text-color") as string,
+          fontFamily: configHash.get("font") as string,
+        }}
       >
-        {
-          (liveElement.value as LiveElementTextValue).lines.map(
-            (l, i, a) => <div className="text-line">{l}</div>
-          )
-        }
-      </AutoScaleText>
-    </div>
+        <AutoScaleText
+          minSize={1}
+          maxSize={(configHash.get("font-size") as number) > 1 ? configHash.get("font-size") as number : 2}
+          step={1}
+        >
+          {
+            (liveElement.value as LiveElementTextValue).lines.map(
+              (l, i, a) => <div className="text-line">{l}</div>
+            )
+          }
+        </AutoScaleText>
+      </div>
+    )
   }
 
 export default DisplayText;

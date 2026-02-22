@@ -318,6 +318,7 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
               <option value={i} key={i}>Display {i + 1}</option>
             ))
           }
+          <option value="other">Other</option>
         </select>
       </div>
       <div className="settings-button-modal-content">
@@ -339,21 +340,34 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
                 />
             )
             :
-            displayConfig.map(entry => (
-              typeof entry === "string" ?
-                <h3 className="config-heading">{entry}</h3>
-                :
-                <ConfigInput
-                  key={entry.id}
-                  type={entry.type}
-                  id={entry.id}
-                  cur={entry.cur[parseInt(menuSelection)]}
-                  isInit={entry.isInit[parseInt(menuSelection)]}
-                  displayId={parseInt(menuSelection)}
-                  title={entry.title}
-                  isDisplay={true}
-                />
-            ))
+            menuSelection === "other" ?
+              <>
+                <h3 className="config-heading">Debug</h3>
+                <button
+                  style={{ width: "100%" }}
+                  onClick={() => {
+                    window.electron.sendUIOpenDevTools();
+                  }}
+                >
+                  Open Dev Tools
+                </button>
+              </>
+              :
+              displayConfig.map(entry => (
+                typeof entry === "string" ?
+                  <h3 className="config-heading">{entry}</h3>
+                  :
+                  <ConfigInput
+                    key={entry.id}
+                    type={entry.type}
+                    id={entry.id}
+                    cur={entry.cur[parseInt(menuSelection)]}
+                    isInit={entry.isInit[parseInt(menuSelection)]}
+                    displayId={parseInt(menuSelection)}
+                    title={entry.title}
+                    isDisplay={true}
+                  />
+              ))
         }
       </div>
     </div >

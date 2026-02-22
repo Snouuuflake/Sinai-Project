@@ -22,6 +22,8 @@ declare global {
       sendUIResetGeneralConfigEntry: (id: string) => void;
       sendGeneralConfigInputPath: (id: string) => void;
 
+      sendUIOpenDevTools: () => void;
+
       sendNewDisplayWindow: (displayId: number) => void;
       sendSetOpenMedia: (id: number) => void;
       sendSetLiveElement: (displayId: number, liveElementIdentifier: mc.LiveElementIdentifier | null) => void;

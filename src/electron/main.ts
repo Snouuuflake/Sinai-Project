@@ -449,6 +449,10 @@ function createDisplayWindow(displayId: number) {
   displayWindow.on("close", () => {
     displayWindows.splice(displayWindows.indexOf(displayWindow), 1);
   })
+  displayWindow.webContents.addListener("before-input-event", (_event, input) => {
+    if (input.type === "keyDown" && input.control && input.key === "i")
+      displayWindow.webContents.openDevTools();
+  })
 
   if (isDev()) {
     displayWindow.loadURL(`http://localhost:5124?displayId=${displayId}`);
@@ -458,7 +462,6 @@ function createDisplayWindow(displayId: number) {
       path.join(app.getAppPath(), "/dist-display/index.html"),
       { query: { displayId: displayId.toString() } }
     );
-    displayWindow.webContents.openDevTools();
   }
 
   displayWindows.push(displayWindow);
@@ -491,6 +494,10 @@ function imageDialog(): Promise<string> {
   })
 }
 
+ipcMain.on("ui-open-devtools", (_event) => {
+  if (uiWindow)
+    uiWindow.webContents.openDevTools();
+})
 ipcMain.on("ui-display-config-request", (_event) => {
   updateDisplayConfig();
 });
@@ -853,7 +860,6 @@ app.on("ready", () => {
     uiWindow.webContents.openDevTools();
   } else {
     uiWindow.loadFile(path.join(app.getAppPath(), "/dist-ui/index.html"));
-    uiWindow.webContents.openDevTools();
   }
 });
 

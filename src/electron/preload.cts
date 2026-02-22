@@ -51,6 +51,8 @@ contextBridge.exposeInMainWorld("electron", {
   sendUIResetGeneralConfigEntry: makeIpcSend("ui-reset-general-config-entry"),
   sendGeneralConfigInputPath: makeIpcSend("ui-general-config-input-path"),
 
+  sendUIOpenDevTools: makeIpcSend("ui-open-devtools"),
+
   sendNewDisplayWindow: makeIpcSend("new-display-window"),
   sendSetOpenMedia: makeIpcSend("set-open-media"),
   sendSetLiveElement: makeIpcSend("set-live-element"),

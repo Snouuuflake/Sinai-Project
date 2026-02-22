@@ -7,7 +7,7 @@ Sinai Project is an open source, easy to use, lyric and media projection softwar
 
 ![main ui](./readme-assets/main-ui.png)
 
-Made with both livestream and in-person projection in mind, Sinai allows different styling as well as simultaneous projection of different media to separate windows, with the main use case being fullscreen projection in person and lowerthird for streams (with direct-to-OBS, transparent projection planned in the near future).
+Made to tackle livestream and in-person projection, Sinai allows different styling as well as simultaneous projection of different media to separate windows, with the main use case being fullscreen projection in-person and lower-third for streams (with direct-to-OBS, transparent projection planned in the near future).
 
 Some features planned for the near future are direct-to-OBS, transparent projection, video projection, PDF projection and easy sharing of full setlists.
 

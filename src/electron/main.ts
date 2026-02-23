@@ -15,6 +15,10 @@ import * as fs from "fs";
 import { parseSong, logSong, stringifySong } from "./parser.js";
 import { AppState, MainDisplayConfigEntry, MainGeneralConfigEntry } from "./AppState.js";
 
+import express from "express";
+import { AddressInfo, WebSocketServer } from "ws";
+import http from "http";
+
 const FILTERS = {
   "Images": {
     name: "Images",
@@ -68,6 +72,17 @@ protocol.registerSchemesAsPrivileged([{
   }
 }])
 
+const expressApp = express();
+expressApp.get("/{*path}", (_req, res) => res.sendFile(
+  path.join(app.getAppPath(), "dist-display/test-express.html")
+));
+
+const httpServer = http.createServer(expressApp);
+httpServer.listen(0, () => {
+  const port = (httpServer.address() as AddressInfo).port; // e.g. 49823
+  console.log(`listening on port: ${port}`)
+});
+
 
 let uiWindow: BrowserWindow;
 const displayWindows: BrowserWindow[] = []
@@ -103,7 +118,7 @@ appState.addGcEntry(new MainGeneralConfigEntry("dark-theme", "boolean", false));
 
 
 if (fs.existsSync(getConfigPath())) {
-  console.log(fs.readFileSync(getConfigPath(), { encoding: "utf8" }));
+  // console.log(fs.readFileSync(getConfigPath(), { encoding: "utf8" }));
   appState.readConfigFile();
 } else {
   try {

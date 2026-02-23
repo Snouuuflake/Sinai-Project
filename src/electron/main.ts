@@ -14,6 +14,7 @@ import {
 import * as fs from "fs";
 import { parseSong, logSong, stringifySong } from "./parser.js";
 import { AppState, MainDisplayConfigEntry, MainGeneralConfigEntry } from "./AppState.js";
+import { IpcWs } from "./IpcWs.js";
 
 import express from "express";
 import { AddressInfo, WebSocketServer } from "ws";
@@ -72,16 +73,23 @@ protocol.registerSchemesAsPrivileged([{
   }
 }])
 
+const ipcws = new IpcWs();
+
 const expressApp = express();
 expressApp.get("/{*path}", (_req, res) => res.sendFile(
   path.join(app.getAppPath(), "dist-display/test-express.html")
 ));
 
 const httpServer = http.createServer(expressApp);
+const wss = new WebSocketServer({ server: httpServer });
+
+ipcws.initWss(wss);
+
 httpServer.listen(0, () => {
   const port = (httpServer.address() as AddressInfo).port; // e.g. 49823
-  console.log(`listening on port: ${port}`)
+  console.log(`!!!!!!!!!! listening on port: ${port}`)
 });
+
 
 
 let uiWindow: BrowserWindow;
@@ -179,7 +187,7 @@ function updateDisplayConfig() {
   sendToUIWindow("ui-update-display-config",
     appState.getSerializedDc()
   )
-  sendToDisplayWinows("display-update-display-config",
+  sendToDisplayWindows("display-update-display-config",
     appState.getSerializedDc()
   )
 }
@@ -320,15 +328,16 @@ ipcMain.on("ui-state-request", (_event) => { updateAllUI(); });
 
 /* ----- display ipc ----- */
 
-function sendToDisplayWinows(channel: string, ...args: any[]) {
+function sendToDisplayWindows(channel: string, ...args: any[]) {
   displayWindows.forEach(dw => {
     if (dw)
       dw.webContents.send(channel, ...args);
   })
+  ipcws.broadcastToWsClients(channel, ...args);
 }
 
 function updateDisplayLiveElement(displayIndex: number) {
-  sendToDisplayWinows(
+  sendToDisplayWindows(
     "display-state-update-live-elements",
     displayIndex,
     appState.getDisplayStateLiveElement(displayIndex)
@@ -336,7 +345,7 @@ function updateDisplayLiveElement(displayIndex: number) {
 }
 
 function updateDisplayLogo(displayIndex: number) {
-  sendToDisplayWinows(
+  sendToDisplayWindows(
     "display-state-update-logo",
     displayIndex,
     appState.getLogoEntry(displayIndex)
@@ -345,7 +354,7 @@ function updateDisplayLogo(displayIndex: number) {
 
 
 // so that windows automatically start displaying upon creation
-ipcMain.handle("invoke-display-get-init-live-state", (_e, displayIndex): SerializedLiveState => {
+ipcws.handleIpcWs("invoke-display-get-init-live-state", (_e, displayIndex): SerializedLiveState => {
   return {
     liveElement: appState.getDisplayStateLiveElement(displayIndex),
     logo: appState.getLogoEntry(displayIndex),

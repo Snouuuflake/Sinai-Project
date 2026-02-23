@@ -13,7 +13,8 @@ const App: React.FC<{}> = ({ }) => {
     return () => {
       window.removeEventListener("keydown", listener);
     }
-  }, [])
+  }, []);
+
   return <DisplayConfigStateContextProvider>
     <Body />
   </DisplayConfigStateContextProvider>

@@ -6,6 +6,7 @@ import {
   ConfigTypesKey,
   SerializedDisplayConfigEntry
 } from "../shared/config-classes";
+import { customipc } from "../shared/IpcWsClient";
 
 
 class DisplayConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T> {
@@ -50,7 +51,10 @@ class DisplayConfig {
       }
     })
     if (errors.length > 0)
-      window.electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
+      // window.electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
+      customipc.send("alert",
+        errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim()
+      );
   }
   get config(): readonly DisplayConfigEntry<ConfigTypesKey>[] {
     return this.#config;
@@ -101,7 +105,9 @@ export const DisplayConfigStateContextProvider: React.FC<{ children: React.React
   const [configHash, setConfigHash] = useState<Map<string, ConfigTypePrimitiveType<ConfigTypesKey>>>(displayConfigRef.current.configHash);
 
   useEffect(() => {
-    const remover = window.electron.onDisplayUpdateDisplayConfig(
+    // const remover = window.electron.onDisplayUpdateDisplayConfig(
+    const remover = customipc.send(
+      "display-update-display-config",
       (newconfig: SerializedDisplayConfigEntry[]) => {
         // this is safe, right?
         try {
@@ -113,7 +119,7 @@ export const DisplayConfigStateContextProvider: React.FC<{ children: React.React
         setConfigHash(displayConfigRef.current!.configHash);
       }
     );
-    window.electron.sendUIDisplayConfigRequest();
+    customipc.send("ui-display-config-request")
     return remover;
   }, [])
 

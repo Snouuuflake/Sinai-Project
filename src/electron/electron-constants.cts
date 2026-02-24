@@ -1,0 +1,10 @@
+const ALLOWED_DISPLAY_SEND_CHANNELS: string[] = [
+] as const;
+
+const ALLOWED_DISPLAY_INVOKE_CHANNELS: string[] = [
+] as const;
+
+export {
+  ALLOWED_DISPLAY_INVOKE_CHANNELS,
+  ALLOWED_DISPLAY_SEND_CHANNELS
+}

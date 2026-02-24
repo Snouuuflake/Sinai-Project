@@ -1,6 +1,8 @@
 import { ipcMain } from "electron";
 import { WebSocketServer, WebSocket } from "ws";
 
+import { ALLOWED_DISPLAY_INVOKE_CHANNELS, ALLOWED_DISPLAY_SEND_CHANNELS } from "./electron-constants.cjs";
+
 type ipcwsSendMessage = {
   type: "send"
   channel: string,
@@ -28,8 +30,12 @@ class IpcWs {
         const msg: ipcwsMessage = JSON.parse(raw.toString());
         // msg: { type: "send"|"invoke", channel, args, id? }
         if (msg.type === "send") {
+          if (!ALLOWED_DISPLAY_SEND_CHANNELS.includes(msg.channel))
+            throw new Error("IpcWs on send: Got disallowed channel");
           ipcMain.emit(msg.channel, {}, ...msg.args);
         } else if (msg.type === "invoke") {
+          if (!ALLOWED_DISPLAY_INVOKE_CHANNELS.includes(msg.channel))
+            throw new Error("IpcWs on invoke: Got disallowed channel");
           // invoke handlers are registered with ipcMain.handle
           // we need to call them manually
           const handler = this.#invokeHandlers.get(msg.channel);

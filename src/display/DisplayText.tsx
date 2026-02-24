@@ -64,10 +64,7 @@ const AutoScaleText: React.FC<{
     window.addEventListener('resize', calculateFontSize);
 
     return () => {
-      // window.removeEventListener('resize', calculateFontSize);
-      const ro = new ResizeObserver(calculateFontSize);
-      ro.observe(container);
-      return () => ro.disconnect();
+      window.removeEventListener('resize', calculateFontSize);
     };
   }, [children, minSize, maxSize, step]);
 

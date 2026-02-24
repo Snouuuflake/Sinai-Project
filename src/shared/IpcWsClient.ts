@@ -25,14 +25,16 @@ function getWs(): WebSocket {
 
   ws.addEventListener("message", (event) => {
     const msg = JSON.parse(event.data);
-    console.log("msg:", msg.channel, ...msg.args);
     if (msg.type === "on") {
+      console.log("msg:", msg.type, msg.channel, ...msg.args ?? []);
       const handlers = wsListeners.get(msg.channel);
-      console.log("handlers", handlers);
       if (handlers) handlers.forEach(h => h(...msg.args));
     } else if (msg.type === "invoke-reply") {
+      console.log("msg:", msg.type, msg.channel, msg.id, msg.result);
       const resolve = pendingInvokes.get(msg.id);
       if (resolve) { resolve(msg.result); pendingInvokes.delete(msg.id); }
+    } else {
+      console.log(msg)
     }
   });
 
@@ -73,6 +75,7 @@ export const customipc = {
     } else {
       return new Promise((resolve) => {
         const id = invokeIdCounter++;
+        console.log(`invoked with id ${id}`, channel, ...args);
         pendingInvokes.set(id, resolve);
         wsSend({ type: "invoke", channel, args, id });
       });

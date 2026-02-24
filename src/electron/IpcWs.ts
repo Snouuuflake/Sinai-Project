@@ -41,7 +41,8 @@ class IpcWs {
           const handler = this.#invokeHandlers.get(msg.channel);
           const result = handler ? await handler(...msg.args) : undefined;
           try {
-            ws.send(JSON.stringify({ type: "invoke-reply", id: msg.id, result }));
+            console.log("sending invoke-reply", msg.id, result);
+            ws.send(JSON.stringify({ type: "invoke-reply", id: msg.id, result }), console.error);
           } catch (err) {
             console.error(err)
           }
@@ -59,7 +60,6 @@ class IpcWs {
     for (const ws of this.#wsClients) {
       try {
         ws.send(payload);
-        console.log(ws, payload)
       } catch (err) {
         console.error(err)
       }

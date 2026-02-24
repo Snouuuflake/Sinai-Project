@@ -72,7 +72,7 @@ class UIDisplayConfig implements UIConfig {
       }
     })
     if (errors.length > 0)
-      window.electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
+      (window as unknown as UIWindow).electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
   }
   get config(): ReadonlyUIDisplayConfigType {
     return this.#config;
@@ -134,7 +134,7 @@ class UIGeneralConfig implements UIConfig {
       }
     })
     if (errors.length > 0)
-      window.electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
+      (window as unknown as UIWindow).electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
   }
   get config(): ReadonlyUIGeneralConfigType {
     return this.#config;
@@ -180,7 +180,7 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
 
 
   useEffect(() => {
-    const remover = window.electron.onUIUpdateDisplayConfig(
+    const remover = (window as unknown as UIWindow).electron.onUIUpdateDisplayConfig(
       (newconfig: SerializedDisplayConfigEntry[]) => {
         // this is safe, right?
         try {
@@ -192,7 +192,7 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
         setDisplayConfig([...displayConfigRef.current!.config]);
       }
     );
-    window.electron.sendUIDisplayConfigRequest();
+    (window as unknown as UIWindow).electron.sendUIDisplayConfigRequest();
     return remover;
   }, [])
 
@@ -206,7 +206,7 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
   const [generalConfigMap, setGeneralConfigMap] = useState<GeneralConfigMap>(generalConfigRef.current.map);
 
   useEffect(() => {
-    const remover = window.electron.onUIUpdateGeneralConfig(
+    const remover = (window as unknown as UIWindow).electron.onUIUpdateGeneralConfig(
       (newconfig: SerializedGeneralConfigEntry[]) => {
         // this is safe, right?
         try {
@@ -219,7 +219,7 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
         setGeneralConfigMap(generalConfigRef.current!.map);
       }
     );
-    window.electron.sendUIGeneralConfigRequest();
+    (window as unknown as UIWindow).electron.sendUIGeneralConfigRequest();
     return remover;
   }, [])
 

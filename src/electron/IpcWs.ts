@@ -1,7 +1,7 @@
 import { ipcMain } from "electron";
 import { WebSocketServer, WebSocket } from "ws";
 
-import { ALLOWED_DISPLAY_INVOKE_CHANNELS, ALLOWED_DISPLAY_SEND_CHANNELS } from "./electron-constants.cjs";
+import { ALLOWED_DISPLAY_INVOKE_CHANNELS, ALLOWED_DISPLAY_SEND_CHANNELS } from "./electron-constants.js";
 
 type ipcwsSendMessage = {
   type: "send"
@@ -55,7 +55,7 @@ class IpcWs {
 
   broadcastToWsClients(channel: string, ...args: any[]) {
     const payload = JSON.stringify({ type: "on", channel, args });
-    console.log(payload)
+    console.log("broadcast to wsclients: ", payload.substring(0, 80));
     for (const ws of this.#wsClients) {
       try {
         ws.send(payload);
@@ -67,7 +67,7 @@ class IpcWs {
   }
 
   handleIpcWs(channel: string, handler: (...args: any[]) => any,) {
-    ipcMain.handle(channel, (_event, ...args: any[]) => { handler(...args) });
+    ipcMain.handle(channel, (_event, ...args: any[]) => { return handler(...args) });
     if (this.#invokeHandlers.get(channel)) {
       throw new Error(`ipcws.handle: handler for channel ${channel} already exists`)
     }

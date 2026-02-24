@@ -76,16 +76,17 @@ protocol.registerSchemesAsPrivileged([{
 const ipcws = new IpcWs();
 
 const expressApp = express();
-expressApp.get("/{*path}", (_req, res) => res.sendFile(
-  path.join(app.getAppPath(), "dist-display/test-express.html")
-));
+expressApp.use(express.static(path.join(app.getAppPath(), "/dist-display")));
+// expressApp.get("/{*path}", (_req, res) => res.sendFile(
+//   path.join(app.getAppPath(), "dist-display/index.html")
+// ));
 
 const httpServer = http.createServer(expressApp);
 const wss = new WebSocketServer({ server: httpServer });
 
 ipcws.initWss(wss);
 
-httpServer.listen(0, () => {
+httpServer.listen(55555, () => {
   const port = (httpServer.address() as AddressInfo).port; // e.g. 49823
   console.log(`!!!!!!!!!! listening on port: ${port}`)
 });
@@ -151,10 +152,7 @@ function createDisplayWindow(displayId: number) {
   const displayWindow = new BrowserWindow({
     title: `Sinai Project: Display Window ${displayId + 1}`,
     webPreferences: {
-      preload: path.join(app.getAppPath(),
-        isDev() ? "" : "..",
-        "dist-electron/electron/preload.cjs"
-      ),
+      preload: getPreloadPath("display"),
     },
   });
 
@@ -354,12 +352,20 @@ function updateDisplayLogo(displayIndex: number) {
 
 
 // so that windows automatically start displaying upon creation
-ipcws.handleIpcWs("invoke-display-get-init-live-state", (_e, displayIndex): SerializedLiveState => {
+ipcws.handleIpcWs("invoke-display-get-init-live-state", (displayIndex): SerializedLiveState => {
+  console.log("invoked thing", displayIndex);
   return {
     liveElement: appState.getDisplayStateLiveElement(displayIndex),
     logo: appState.getLogoEntry(displayIndex),
   }
 })
+
+// ipcMain.handle("invoke-display-get-init-live-state", (_e, displayIndex): SerializedLiveState => {
+//   return {
+//     liveElement: appState.getDisplayStateLiveElement(displayIndex),
+//     logo: appState.getLogoEntry(displayIndex),
+//   }
+// })
 
 /* on setlist operations */
 ipcMain.on("add-images", (_event) => {
@@ -561,7 +567,7 @@ app.on("ready", () => {
     minWidth: 500,
     minHeight: 500,
     webPreferences: {
-      preload: getPreloadPath(),
+      preload: getPreloadPath("ui"),
     },
   });
   uiWindow.setMenu(null);

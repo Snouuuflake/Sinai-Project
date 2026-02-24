@@ -25,8 +25,10 @@ function getWs(): WebSocket {
 
   ws.addEventListener("message", (event) => {
     const msg = JSON.parse(event.data);
+    console.log("msg:", msg.channel, ...msg.args);
     if (msg.type === "on") {
       const handlers = wsListeners.get(msg.channel);
+      console.log("handlers", handlers);
       if (handlers) handlers.forEach(h => h(...msg.args));
     } else if (msg.type === "invoke-reply") {
       const resolve = pendingInvokes.get(msg.id);
@@ -48,8 +50,7 @@ function wsSend(msg: object) {
 export const customipc = {
   on(channel: string, callback: IpcHandler): () => void {
     if (isElectron()) {
-      // Map channel to the window.electron.onXxx function
-      return (window as unknown as DisplayWindow).electron.ipcRendererOnS(channel, callback);
+      return (window as unknown as DisplayWindow).electron.ipcRendererOnS(channel, (_event, ...values: any[]) => { callback(...values) });
     } else {
       if (!wsListeners.has(channel)) wsListeners.set(channel, new Set());
       wsListeners.get(channel)!.add(callback);

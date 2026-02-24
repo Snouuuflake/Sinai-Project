@@ -17,7 +17,7 @@ const MoveButton: React.FC<{ item: SerializedMediaIdentifier, hoveredHalf: Hover
     className="setlist-item-move-item-modal-move-button"
     onClick={
       () => {
-        window.electron.sendMoveMedia(
+        (window as unknown as UIWindow).electron.sendMoveMedia(
           item.id, hoveredHalf.index + hoveredHalf.half
         );
         hideModal();
@@ -168,7 +168,7 @@ const SetlistItemMenu:
         className="setlist-item-menu-button"
         onClick={
           (_e) => {
-            window.electron.sendDeleteMedia(item.id);
+            (window as unknown as UIWindow).electron.sendDeleteMedia(item.id);
             hideMenu();
           }
         }
@@ -188,7 +188,7 @@ const SetlistItem: React.FC<{ maxIdChars: number, item: SerializedMediaIdentifie
     }}
     onClick={
       () => {
-        window.electron.sendSetOpenMedia(item.id);
+        (window as unknown as UIWindow).electron.sendSetOpenMedia(item.id);
       }
     }
   >

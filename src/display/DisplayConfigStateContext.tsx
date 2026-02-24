@@ -51,7 +51,7 @@ class DisplayConfig {
       }
     })
     if (errors.length > 0)
-      // window.electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
+      // (window as unknown as UIWindow).electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
       customipc.send("alert",
         errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim()
       );
@@ -105,8 +105,8 @@ export const DisplayConfigStateContextProvider: React.FC<{ children: React.React
   const [configHash, setConfigHash] = useState<Map<string, ConfigTypePrimitiveType<ConfigTypesKey>>>(displayConfigRef.current.configHash);
 
   useEffect(() => {
-    // const remover = window.electron.onDisplayUpdateDisplayConfig(
-    const remover = customipc.send(
+    // const remover = (window as unknown as UIWindow).electron.onDisplayUpdateDisplayConfig(
+    const remover = customipc.on(
       "display-update-display-config",
       (newconfig: SerializedDisplayConfigEntry[]) => {
         // this is safe, right?

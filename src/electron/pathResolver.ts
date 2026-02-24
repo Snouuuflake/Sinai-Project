@@ -2,11 +2,11 @@ import path from "path";
 import { app } from "electron";
 import { isDev } from "./util.js";
 
-function getPreloadPath(): string {
+function getPreloadPath(window: "display" | "ui"): string {
   return path.join(
     app.getAppPath(),
     isDev() ? "." : "..",
-    "dist-electron/electron/preload.cjs",
+    `dist-electron/electron/preload-${window}.cjs`,
   );
 }
 

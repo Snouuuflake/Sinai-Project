@@ -58,10 +58,11 @@ body {
 .display-text {
 }
 .display-text .text-line {
-  padding: 0.2em 0;
+  padding: 0;
 }
 .text-line {
   font-family: inherit;
+  box-sizing: content-box;
 }
 
 .display-image {

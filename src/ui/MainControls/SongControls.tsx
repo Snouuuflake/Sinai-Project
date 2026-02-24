@@ -165,9 +165,9 @@ const EditSongModalSectionList:
                   s => s.name === trimmedNewSectionName
                 ).length != 0
               ) {
-                window.electron.sendAlert("Cannot have repeated section names");
+                (window as unknown as UIWindow).electron.sendAlert("Cannot have repeated section names");
               } else if (trimmedNewSectionName === "") {
-                window.electron.sendAlert("New section name cannot be empty");
+                (window as unknown as UIWindow).electron.sendAlert("New section name cannot be empty");
               } else {
                 const newSections = structuredClone(song.sections);
                 const newId = newSections.length == 0 ? 0 :
@@ -427,7 +427,7 @@ const EditSongModal:
         className="edit-song-modal-save-button hi-1-button"
         onClick={() => {
           if (localSong.properties.title.trim() === "") {
-            window.electron.sendAlert("Song has no title!");
+            (window as unknown as UIWindow).electron.sendAlert("Song has no title!");
             setLocalSong(
               {
                 ...localSong,
@@ -439,7 +439,7 @@ const EditSongModal:
             );
             return;
           }
-          window.electron.sendReplaceSong(mediaId,
+          (window as unknown as UIWindow).electron.sendReplaceSong(mediaId,
             {
               ...localSong,
               properties: {
@@ -541,7 +541,7 @@ const SongControls:
             className="song-controls-edit-button main-container-button"
             onClick={
               (_e) => {
-                window.electron.sendSaveSong(openMedia.id);
+                (window as unknown as UIWindow).electron.sendSaveSong(openMedia.id);
               }
             }
           >

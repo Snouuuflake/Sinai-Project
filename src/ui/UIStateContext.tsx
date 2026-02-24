@@ -27,35 +27,35 @@ export const UIStateContextProvider:
     const [logo, setLogo] = useState<boolean[]>(Array.from({ length: DISPLAYS }, (_x) => false));
 
     useEffect(() => {
-      const remover = window.electron.onUIStateUpdateSetlist(
+      const remover = (window as unknown as UIWindow).electron.onUIStateUpdateSetlist(
         (newValue: SerializedMediaIdentifier[]) => { setSetlist(newValue); }
       );
       return remover;
     }, [])
 
     useEffect(() => {
-      const remover = window.electron.onUIStateUpdateOpenMedia(
+      const remover = (window as unknown as UIWindow).electron.onUIStateUpdateOpenMedia(
         (newValue: SerializedMediaWithId) => { setOpenMedia(newValue); }
       );
       return remover;
     }, [])
 
     useEffect(() => {
-      const remover = window.electron.onUIStateUpdateLiveElements(
+      const remover = (window as unknown as UIWindow).electron.onUIStateUpdateLiveElements(
         (newValue: Array<LiveElementIdentifier | null>) => { setLiveElements(newValue) }
       );
       return remover;
     }, [])
 
     useEffect(() => {
-      const remover = window.electron.onUIStateUpdateLogo(
+      const remover = (window as unknown as UIWindow).electron.onUIStateUpdateLogo(
         (newValue: Array<boolean>) => { setLogo(newValue) }
       );
       return remover;
     }, [])
 
     useEffect(() => {
-      window.electron.sendUIStateRequest();
+      (window as unknown as UIWindow).electron.sendUIStateRequest();
     }, [])
 
     return <UIStateContext.Provider

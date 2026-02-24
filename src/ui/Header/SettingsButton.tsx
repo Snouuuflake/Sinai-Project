@@ -229,16 +229,16 @@ const ConfigInput = ({
 }): React.ReactElement => {
   const onSubmit = (value: any) => {
     if (isDisplay) {
-      window.electron.sendUISetDisplayConfigEntry(id, displayId, value);
+      (window as unknown as UIWindow).electron.sendUISetDisplayConfigEntry(id, displayId, value);
     } else {
-      window.electron.sendUISetGeneralConfigEntry(id, value);
+      (window as unknown as UIWindow).electron.sendUISetGeneralConfigEntry(id, value);
     }
   }
   const onReset = () => {
     if (isDisplay) {
-      window.electron.sendUIResetDisplayConfigEntry(id, displayId);
+      (window as unknown as UIWindow).electron.sendUIResetDisplayConfigEntry(id, displayId);
     } else {
-      window.electron.sendUIResetGeneralConfigEntry(id);
+      (window as unknown as UIWindow).electron.sendUIResetGeneralConfigEntry(id);
     }
   }
   return (
@@ -268,9 +268,9 @@ const ConfigInput = ({
                   cur={cur as (ConfigTypePrimitiveType<"path"> | null)}
                   onSubmit={() => {
                     if (isDisplay) {
-                      window.electron.sendDisplayConfigInputPath(id, displayId);
+                      (window as unknown as UIWindow).electron.sendDisplayConfigInputPath(id, displayId);
                     } else {
-                      window.electron.sendGeneralConfigInputPath(id);
+                      (window as unknown as UIWindow).electron.sendGeneralConfigInputPath(id);
                     }
                   }}
                 />
@@ -346,7 +346,7 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
                 <button
                   style={{ width: "100%" }}
                   onClick={() => {
-                    window.electron.sendUIOpenDevTools();
+                    (window as unknown as UIWindow).electron.sendUIOpenDevTools();
                   }}
                 >
                   Open Dev Tools

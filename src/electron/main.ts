@@ -86,15 +86,13 @@ expressApp.get("/fetch-media/:id", (req, res) => {
     return;
   }
   res.sendFile(media.value.path);
-  // const filePath = (media.value as any).path;
-  // const stream = fs.createReadStream(filePath);
-  // stream.on("error", () => res.status(404).end());
-  // stream.pipe(res);
+});
+expressApp.get("/local-file/:path", (req, res) => {
+  const path = decodeURIComponent(req.params.path);
+  console.log("local-file", path);
+  res.sendFile(path);
 });
 expressApp.use(express.static(path.join(app.getAppPath(), "/dist-display")));
-// expressApp.get("/{*path}", (_req, res) => res.sendFile(
-//   path.join(app.getAppPath(), "dist-display/index.html")
-// ));
 
 const httpServer = http.createServer(expressApp);
 const wss = new WebSocketServer({ server: httpServer });

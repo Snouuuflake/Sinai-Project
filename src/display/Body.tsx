@@ -5,6 +5,14 @@ import DisplayText from "./DisplayText";
 import DisplayImage from "./DisplayImage";
 import { formatSrcPath } from "./util";
 import { customipc } from "../shared/IpcWsClient";
+import { isElectron } from "../shared/isElectron";
+
+export function localFileUrl(path: string): string {
+  if (isElectron()) {
+    return `local-file://${formatSrcPath(path)}`;
+  }
+  return `${window.location.origin}/local-file/${encodeURIComponent(path)}`;
+}
 
 const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
   const { configHash } = useDisplayConfigState();
@@ -13,7 +21,7 @@ const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
   if (logoIsVisible)
     logoHasBeenVisible.current = true;
 
-  const src = formatSrcPath(configHash.get("logo-path") as string);
+  const logoPath = configHash.get("logo-path") as string;
   // logo only has fade animation i think that's reasonable
   return <div
     className={`display-logo display-element-container ${logoIsVisible ? "logo-animation-in" : "logo-animation-out"}`}
@@ -21,11 +29,9 @@ const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
     <img className="logo-img"
       style={{
         height: `${configHash.get("logo-size") as number}vh`,
-        opacity: logoHasBeenVisible.current && src !== "/" ? "100%" : "0", // "/" for avoiding error icon on empty src
+        opacity: logoHasBeenVisible.current && logoPath !== "" ? "100%" : "0", // "/" for avoiding error icon on empty src
       }}
-      src={
-        `localfile://${src}`
-      } />
+      src={localFileUrl(logoPath)} />
   </div>
 }
 

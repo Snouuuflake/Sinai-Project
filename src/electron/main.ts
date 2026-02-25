@@ -76,6 +76,21 @@ protocol.registerSchemesAsPrivileged([{
 const ipcws = new IpcWs();
 
 const expressApp = express();
+expressApp.get("/fetch-media/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const media = appState.media.get(id);
+  console.log("fetch-media", id, media?.value);
+  if (!media || media.type !== "image") {
+    console.log("404ing")
+    res.status(404).end();
+    return;
+  }
+  res.sendFile(media.value.path);
+  // const filePath = (media.value as any).path;
+  // const stream = fs.createReadStream(filePath);
+  // stream.on("error", () => res.status(404).end());
+  // stream.pipe(res);
+});
 expressApp.use(express.static(path.join(app.getAppPath(), "/dist-display")));
 // expressApp.get("/{*path}", (_req, res) => res.sendFile(
 //   path.join(app.getAppPath(), "dist-display/index.html")

@@ -1,8 +1,7 @@
+import { isElectron } from "./isElectron";
+
 type IpcHandler = (...args: any[]) => void;
 
-function isElectron(): boolean {
-  return typeof window !== "undefined" && !!(window as any).electron;
-}
 
 let ws: WebSocket | null = null;
 let wsReady = false;

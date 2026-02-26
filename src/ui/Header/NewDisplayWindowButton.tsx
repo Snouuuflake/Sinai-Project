@@ -12,7 +12,7 @@ const NewDisplayContextMenu: React.FC<{}> = ({ }) => {
         key={i}
         onClick={
           () => {
-            window.electron.sendNewDisplayWindow(i);
+            (window as unknown as UIWindow).electron.sendNewDisplayWindow(i);
             hideMenu();
           }
         }

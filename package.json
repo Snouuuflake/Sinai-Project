@@ -19,13 +19,17 @@
     "dist:win": "npm run rmdist && npm run build && electron-builder --win"
   },
   "dependencies": {
+    "@types/ws": "^8.18.1",
+    "express": "^5.2.1",
     "fast-fuzzy": "^1.12.0",
     "lucide-react": "^0.561.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "ws": "^8.19.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
+    "@types/express": "^5.0.6",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",

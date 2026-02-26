@@ -14,6 +14,12 @@ import {
 import * as fs from "fs";
 import { parseSong, logSong, stringifySong } from "./parser.js";
 import { AppState, MainDisplayConfigEntry, MainGeneralConfigEntry } from "./AppState.js";
+import { IpcWs } from "./IpcWs.js";
+
+import express from "express";
+import { Express } from "express";
+import { AddressInfo, WebSocketServer } from "ws";
+import http from "http";
 
 const FILTERS = {
   "Images": {
@@ -45,28 +51,82 @@ function alertMessageBox(message: string) {
 // with the same name and path as one already loaded
 // shows the old image
 // *maybe
-protocol.registerSchemesAsPrivileged([
-  {
-    scheme: 'local-file',
-    privileges: {
-      standard: true,
-      secure: true,
-      supportFetchAPI: true,
-      corsEnabled: false,
-      bypassCSP: false
-    }
-  }
-]);
+// protocol.registerSchemesAsPrivileged([
+//   {
+//     scheme: 'local-file',
+//     privileges: {
+//       // standard: true,
+//       secure: true,
+//       supportFetchAPI: true,
+//       // corsEnabled: false,
+//       bypassCSP: false,
+//       stream: true
+//     }
+//   },
+//
+//   {
+//     scheme: 'media',
+//     privileges: {
+//       secure: true,
+//       supportFetchAPI: true,
+//       bypassCSP: false,
+//       stream: true
+//     }
+//   }
+// ]);
 
-protocol.registerSchemesAsPrivileged([{
-  scheme: 'media',
-  privileges: {
-    secure: true,
-    supportFetchAPI: true,
-    bypassCSP: true,
-    stream: true
+const expressApp = express();
+expressApp.get("/fetch-media/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const media = appState.media.get(id);
+  console.log("fetch-media", id, media?.value);
+  if (!media || media.type !== "image") {
+    console.log("404ing")
+    res.status(404).end();
+    return;
   }
-}])
+  res.sendFile(media.value.path);
+});
+expressApp.get("/local-file/:path", (req, res) => {
+  const path = decodeURIComponent(req.params.path);
+  console.log("local-file", path);
+  res.sendFile(path);
+});
+expressApp.use(express.static(path.join(app.getAppPath(), "/dist-display")));
+
+const ipcws = new IpcWs();
+
+let httpServer: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse> | null = null;
+function startServers() {
+  // if (httpServer) {
+  //   httpServer.close(console.error);
+  // }
+  httpServer = http.createServer(expressApp);
+  const wss = new WebSocketServer({ server: httpServer });
+
+  httpServer!.listen(0, () => {
+    try {
+      const port = (httpServer!.address() as AddressInfo).port; // e.g. 49823
+      console.log(`!!!!!!!!!! listening on port: ${port}`);
+      updatePort(port);
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  ipcws.initWss(wss);
+}
+
+function updateUIPort() {
+  sendToUIWindow("ui-update-port", appState.getPort());
+}
+
+function updatePort(port: number | null) {
+  appState.setPort(port);
+  updateUIPort();
+}
+
+
 
 
 let uiWindow: BrowserWindow;
@@ -103,7 +163,7 @@ appState.addGcEntry(new MainGeneralConfigEntry("dark-theme", "boolean", false));
 
 
 if (fs.existsSync(getConfigPath())) {
-  console.log(fs.readFileSync(getConfigPath(), { encoding: "utf8" }));
+  // console.log(fs.readFileSync(getConfigPath(), { encoding: "utf8" }));
   appState.readConfigFile();
 } else {
   try {
@@ -128,10 +188,7 @@ function createDisplayWindow(displayId: number) {
   const displayWindow = new BrowserWindow({
     title: `Sinai Project: Display Window ${displayId + 1}`,
     webPreferences: {
-      preload: path.join(app.getAppPath(),
-        isDev() ? "" : "..",
-        "dist-electron/electron/preload.cjs"
-      ),
+      preload: getPreloadPath("display"),
     },
   });
 
@@ -164,7 +221,7 @@ function updateDisplayConfig() {
   sendToUIWindow("ui-update-display-config",
     appState.getSerializedDc()
   )
-  sendToDisplayWinows("display-update-display-config",
+  sendToDisplayWindows("display-update-display-config",
     appState.getSerializedDc()
   )
 }
@@ -184,6 +241,14 @@ function imageDialog(): Promise<string> {
     )
   })
 }
+
+ipcMain.on("ui-port-request", (_event) => {
+  updateUIPort();
+})
+
+ipcMain.on("ui-restart-server-request", (_event) => {
+  startServers();
+})
 
 ipcMain.on("ui-open-devtools", (_event) => {
   if (uiWindow)
@@ -305,15 +370,16 @@ ipcMain.on("ui-state-request", (_event) => { updateAllUI(); });
 
 /* ----- display ipc ----- */
 
-function sendToDisplayWinows(channel: string, ...args: any[]) {
+function sendToDisplayWindows(channel: string, ...args: any[]) {
   displayWindows.forEach(dw => {
     if (dw)
       dw.webContents.send(channel, ...args);
   })
+  ipcws.broadcastToWsClients(channel, ...args);
 }
 
 function updateDisplayLiveElement(displayIndex: number) {
-  sendToDisplayWinows(
+  sendToDisplayWindows(
     "display-state-update-live-elements",
     displayIndex,
     appState.getDisplayStateLiveElement(displayIndex)
@@ -321,7 +387,7 @@ function updateDisplayLiveElement(displayIndex: number) {
 }
 
 function updateDisplayLogo(displayIndex: number) {
-  sendToDisplayWinows(
+  sendToDisplayWindows(
     "display-state-update-logo",
     displayIndex,
     appState.getLogoEntry(displayIndex)
@@ -330,12 +396,20 @@ function updateDisplayLogo(displayIndex: number) {
 
 
 // so that windows automatically start displaying upon creation
-ipcMain.handle("invoke-display-get-init-live-state", (_e, displayIndex): SerializedLiveState => {
+ipcws.handleIpcWs("invoke-display-get-init-live-state", (displayIndex): SerializedLiveState => {
+  console.log("invoked thing", displayIndex);
   return {
     liveElement: appState.getDisplayStateLiveElement(displayIndex),
     logo: appState.getLogoEntry(displayIndex),
   }
 })
+
+// ipcMain.handle("invoke-display-get-init-live-state", (_e, displayIndex): SerializedLiveState => {
+//   return {
+//     liveElement: appState.getDisplayStateLiveElement(displayIndex),
+//     logo: appState.getLogoEntry(displayIndex),
+//   }
+// })
 
 /* on setlist operations */
 ipcMain.on("add-images", (_event) => {
@@ -506,9 +580,102 @@ ipcMain.on("set-logo", (_event, displayIndex: number, logo: boolean) => {
   }
 });
 
+/*
+To fix the crash and handle the WebSocket Server (WSS) correctly, you should move the server creation into a dedicated function.
+
+While you can't easily "swap" the HTTP server inside an existing `WebSocketServer` instance, you can simply **keep the same server objects** and retry the `.listen()` call. Since the WSS attaches to the HTTP server's `upgrade` event, it will automatically follow the HTTP server to whatever port it eventually lands on.
+
+### The Solution: Robust Server Setup
+
+Replace your top-level server declarations and the `startListening` function with this logic:
+
+```typescript
+// Move these into a function or manage them so they can be re-initialized
+let httpServer: http.Server;
+let wss: WebSocketServer;
+
+function initializeServers(port: number) {
+  // 1. Create the Express-linked HTTP server
+  httpServer = http.createServer(expressApp);
+
+  // 2. Create the WebSocket server and link it to the HTTP server
+  wss = new WebSocketServer({ server: httpServer });
+
+  // 3. Update your IpcWs instance with the new WSS
+  ipcws.initWss(wss);
+
+  // 4. Attach the error handler BEFORE calling listen
+  httpServer.on("error", (err: NodeJS.ErrnoException) => {
+    if (err.code === "EADDRINUSE") {
+      console.warn(`Port ${port} is busy. Retrying with a random port...`);
+      
+      // IMPORTANT: Close the current attempt to clean up listeners
+      // but do not throw. Then, try again with port 0.
+      httpServer.close(() => {
+        initializeServers(0); 
+      });
+    } else {
+      dialog.showErrorBox("Server Error", err.message);
+    }
+  });
+
+  // 5. Start listening
+  httpServer.listen(port, () => {
+    const actualPort = (httpServer.address() as AddressInfo).port;
+    console.log(`!!!!!!!!!! Server active on port: ${actualPort}`);
+    
+    // Update your AppState and UI
+    appState.setPort(actualPort);
+    if (uiWindow) {
+      uiWindow.webContents.send("ui-update-port", actualPort);
+    }
+  });
+}
+
+// --- Inside app.on("ready") ---
+app.on("ready", () => {
+  // ... other setup code ...
+
+  // Replace your old startListening call with this:
+  initializeServers(PREFERED_PORT);
+
+  // ... rest of your code ...
+});
+
+```
+
+---
+
+### Why this works
+
+1. **The "Switch" Problem:** By re-running `initializeServers`, you create a fresh `httpServer` and a fresh `wss` that are properly linked. This is much cleaner than trying to "hot-swap" the server property on a running WebSocket instance, which the `ws` library doesn't natively support.
+2. **`ipcws.initWss(wss)`:** Since you call this inside the initialization function, your `IpcWs` helper always gets the latest, valid WebSocket instance.
+3. **Port 0:** By falling back to `0`, the OS guarantees you a free port, preventing an infinite loop of "Port in Use" errors.
+
+### Handling the "Same Object" Error
+
+In your previous attempt, the crash happened because you called `httpServer.close()` on a server that hadn't successfully started. By wrapping everything in `initializeServers`, we ensure that if a port is taken, we completely discard the "failed" server and start over with a brand new one.
+
+### One small cleanup for `IpcWs`
+
+If your `IpcWs` class stores the `wss` instance, make sure its `initWss` method replaces the old reference:
+
+```typescript
+// Inside your IpcWs class
+initWss(newWss: WebSocketServer) {
+  this.wss = newWss;
+  // Re-attach your listeners here...
+}
+
+```
+
+**Would you like me to show you how to display a "Success" notification in the Electron UI once the server finds a valid port?**
+*/
 
 
 app.on("ready", () => {
+  startServers();
+
   protocol.handle('fetch-media', (request) => {
     const requestContent = decodeURIComponent(request.url.replace('fetch-media://', ''));
     let fileUrl: string;
@@ -525,19 +692,17 @@ app.on("ready", () => {
     return net.fetch(fileUrl);
   });
 
-  app.whenReady().then(() => {
-    protocol.handle('localfile', request => {
-      const pathToMedia = new URL(request.url).pathname
-      return net.fetch(`file://${pathToMedia}`)
-    })
-  })
+  protocol.handle('local-file', request => {
+    const pathToMedia = new URL(request.url).pathname
+    return net.fetch(`file://${pathToMedia}`)
+  });
 
   uiWindow = new BrowserWindow({
     title: `Sinai Project`,
     minWidth: 500,
     minHeight: 500,
     webPreferences: {
-      preload: getPreloadPath(),
+      preload: getPreloadPath("ui"),
     },
   });
   uiWindow.setMenu(null);
@@ -547,6 +712,7 @@ app.on("ready", () => {
     uiWindow.webContents.openDevTools();
   } else {
     uiWindow.loadFile(path.join(app.getAppPath(), "/dist-ui/index.html"));
+    uiWindow.webContents.openDevTools();
   }
 });
 

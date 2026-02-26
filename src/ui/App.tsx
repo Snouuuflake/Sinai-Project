@@ -2,6 +2,7 @@ import { ThemeContextProvider } from "./ThemeContext";
 import { ContextMenuContextProvider } from "./ContextMenuContext";
 import { UIStateContextProvider } from "./UIStateContext";
 import { ModalContextProvider } from "./ModalContext";
+import { PortContextProvider } from "./PortContext";
 
 import "./App.css";
 
@@ -14,11 +15,13 @@ function App() {
     <ConfigStateContextProvider>
       <UIStateContextProvider>
         <ThemeContextProvider>
-          <ModalContextProvider>
-            <ContextMenuContextProvider>
-              <AppContainer />
-            </ContextMenuContextProvider>
-          </ModalContextProvider>
+          <PortContextProvider>
+            <ModalContextProvider>
+              <ContextMenuContextProvider>
+                <AppContainer />
+              </ContextMenuContextProvider>
+            </ModalContextProvider>
+          </PortContextProvider>
         </ThemeContextProvider>
       </UIStateContextProvider>
     </ConfigStateContextProvider>

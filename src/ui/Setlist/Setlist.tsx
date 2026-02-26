@@ -38,9 +38,9 @@ const NewSongModal: React.FC<{}> = ({ }) => {
       onClick={() => {
         hideModal();
         if (title.trim() !== "") {
-          window.electron.sendCreateSong(title.trim(), author.trim());
+          (window as unknown as UIWindow).electron.sendCreateSong(title.trim(), author.trim());
         } else {
-          window.electron.sendAlert("New song has no title!")
+          (window as unknown as UIWindow).electron.sendAlert("New song has no title!")
         }
       }}
     >
@@ -64,7 +64,7 @@ const SetlistPlusMenu: React.FC<{}> = ({ }) => {
     <button
       onClick={
         (e) => {
-          window.electron.sendAddImages();
+          (window as unknown as UIWindow).electron.sendAddImages();
           hideMenu();
         }
       }>
@@ -73,7 +73,7 @@ const SetlistPlusMenu: React.FC<{}> = ({ }) => {
     <button
       onClick={
         (e) => {
-          window.electron.sendAddSongs();
+          (window as unknown as UIWindow).electron.sendAddSongs();
           hideMenu();
         }
       }>

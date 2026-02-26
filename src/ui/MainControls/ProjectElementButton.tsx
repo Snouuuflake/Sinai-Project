@@ -18,11 +18,11 @@ const ProjectToDisplayButton:
       )
       : false;
     const onClickRemove = () => {
-      window.electron.sendSetLiveElement(index, null);
+      (window as unknown as UIWindow).electron.sendSetLiveElement(index, null);
       hideMenu();
     }
     const onClickProject = () => {
-      window.electron.sendSetLiveElement(index, {
+      (window as unknown as UIWindow).electron.sendSetLiveElement(index, {
         id: id,
         element: element,
       });
@@ -54,7 +54,7 @@ const ProjectElementButtonContextMenu:
               for (let i = 0; i < DISPLAYS; i++) {
                 let le = liveElements[i];
                 if (le && le.id === id && le.element === element)
-                  window.electron.sendSetLiveElement(i, null);
+                  (window as unknown as UIWindow).electron.sendSetLiveElement(i, null);
               }
               hideMenu();
             }
@@ -111,7 +111,7 @@ const ProjectElementButton:
       onClick={
         () => {
           for (let i = 0; i < DISPLAYS; i++) {
-            window.electron.sendSetLiveElement(i, {
+            (window as unknown as UIWindow).electron.sendSetLiveElement(i, {
               id: id,
               element: element,
             });

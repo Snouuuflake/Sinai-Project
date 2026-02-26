@@ -119,7 +119,7 @@ class AppState {
         return;
       }
       const { dc, gc }: { dc: SerializedDisplayConfigEntry[], gc: SerializedGeneralConfigEntry[] } = JSON.parse(data);
-      console.log(dc, gc);
+      // console.log(dc, gc);
       dc.forEach(entry => {
         entry.cur.forEach((cur, i) => {
           if (i < DISPLAYS) {
@@ -263,7 +263,7 @@ class AppState {
       throw new Error("setLiveElements: id not in this.#media");
     }
     this.#liveElements[displayIndex] = liveElementIdentifier;
-    console.log("setLiveElement result", this.#liveElements);
+    // console.log("setLiveElement result", this.#liveElements);
     return;
   }
   getLogo(): readonly boolean[] {
@@ -326,6 +326,13 @@ class AppState {
     if (this.#openMedia === id) {
       this.setOpenMedia(null);
     }
+  }
+  #port: number | null = null;
+  setPort(port: number | null) {
+    this.#port = port
+  }
+  getPort() {
+    return this.#port;
   }
 }
 

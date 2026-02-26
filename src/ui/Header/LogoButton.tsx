@@ -18,7 +18,7 @@ const LogoContextMenu: React.FC<{}> = ({ }) => {
   >
     <button key="a" onClick={() => {
       logo.forEach((_x, i) => {
-        window.electron.sendSetLogo(i, false);
+        (window as unknown as UIWindow).electron.sendSetLogo(i, false);
         hideMenu();
       })
     }
@@ -31,7 +31,7 @@ const LogoContextMenu: React.FC<{}> = ({ }) => {
         key={i}
         onClick={
           () => {
-            window.electron.sendSetLogo(i, !x);
+            (window as unknown as UIWindow).electron.sendSetLogo(i, !x);
             hideMenu();
           }
         }
@@ -70,11 +70,11 @@ const LogoButton: React.FC<{}> =
         onClick={(e) => {
           if (logo.every(x => x == false)) {
             logo.forEach((_x, i) => {
-              window.electron.sendSetLogo(i, true);
+              (window as unknown as UIWindow).electron.sendSetLogo(i, true);
             });
           } else if (logo.every(x => x)) {
             logo.forEach((_x, i) => {
-              window.electron.sendSetLogo(i, false);
+              (window as unknown as UIWindow).electron.sendSetLogo(i, false);
             });
           }
           else {

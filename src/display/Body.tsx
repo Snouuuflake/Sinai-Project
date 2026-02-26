@@ -23,6 +23,7 @@ const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
 
   const logoPath = configHash.get("logo-path") as string;
   // logo only has fade animation i think that's reasonable
+  console.log(logoPath, "logopath")
   return <div
     className={`display-logo display-element-container ${logoIsVisible ? "logo-animation-in" : "logo-animation-out"}`}
   >
@@ -31,7 +32,7 @@ const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
         height: `${configHash.get("logo-size") as number}vh`,
         opacity: logoHasBeenVisible.current && logoPath !== "" ? "100%" : "0", // "/" for avoiding error icon on empty src
       }}
-      src={localFileUrl(logoPath)} />
+      src={logoPath ? localFileUrl(logoPath) : ""} />
   </div>
 }
 
@@ -104,7 +105,7 @@ const Body: React.FC<{}> = () => {
 
   return <div className="body" style={{
     backgroundColor: configHash.get("background-color") as string,
-    backgroundImage: `url("localfile://${formatSrcPath(configHash.get("background-image") as string)}")`
+    backgroundImage: `url("local-file://${formatSrcPath(configHash.get("background-image") as string)}")`
   }}>
     <style>
       {

@@ -159,8 +159,43 @@
   min-width: 14px;
 }
 
+.conifg-server-urls-container {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: auto 1fr;
+}
+.config-server-url-button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 15px !important;
+  height: auto !important;
+  color: var(--hi-2);
+}
+.config-server-url-button:hover {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 15px;
+  height: auto !important;
+  color: color-mix(in srgb, var(--hi-2), white 40%);
+}
+.config-server-url-button:active {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 15px;
+  height: auto !important;
+  color: var(--hi-1);
+}
+
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
+
+

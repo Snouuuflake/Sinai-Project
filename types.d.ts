@@ -35,6 +35,10 @@ declare global {
     sendReplaceSong: (id: number, song: Song) => void;
     sendSaveSong: (id: number) => void;
 
+    onUIUpdatePort: (callback: (port: number | null) => void) => () => void;
+    sendUIPortRequest: () => void;
+    sendUIRestartServerRequest: () => void;
+
     // onDisplayStateUpdateLiveElement: (callback: (displayId: number, newValue: SerializedLiveElement | null) => void) => () => void;
     // onDisplayUpdateDisplayConfig: (callback: (newValue: cc.SerializedDisplayConfigEntry[]) => void) => () => void;
     // onDisplayStateUpdateLogo: (callback: (displayId: number, newValue: boolean) => void) => () => void;

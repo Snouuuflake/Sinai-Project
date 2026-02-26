@@ -65,6 +65,11 @@ contextBridge.exposeInMainWorld("electron", {
   sendReplaceSong: makeIpcSend("replace-song"),
   sendSaveSong: makeIpcSend("save-song"),
 
+
+  onUIUpdatePort: makeIpcOn("ui-update-port"),
+  sendUIPortRequest: makeIpcSend("ui-port-request"),
+  sendUIRestartServerRequest: makeIpcSend("ui-restart-server-request"),
+
   onDisplayStateUpdateLiveElement: makeIpcOn("display-state-update-live-elements"),
   onDisplayStateUpdateLogo: makeIpcOn("display-state-update-logo"),
   onDisplayUpdateDisplayConfig: makeIpcOn("display-update-display-config"),

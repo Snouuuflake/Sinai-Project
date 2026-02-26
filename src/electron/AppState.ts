@@ -327,6 +327,13 @@ class AppState {
       this.setOpenMedia(null);
     }
   }
+  #port: number | null = null;
+  setPort(port: number | null) {
+    this.#port = port
+  }
+  getPort() {
+    return this.#port;
+  }
 }
 
 export { AppState, MainDisplayConfigEntry, MainGeneralConfigEntry };

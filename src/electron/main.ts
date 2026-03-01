@@ -150,6 +150,8 @@ appState.addDcEntry(new MainDisplayConfigEntry("font-size", "nnumber", 30));
 appState.addDcEntry(new MainDisplayConfigEntry("font", "string", ""));
 appState.addDcEntry(new MainDisplayConfigEntry("bold", "boolean", false));
 appState.addDcEntry(new MainDisplayConfigEntry("text-color", "hexcolor", "#FFFFFF"));
+appState.addDcEntry(new MainDisplayConfigEntry("text-outline-width", "nnumber", 0));
+appState.addDcEntry(new MainDisplayConfigEntry("text-outline-color", "hexcolor", "#000000"));
 
 appState.addDcEntry(new MainDisplayConfigEntry("text-margin-top", "nnumber", 0));
 appState.addDcEntry(new MainDisplayConfigEntry("text-margin-bottom", "nnumber", 0));
@@ -580,98 +582,7 @@ ipcMain.on("set-logo", (_event, displayIndex: number, logo: boolean) => {
   }
 });
 
-/*
-To fix the crash and handle the WebSocket Server (WSS) correctly, you should move the server creation into a dedicated function.
-
-While you can't easily "swap" the HTTP server inside an existing `WebSocketServer` instance, you can simply **keep the same server objects** and retry the `.listen()` call. Since the WSS attaches to the HTTP server's `upgrade` event, it will automatically follow the HTTP server to whatever port it eventually lands on.
-
-### The Solution: Robust Server Setup
-
-Replace your top-level server declarations and the `startListening` function with this logic:
-
-```typescript
-// Move these into a function or manage them so they can be re-initialized
-let httpServer: http.Server;
-let wss: WebSocketServer;
-
-function initializeServers(port: number) {
-  // 1. Create the Express-linked HTTP server
-  httpServer = http.createServer(expressApp);
-
-  // 2. Create the WebSocket server and link it to the HTTP server
-  wss = new WebSocketServer({ server: httpServer });
-
-  // 3. Update your IpcWs instance with the new WSS
-  ipcws.initWss(wss);
-
-  // 4. Attach the error handler BEFORE calling listen
-  httpServer.on("error", (err: NodeJS.ErrnoException) => {
-    if (err.code === "EADDRINUSE") {
-      console.warn(`Port ${port} is busy. Retrying with a random port...`);
-      
-      // IMPORTANT: Close the current attempt to clean up listeners
-      // but do not throw. Then, try again with port 0.
-      httpServer.close(() => {
-        initializeServers(0); 
-      });
-    } else {
-      dialog.showErrorBox("Server Error", err.message);
-    }
-  });
-
-  // 5. Start listening
-  httpServer.listen(port, () => {
-    const actualPort = (httpServer.address() as AddressInfo).port;
-    console.log(`!!!!!!!!!! Server active on port: ${actualPort}`);
-    
-    // Update your AppState and UI
-    appState.setPort(actualPort);
-    if (uiWindow) {
-      uiWindow.webContents.send("ui-update-port", actualPort);
-    }
-  });
-}
-
-// --- Inside app.on("ready") ---
-app.on("ready", () => {
-  // ... other setup code ...
-
-  // Replace your old startListening call with this:
-  initializeServers(PREFERED_PORT);
-
-  // ... rest of your code ...
-});
-
-```
-
----
-
-### Why this works
-
-1. **The "Switch" Problem:** By re-running `initializeServers`, you create a fresh `httpServer` and a fresh `wss` that are properly linked. This is much cleaner than trying to "hot-swap" the server property on a running WebSocket instance, which the `ws` library doesn't natively support.
-2. **`ipcws.initWss(wss)`:** Since you call this inside the initialization function, your `IpcWs` helper always gets the latest, valid WebSocket instance.
-3. **Port 0:** By falling back to `0`, the OS guarantees you a free port, preventing an infinite loop of "Port in Use" errors.
-
-### Handling the "Same Object" Error
-
-In your previous attempt, the crash happened because you called `httpServer.close()` on a server that hadn't successfully started. By wrapping everything in `initializeServers`, we ensure that if a port is taken, we completely discard the "failed" server and start over with a brand new one.
-
-### One small cleanup for `IpcWs`
-
-If your `IpcWs` class stores the `wss` instance, make sure its `initWss` method replaces the old reference:
-
-```typescript
-// Inside your IpcWs class
-initWss(newWss: WebSocketServer) {
-  this.wss = newWss;
-  // Re-attach your listeners here...
-}
-
-```
-
-**Would you like me to show you how to display a "Success" notification in the Electron UI once the server finds a valid port?**
-*/
-
+let hasConfirmedUiWindowClose: boolean = false;
 
 app.on("ready", () => {
   startServers();
@@ -706,6 +617,30 @@ app.on("ready", () => {
     },
   });
   uiWindow.setMenu(null);
+
+
+  uiWindow.on("close", (event) => {
+    if (!hasConfirmedUiWindowClose) {
+      event.preventDefault();
+      dialog.showMessageBox(uiWindow, {
+        message: "Estás seguro que quieres cerrar Sinai Project?",
+        type: "warning",
+        buttons: ["Ok", "Cancel"],
+        defaultId: 1,
+        cancelId: 1,
+      }).then(value => {
+        if (value.response === 0) {
+          hasConfirmedUiWindowClose = true;
+          uiWindow.close();
+          // FIXME: looks to do nothing
+          // for (let i = 0; i < DISPLAYS; i++) {
+          //   ipcMain.emit("set-live-element", i, null);
+          // }
+          app.quit();
+        }
+      })
+    }
+  })
 
   if (isDev()) {
     uiWindow.loadURL("http://localhost:5123");

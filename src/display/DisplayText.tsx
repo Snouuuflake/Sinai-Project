@@ -61,10 +61,12 @@ const AutoScaleText: React.FC<{
     };
 
     calculateFontSize();
-    window.addEventListener('resize', calculateFontSize);
-
+    const observer = new ResizeObserver(() => {
+      calculateFontSize();
+    })
+    observer.observe(container);
     return () => {
-      window.removeEventListener('resize', calculateFontSize);
+      observer.disconnect();
     };
   }, [children, minSize, maxSize, step]);
 
@@ -137,11 +139,15 @@ const DisplayText: React.FC<{ liveElement: SerializedLiveElement, className: str
         >
           {
             (liveElement.value as LiveElementTextValue).lines.map(
-              (l, i, a) => <div className="text-line">{l}</div>
+              (l, i, a) => <div className="text-line"
+                style={{
+                  WebkitTextStrokeWidth: `${configHash.get("text-outline-width") as number * 0.01}em`,
+                  WebkitTextStrokeColor: configHash.get("text-outline-color") as string,
+                }}>{l}</div>
             )
           }
         </AutoScaleText>
-      </div>
+      </div >
     )
   }
 

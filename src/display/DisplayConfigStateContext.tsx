@@ -92,6 +92,8 @@ export const DisplayConfigStateContextProvider: React.FC<{ children: React.React
     displayConfigRef.current.addEntry(new DisplayConfigEntry("bold", "boolean", false));
     displayConfigRef.current.addEntry(new DisplayConfigEntry("text-color", "hexcolor", "#FFFFFF"));
     displayConfigRef.current.addEntry(new DisplayConfigEntry("font", "string", "Arial"));
+    displayConfigRef.current.addEntry(new DisplayConfigEntry("text-outline-width", "nnumber", 0));
+    displayConfigRef.current.addEntry(new DisplayConfigEntry("text-outline-color", "hexcolor", "#000000"));
 
     displayConfigRef.current.addEntry(new DisplayConfigEntry("text-margin-top", "nnumber", 0));
     displayConfigRef.current.addEntry(new DisplayConfigEntry("text-margin-bottom", "nnumber", 0));

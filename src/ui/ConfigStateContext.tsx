@@ -167,6 +167,9 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("font", "string", "Font"));
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("bold", "boolean", "Bold Text"));
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-color", "hexcolor", "Text Color"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-outline-width", "nnumber", "Text Outline Width (px)"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-outline-color", "hexcolor", "Text Outline Color"));
+
 
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-top", "nnumber", "Top Margin"));
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-bottom", "nnumber", "Bottom Margin"));

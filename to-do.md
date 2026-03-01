@@ -6,3 +6,5 @@
 - [ ] text outline
 - [ ] text shadow
 - [ ] test if adding `body {background-color: transparent}` makes doing so in obs unnecesary
+- [ ] fullscreen
+- [ ] don't open devtools by default in dist

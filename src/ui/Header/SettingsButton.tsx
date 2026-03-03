@@ -303,7 +303,7 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
         <h1 className="settings-button-modal-title">Settings</h1>
         <button
           className="settings-button-modal-exit-button hi-1-button"
-          onClick={(e) => hideModal()}
+          onClick={(_e) => hideModal()}
         >
           <X />
         </button>
@@ -390,9 +390,9 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
                 </button>
               </>
               :
-              displayConfig.map(entry => (
+              displayConfig.map((entry, i) => (
                 typeof entry === "string" ?
-                  <h3 className="config-heading">{entry}</h3>
+                  <h3 className="config-heading" key={`heading-${parseInt(menuSelection)}-${i}`}>{entry}</h3>
                   :
                   <ConfigInput
                     key={entry.id}

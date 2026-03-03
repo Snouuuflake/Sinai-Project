@@ -64,7 +64,7 @@ class UIDisplayConfig implements UIConfig {
       try {
         if (foundConfigEntry === undefined)
           throw new Error(`Attempt to write to non-existant config entry from main to UI (id: ${sentry.id})`);
-        console.log(sentry)
+        // console.log(sentry)
         foundConfigEntry.set(sentry.cur, sentry.isInit);
       } catch (err) {
         if (err instanceof Error)
@@ -126,7 +126,7 @@ class UIGeneralConfig implements UIConfig {
       try {
         if (foundConfigEntry === undefined)
           throw new Error(`Attempt to write to non-existant config entry from main to UI (id: ${sentry.id})`);
-        console.log(sentry)
+        // console.log(sentry)
         foundConfigEntry.set(sentry.cur, sentry.isInit);
       } catch (err) {
         if (err instanceof Error)

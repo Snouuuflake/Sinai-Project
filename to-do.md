@@ -8,8 +8,8 @@
   body {background-color: transparent}
   ``` 
   makes doing so in obs unnecessary
-- [ ] full-screen
+- [X] full-screen
 - [X] don't open devtools by default in dist
 - [X] ipc logs to vebose
-- [ ] fix: SettingsButton.tsx:353 Warning: Each child in a list should have a unique "key" prop.
+- [X] fix: SettingsButton.tsx:353 Warning: Each child in a list should have a unique "key" prop.
 

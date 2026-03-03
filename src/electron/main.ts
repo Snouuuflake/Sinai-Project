@@ -46,35 +46,6 @@ function alertMessageBox(message: string) {
     dialog.showMessageBox(uiWindow, { message: message, });
 }
 
-// FIXME: handle files by serving their b64 contents- 
-// browser caches images such that opening a new image
-// with the same name and path as one already loaded
-// shows the old image
-// *maybe
-// protocol.registerSchemesAsPrivileged([
-//   {
-//     scheme: 'local-file',
-//     privileges: {
-//       // standard: true,
-//       secure: true,
-//       supportFetchAPI: true,
-//       // corsEnabled: false,
-//       bypassCSP: false,
-//       stream: true
-//     }
-//   },
-//
-//   {
-//     scheme: 'media',
-//     privileges: {
-//       secure: true,
-//       supportFetchAPI: true,
-//       bypassCSP: false,
-//       stream: true
-//     }
-//   }
-// ]);
-
 const expressApp = express();
 expressApp.get("/fetch-media/:id", (req, res) => {
   const id = parseInt(req.params.id);

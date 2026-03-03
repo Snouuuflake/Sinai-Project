@@ -256,6 +256,7 @@ ipcMain.on("ui-open-devtools", (_event) => {
   if (uiWindow)
     uiWindow.webContents.openDevTools();
 })
+
 ipcMain.on("ui-display-config-request", (_event) => {
   updateDisplayConfig();
 });
@@ -647,7 +648,6 @@ app.on("ready", () => {
     uiWindow.webContents.openDevTools();
   } else {
     uiWindow.loadFile(path.join(app.getAppPath(), "/dist-ui/index.html"));
-    uiWindow.webContents.openDevTools();
   }
 });
 

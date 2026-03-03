@@ -3,15 +3,15 @@ const { ipcRenderer, contextBridge } = require("electron");
 
 function makeIpcSend(channel: string) {
   return (...args: any[]) => {
-    console.log("ipc send:", channel, ...args);
+    console.debug("ipc send:", channel, ...args);
     ipcRenderer.send(channel, ...args);
   };
 }
 function makeIpcInvoke<T>(channel: string): (...args: any[]) => Promise<T> {
   return (...args: any[]) => {
-    console.log("ipc invoke:", channel, ...args);
+    console.debug("ipc invoke:", channel, ...args);
     return (ipcRenderer.invoke(channel, ...args) as Promise<T>).then((res) => {
-      console.log("ipc invoke response:", channel, res);
+      console.debug("ipc invoke response:", channel, res);
       return res;
     })
   };
@@ -21,7 +21,7 @@ function makeIpcOn(channel: string) {
     const listener = (_event: any, ...args: any[]) => { callback(...args) };
     ipcRenderer.on(channel, listener);
     const logger = (_event: any, ...args: any[]) => {
-      console.log("ipc on:", channel, ...args);
+      console.debug("ipc on:", channel, ...args);
     }
     ipcRenderer.on(channel, logger);
     return () => {

@@ -400,7 +400,6 @@ function updateDisplayLogo(displayIndex: number) {
 
 // so that windows automatically start displaying upon creation
 ipcws.handleIpcWs("invoke-display-get-init-live-state", (displayIndex): SerializedLiveState => {
-  console.log("invoked thing", displayIndex);
   return {
     liveElement: appState.getDisplayStateLiveElement(displayIndex),
     logo: appState.getLogoEntry(displayIndex),

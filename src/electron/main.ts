@@ -10,6 +10,7 @@ import {
   MediaSong,
   Song,
   SerializedLiveState,
+  Media,
 } from "../shared/media-classes.js";
 import * as fs from "fs";
 import { parseSong, logSong, stringifySong } from "./parser.js";
@@ -462,13 +463,25 @@ ipcMain.on("move-media", (_event, id: number, index: number) => {
 })
 
 ipcMain.on("delete-media", (_event, id: number) => {
-  try {
-    appState.deleteMedia(id);
-    updateUISetlist();
-    updateUIOpenMedia(); // !!
-  } catch (e) {
-    if (e instanceof Error) alertMessageBox(e.message);
-  }
+  let mediaToDelete = appState.media.get(id);
+  if (mediaToDelete === undefined)
+    throw new Error("delete-media: media id doesn't exist");
+  dialog.showMessageBox(uiWindow, {
+    message: `¿Está seguro que desea eliminar ${mediaToDelete.name}?\n\n Esta acción es irreversible.`,
+    buttons: ["Ok", "Cancel"],
+    defaultId: 1,
+    cancelId: 1,
+  }).then(value => {
+    if (value.response === 0) {
+      try {
+        appState.deleteMedia(id);
+        updateUISetlist();
+        updateUIOpenMedia(); // !!
+      } catch (e) {
+        if (e instanceof Error) alertMessageBox(e.message);
+      }
+    }
+  })
 });
 
 ipcMain.on("create-song", (_event, title: string, author: string) => {

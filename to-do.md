@@ -1,7 +1,7 @@
 # for v0.2.0
 - [X] handle closing app
   - [X] are you sure dialog for closing
-- [ ] are you sure dialog for deleting media
+- [X] are you sure dialog for deleting media
 - [X] text outline
 - [X] test if adding
   ```css 
@@ -13,3 +13,7 @@
 - [X] ipc logs to vebose
 - [X] fix: SettingsButton.tsx:353 Warning: Each child in a list should have a unique "key" prop.
 
+# for v0.3.0
+- [ ] setlist
+  - [ ] reading 
+  - [ ] writing

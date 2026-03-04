@@ -4,6 +4,15 @@ import { SerializedLiveElement } from "../shared/media-classes";
 import DisplayText from "./DisplayText";
 import DisplayImage from "./DisplayImage";
 import { formatSrcPath } from "./util";
+import { customipc } from "../shared/IpcWsClient";
+import { isElectron } from "../shared/isElectron";
+
+export function localFileUrl(path: string): string {
+  if (isElectron()) {
+    return `local-file://${formatSrcPath(path)}`;
+  }
+  return `${window.location.origin}/local-file/${encodeURIComponent(path)}`;
+}
 
 const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
   const { configHash } = useDisplayConfigState();
@@ -12,19 +21,18 @@ const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
   if (logoIsVisible)
     logoHasBeenVisible.current = true;
 
-  const src = formatSrcPath(configHash.get("logo-path") as string);
+  const logoPath = configHash.get("logo-path") as string;
   // logo only has fade animation i think that's reasonable
+  console.log(logoPath, "logopath")
   return <div
     className={`display-logo display-element-container ${logoIsVisible ? "logo-animation-in" : "logo-animation-out"}`}
   >
     <img className="logo-img"
       style={{
         height: `${configHash.get("logo-size") as number}vh`,
-        opacity: logoHasBeenVisible.current && src !== "/" ? "100%" : "0", // "/" for avoiding error icon on empty src
+        opacity: logoHasBeenVisible.current && logoPath !== "" ? "100%" : "0", // "/" for avoiding error icon on empty src
       }}
-      src={
-        `localfile://${src}`
-      } />
+      src={logoPath ? localFileUrl(logoPath) : ""} />
   </div>
 }
 
@@ -56,8 +64,10 @@ const Body: React.FC<{}> = () => {
 
 
   useEffect(() => {
-    const remover = window.electron.onDisplayStateUpdateLiveElement(
+    // const remover = (window as unknown as UIWindow).electron.onDisplayStateUpdateLiveElement(
+    const remover = customipc.on("display-state-update-live-elements",
       (displayId, newValue) => {
+        console.log("set curLiveElement", newValue);
         if (displayId === DISPLAY_ID) {
           setCurLiveElement(prevValue => {
             if (
@@ -72,7 +82,8 @@ const Body: React.FC<{}> = () => {
       }
     );
     if (!hasRequestedLiveState.current)
-      window.electron.invokeDisplayGetInitLiveState(DISPLAY_ID).then(le => {
+      // (window as unknown as UIWindow).electron.invokeDisplayGetInitLiveState(DISPLAY_ID).then(le => {
+      customipc.invoke("invoke-display-get-init-live-state", DISPLAY_ID).then(le => {
         hasRequestedLiveState.current = true;
         curLiveElementRef.current = le.liveElement;
         setCurLiveElement(le.liveElement);
@@ -81,7 +92,8 @@ const Body: React.FC<{}> = () => {
     return remover;
   }, []);
   useEffect(() => {
-    const remover = window.electron.onDisplayStateUpdateLogo(
+    // const remover = (window as unknown as UIWindow).electron.onDisplayStateUpdateLogo(
+    const remover = customipc.on("display-state-update-logo",
       (displayId, logo) => {
         if (displayId === DISPLAY_ID)
           setLogoIsVisible(logo);
@@ -93,7 +105,7 @@ const Body: React.FC<{}> = () => {
 
   return <div className="body" style={{
     backgroundColor: configHash.get("background-color") as string,
-    backgroundImage: `url("localfile://${formatSrcPath(configHash.get("background-image") as string)}")`
+    backgroundImage: `url("local-file://${formatSrcPath(configHash.get("background-image") as string)}")`
   }}>
     <style>
       {

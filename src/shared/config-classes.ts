@@ -56,7 +56,6 @@ class ConfigEntryBase<T extends ConfigTypesKey> {
 
 
 
-
 type SerializedDisplayConfigEntry = {
   id: string;
   type: string;

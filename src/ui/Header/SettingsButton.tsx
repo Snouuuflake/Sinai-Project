@@ -8,8 +8,9 @@ import {
 import { useModal } from "../ModalContext";
 import { useConfigState } from "../ConfigStateContext";
 import { useEffect, useState } from "react";
-import { FilePlusCorner, Minus, Plus, RotateCw, X } from "lucide-react";
+import { Copy, FilePlusCorner, Minus, Plus, RotateCw, X } from "lucide-react";
 import { DISPLAYS } from "../../shared/constants";
+import { usePort } from "../PortContext";
 
 const ConfigInputBoolean = ({
   cur,
@@ -229,16 +230,16 @@ const ConfigInput = ({
 }): React.ReactElement => {
   const onSubmit = (value: any) => {
     if (isDisplay) {
-      window.electron.sendUISetDisplayConfigEntry(id, displayId, value);
+      (window as unknown as UIWindow).electron.sendUISetDisplayConfigEntry(id, displayId, value);
     } else {
-      window.electron.sendUISetGeneralConfigEntry(id, value);
+      (window as unknown as UIWindow).electron.sendUISetGeneralConfigEntry(id, value);
     }
   }
   const onReset = () => {
     if (isDisplay) {
-      window.electron.sendUIResetDisplayConfigEntry(id, displayId);
+      (window as unknown as UIWindow).electron.sendUIResetDisplayConfigEntry(id, displayId);
     } else {
-      window.electron.sendUIResetGeneralConfigEntry(id);
+      (window as unknown as UIWindow).electron.sendUIResetGeneralConfigEntry(id);
     }
   }
   return (
@@ -268,9 +269,9 @@ const ConfigInput = ({
                   cur={cur as (ConfigTypePrimitiveType<"path"> | null)}
                   onSubmit={() => {
                     if (isDisplay) {
-                      window.electron.sendDisplayConfigInputPath(id, displayId);
+                      (window as unknown as UIWindow).electron.sendDisplayConfigInputPath(id, displayId);
                     } else {
-                      window.electron.sendGeneralConfigInputPath(id);
+                      (window as unknown as UIWindow).electron.sendGeneralConfigInputPath(id);
                     }
                   }}
                 />
@@ -295,13 +296,14 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
   const { hideModal } = useModal();
   const { displayConfig, generalConfig } = useConfigState();
   const [menuSelection, useMenuSelection] = useState<string>("general");
+  const { port } = usePort();
   return (
     <div className="settings-button-modal">
       <div className="settings-button-modal-header-container">
         <h1 className="settings-button-modal-title">Settings</h1>
         <button
           className="settings-button-modal-exit-button hi-1-button"
-          onClick={(e) => hideModal()}
+          onClick={(_e) => hideModal()}
         >
           <X />
         </button>
@@ -342,20 +344,55 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
             :
             menuSelection === "other" ?
               <>
+                <div>
+                  <h3 className="config-heading">Local Server</h3>
+                  {
+                    port === null ?
+                      "No port is available"
+                      :
+                      <div className="conifg-server-urls-container">
+                        {
+                          Array.from({ length: DISPLAYS }, (_x, i) => {
+                            const url = `localhost:${port}/?displayId=${i}`;
+                            return <>
+                              <div>{`Display ID ${i + 1}:`}</div>
+                              <button
+                                className="config-server-url-button"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(url);
+                                }}
+                              >
+                                {url}
+                                <Copy size={16} />
+                              </button>
+                            </>
+                          })
+                        }
+                      </div>
+                  }
+                </div>
+                <button
+                  style={{ width: "100%" }}
+                  onClick={() => {
+                    (window as unknown as UIWindow).electron.sendUIRestartServerRequest();
+                  }}
+                >
+                  Restart Server
+                </button>
                 <h3 className="config-heading">Debug</h3>
                 <button
                   style={{ width: "100%" }}
                   onClick={() => {
-                    window.electron.sendUIOpenDevTools();
+                    (window as unknown as UIWindow).electron.sendUIOpenDevTools();
                   }}
                 >
                   Open Dev Tools
                 </button>
               </>
               :
-              displayConfig.map(entry => (
+              displayConfig.map((entry, i) => (
                 typeof entry === "string" ?
-                  <h3 className="config-heading">{entry}</h3>
+                  <h3 className="config-heading" key={`heading-${parseInt(menuSelection)}-${i}`}>{entry}</h3>
                   :
                   <ConfigInput
                     key={entry.id}

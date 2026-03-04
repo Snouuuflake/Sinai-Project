@@ -64,7 +64,7 @@ class UIDisplayConfig implements UIConfig {
       try {
         if (foundConfigEntry === undefined)
           throw new Error(`Attempt to write to non-existant config entry from main to UI (id: ${sentry.id})`);
-        console.log(sentry)
+        // console.log(sentry)
         foundConfigEntry.set(sentry.cur, sentry.isInit);
       } catch (err) {
         if (err instanceof Error)
@@ -72,7 +72,7 @@ class UIDisplayConfig implements UIConfig {
       }
     })
     if (errors.length > 0)
-      window.electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
+      (window as unknown as UIWindow).electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
   }
   get config(): ReadonlyUIDisplayConfigType {
     return this.#config;
@@ -126,7 +126,7 @@ class UIGeneralConfig implements UIConfig {
       try {
         if (foundConfigEntry === undefined)
           throw new Error(`Attempt to write to non-existant config entry from main to UI (id: ${sentry.id})`);
-        console.log(sentry)
+        // console.log(sentry)
         foundConfigEntry.set(sentry.cur, sentry.isInit);
       } catch (err) {
         if (err instanceof Error)
@@ -134,7 +134,7 @@ class UIGeneralConfig implements UIConfig {
       }
     })
     if (errors.length > 0)
-      window.electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
+      (window as unknown as UIWindow).electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
   }
   get config(): ReadonlyUIGeneralConfigType {
     return this.#config;
@@ -167,6 +167,9 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("font", "string", "Font"));
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("bold", "boolean", "Bold Text"));
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-color", "hexcolor", "Text Color"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-outline-width", "nnumber", "Text Outline Width (px)"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-outline-color", "hexcolor", "Text Outline Color"));
+
 
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-top", "nnumber", "Top Margin"));
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-bottom", "nnumber", "Bottom Margin"));
@@ -180,7 +183,7 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
 
 
   useEffect(() => {
-    const remover = window.electron.onUIUpdateDisplayConfig(
+    const remover = (window as unknown as UIWindow).electron.onUIUpdateDisplayConfig(
       (newconfig: SerializedDisplayConfigEntry[]) => {
         // this is safe, right?
         try {
@@ -192,7 +195,7 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
         setDisplayConfig([...displayConfigRef.current!.config]);
       }
     );
-    window.electron.sendUIDisplayConfigRequest();
+    (window as unknown as UIWindow).electron.sendUIDisplayConfigRequest();
     return remover;
   }, [])
 
@@ -206,7 +209,7 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
   const [generalConfigMap, setGeneralConfigMap] = useState<GeneralConfigMap>(generalConfigRef.current.map);
 
   useEffect(() => {
-    const remover = window.electron.onUIUpdateGeneralConfig(
+    const remover = (window as unknown as UIWindow).electron.onUIUpdateGeneralConfig(
       (newconfig: SerializedGeneralConfigEntry[]) => {
         // this is safe, right?
         try {
@@ -219,7 +222,7 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
         setGeneralConfigMap(generalConfigRef.current!.map);
       }
     );
-    window.electron.sendUIGeneralConfigRequest();
+    (window as unknown as UIWindow).electron.sendUIGeneralConfigRequest();
     return remover;
   }, [])
 

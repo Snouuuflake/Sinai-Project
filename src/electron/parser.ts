@@ -51,7 +51,7 @@ function getAndRemoveAllMatchingLines(text: string, criteria: RegExp): { newText
 }
 
 function getCommandValue(line: string): string {
-  return line.replace(/^!-[A-Za-z] /, "");
+  return line.replace(/^!-[A-Za-z] /, "").trim();
 }
 
 /**
@@ -167,22 +167,6 @@ function parseSong(rawText: string): Song {
     throw new Error("how");
   })
 
-  // old
-  // const elementOrder: SongElementIdentifier[] = elementCommandIndexes.map(i => makeSongElementIdentifier(lines[i]));
-  //
-  // // validating no empty section or repeat names
-  // elementOrder.forEach(sei => {
-  //   if (sei.name === "") {
-  //     throw new Error("Song section or repeat has no name");
-  //   }
-  // })
-  // console.log(elementOrder);
-  // elementOrder.forEach(sei => {
-  //   if (sei.type === "repeat" && !(sections.find(s => s.name === sei.name) ?? false)) {
-  //     throw new Error(`Song repeat with name ${sei.name} has no corresponding defined section`);
-  //   }
-  // })
-
   return {
     properties: {
       title: title,
@@ -197,9 +181,9 @@ function parseSong(rawText: string): Song {
   * @throws Error
   */
 function stringifySong(song: Song): string {
-  type sectionWithWrittenFlag = SongSection & { isWritten: boolean };
+  type SectionWithWrittenFlag = SongSection & { isWritten: boolean };
   let buffer: string = ""
-  const sectionsWithWrittenFlag = song.sections.map<sectionWithWrittenFlag>(
+  const sectionsWithWrittenFlag = song.sections.map<SectionWithWrittenFlag>(
     s => ({ ...s, isWritten: false })
   );
   buffer += `!-T ${song.properties.title}\n`;
@@ -208,7 +192,7 @@ function stringifySong(song: Song): string {
     const referencedSection = sectionsWithWrittenFlag.find(s => s.id === id) ?? null;
     try {
       if (referencedSection === null)
-        throw new Error("stringifySong: referencedSection is null");
+        throw new Error("stringifySong: referencedSection does not exist");
       if (referencedSection.isWritten) {
         buffer += `!-R ${referencedSection.name}\n`;
       } else {

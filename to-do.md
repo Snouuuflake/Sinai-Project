@@ -13,6 +13,9 @@
 - [X] ipc logs to vebose
 - [X] fix: SettingsButton.tsx:353 Warning: Each child in a list should have a unique "key" prop.
 
+# for v0.2.1
+- [X] make sure section names are parsed as trimmed always
+
 # for v0.3.0
 - [ ] setlist
   - [ ] reading 

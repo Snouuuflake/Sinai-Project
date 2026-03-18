@@ -5,7 +5,7 @@ import { DisplayConfigStateContextProvider } from "./DisplayConfigStateContext";
 const App: React.FC<{}> = ({ }) => {
   useEffect(() => {
     const listener = (event: KeyboardEvent) => {
-      if (event.key === "f") {
+      if (event.key.toLowerCase() === "f") {
         window.document.documentElement.requestFullscreen();
       }
     };

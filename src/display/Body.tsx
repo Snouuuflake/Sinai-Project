@@ -4,7 +4,7 @@ import { SerializedLiveElement } from "../shared/media-classes";
 import DisplayText from "./DisplayText";
 import DisplayImage from "./DisplayImage";
 import { formatSrcPath } from "./util";
-import { customipc } from "../shared/IpcWsClient";
+import { CustomIPC } from "../shared/IpcWsClient";
 import { isElectron } from "../shared/isElectron";
 
 export function localFileUrl(path: string): string {
@@ -65,7 +65,7 @@ const Body: React.FC<{}> = () => {
 
   useEffect(() => {
     // const remover = (window as unknown as UIWindow).electron.onDisplayStateUpdateLiveElement(
-    const remover = customipc.on("display-state-update-live-elements",
+    const remover = CustomIPC.on("display-state-update-live-elements",
       (displayId, newValue) => {
         console.log("set curLiveElement", newValue);
         if (displayId === DISPLAY_ID) {
@@ -83,7 +83,7 @@ const Body: React.FC<{}> = () => {
     );
     if (!hasRequestedLiveState.current)
       // (window as unknown as UIWindow).electron.invokeDisplayGetInitLiveState(DISPLAY_ID).then(le => {
-      customipc.invoke("invoke-display-get-init-live-state", DISPLAY_ID).then(le => {
+      CustomIPC.invoke("invoke-display-get-init-live-state", DISPLAY_ID).then(le => {
         hasRequestedLiveState.current = true;
         curLiveElementRef.current = le.liveElement;
         setCurLiveElement(le.liveElement);
@@ -93,7 +93,7 @@ const Body: React.FC<{}> = () => {
   }, []);
   useEffect(() => {
     // const remover = (window as unknown as UIWindow).electron.onDisplayStateUpdateLogo(
-    const remover = customipc.on("display-state-update-logo",
+    const remover = CustomIPC.on("display-state-update-logo",
       (displayId, logo) => {
         if (displayId === DISPLAY_ID)
           setLogoIsVisible(logo);

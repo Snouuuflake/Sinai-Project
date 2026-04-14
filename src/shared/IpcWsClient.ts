@@ -2,7 +2,6 @@ import { isElectron } from "./isElectron";
 
 type IpcHandler = (...args: any[]) => void;
 
-
 let ws: WebSocket | null = null;
 let wsReady = false;
 const wsQueue: string[] = [];
@@ -48,7 +47,7 @@ function wsSend(msg: object) {
   else wsQueue.push(s);
 }
 
-export const customipc = {
+export const CustomIPC = {
   on(channel: string, callback: IpcHandler): () => void {
     if (isElectron()) {
       return (window as unknown as DisplayWindow).electron.ipcRendererOnS(channel, (_event, ...values: any[]) => { callback(...values) });

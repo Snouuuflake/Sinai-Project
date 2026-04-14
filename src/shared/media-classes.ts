@@ -100,16 +100,16 @@ class MediaImage extends Media {
   constructor(name: string, path: string) {
     super(name);
     this.value = {
-      path: path,
+      path
     };
   }
   toSerializedLiveElement(id: number, element: number): SerializedLiveElement {
     return {
-      id: id,
-      element: element,
+      id,
+      element,
       type: "image",
       value: {
-        id: id,
+        id
       } as LiveElementImageValue,
     };
   }
@@ -138,7 +138,10 @@ class MediaSong extends Media {
     }
   }
 }
-const SECTION_MULTIPLIER = 1000000
+
+// if you have a million verses this breaks, but also 
+// if you have a million verses you deserve it
+const SECTION_MULTIPLIER = 1000000;
 const encodeVerseId =
   (section: number, verse: number) => (section * SECTION_MULTIPLIER) + verse;
 const decodeVerseId =

@@ -31,9 +31,16 @@ const FILTERS = {
   },
   "Songs": {
     name: "Songs",
-    extensions: ["sinai", "txt", "mss"]
+    extensions: [
+      "sinai", "txt", "mss"
+    ]
   }
 } as const;
+
+function matchFilter(str: string, filter: keyof typeof FILTERS): boolean {
+  const regexp = new RegExp("\." + (FILTERS[filter].extensions.join("|")) + "$");
+  return !!str.match(regexp);
+}
 
 // handling unhandled rejected promises
 process.on('unhandledRejection', (error: Error) => {
@@ -137,7 +144,6 @@ appState.addGcEntry(new MainGeneralConfigEntry("dark-theme", "boolean", false));
 
 
 if (fs.existsSync(getConfigPath())) {
-  // console.log(fs.readFileSync(getConfigPath(), { encoding: "utf8" }));
   appState.readConfigFile();
 } else {
   try {
@@ -304,6 +310,10 @@ ipcMain.on("ui-general-config-input-path", (_event, id, displayId) => {
 
 /* ------- ui ipc ------- */
 
+function readSetList(path: string) {
+  // TODO: this!
+}
+
 ipcMain.on("new-display-window", (_event, id: number) => {
   createDisplayWindow(id);
 });
@@ -386,6 +396,18 @@ ipcws.handleIpcWs("invoke-display-get-init-live-state", (displayIndex): Serializ
 // })
 
 /* on setlist operations */
+
+function readImage(filePath: string): Promise<void | Error> {
+  return new Promise<void>(
+    (resolve, _reject) => {
+      appState.addMedia(
+        new MediaImage(filePath.split(path.sep).at(-1) ?? "Image", filePath)
+      );
+      resolve();
+    }
+  );
+}
+
 ipcMain.on("add-images", (_event) => {
   if (!uiWindow)
     return;
@@ -398,15 +420,42 @@ ipcMain.on("add-images", (_event) => {
   }).then(
     result => {
       if (result.canceled) return;
-      result.filePaths.forEach(fp =>
-        appState.addMedia(
-          new MediaImage(fp.split(path.sep).at(-1) ?? "Image", fp)
-        )
-      );
+      result.filePaths.forEach(readImage);
       updateUISetlist();
     }
   )
 });
+
+function readSong(filePath: string): Promise<void | Error> {
+  return new Promise<void>(
+    (resolve, reject) => {
+      fs.readFile(filePath, "utf8",
+        (err, data) => {
+          if (err) {
+            console.error(`Error parsing song at:\n${filePath}\n${err.message}`);
+            reject(`Error parsing song at: ${path.basename(filePath)}`);
+          } else {
+            try {
+              const song = parseSong(data);
+              logSong(song);
+              appState.addMedia(
+                new MediaSong(
+                  song.properties.title, song
+                )
+              );
+            } catch (e) {
+              if (e instanceof Error) {
+                console.error(`Error parsing song at:\n${filePath}\n${e.message}`);
+                reject(`Error parsing song at: ${path.basename(filePath)}`);
+              }
+            }
+            resolve();
+          }
+        }
+      );
+    }
+  )
+}
 
 ipcMain.on("add-songs", (_event) => {
   if (!uiWindow)
@@ -421,37 +470,139 @@ ipcMain.on("add-songs", (_event) => {
     result => {
       if (result.canceled) return;
       Promise.allSettled(
-        result.filePaths.map<Promise<void>>(fp => {
-          return new Promise<void>((resolve, reject) => {
-            fs.readFile(fp, "utf8",
-              (err, data) => {
-                if (err) {
-                  alertMessageBox(err.message);
-                  reject();
-                } else {
-                  try {
-                    const song = parseSong(data);
-                    logSong(song);
-                    appState.addMedia(
-                      new MediaSong(
-                        song.properties.title, song
-                      )
-                    );
-                  } catch (e) {
-                    if (e instanceof Error) {
-                      alertMessageBox(`Error parsing song at:\n${fp}\n${e.message}`);
-                    }
-                    reject();
-                  }
-                  resolve();
-                }
-              }
-            );
-          })
-        })).then(_results => { updateUISetlist() });
+        result.filePaths.map<Promise<void | Error>>(readSong)
+      ).then(
+        results => {
+          alertMessageBox(
+            results.filter(
+              result => result.status === "rejected"
+            ).map(result => `${result.reason}`).join("\n")
+          );
+          updateUISetlist();
+        }
+      );
     }
   )
 });
+
+ipcMain.on(
+  "read-directory",
+  (_event) => {
+    if (!uiWindow)
+      return;
+    dialog.showOpenDialog(uiWindow, {
+      title: "Read Folder",
+      filters: [],
+      properties: ["openDirectory"]
+    }).then(
+      result => {
+        if (result.canceled) return;
+        fs.readdir(
+          result.filePaths[0],
+          (err, files) => {
+            if (err) {
+              alertMessageBox(`Error reading folder: ${err.message}`);
+              return;
+            }
+            const filePaths = files.map(file => path.resolve(result.filePaths[0], file)).filter(fp => fs.statSync(fp).isFile());
+            Promise.allSettled(
+              filePaths.map<Promise<void | Error>>(
+                (fp): Promise<void | Error> => {
+                  if (matchFilter(fp, "Songs")) {
+                    return readSong(fp);
+                  } else if (matchFilter(fp, "Images")) {
+                    return readImage(fp);
+                  }
+                  // why, typescript
+                  return new Promise<void>((resolve) => { resolve() });
+                }
+              )
+            ).then(
+              results => {
+                const errors = results.filter(
+                  result => result.status === "rejected"
+                ).map(
+                  result => result.reason
+                );
+                if (errors.length > 0)
+                  alertMessageBox(
+                    errors.join("\n")
+                  );
+                updateUISetlist();
+              }
+            );
+          }
+        );
+      }
+    )
+  }
+);
+
+ipcMain.on(
+  "write-setlist",
+  (_event) => {
+    if (!uiWindow)
+      return;
+    dialog.showOpenDialog(uiWindow, {
+      title: "Write Setlist",
+      filters: [],
+      properties: ["openDirectory"]
+    }).then(
+      result => {
+        if (result.canceled) return;
+        const errors: Error[] = [];
+        appState.getUIStateSetlist().forEach(
+          smi => {
+            try {
+              let media: Media | undefined = undefined;
+              switch (smi.type) {
+                case "song":
+                  media = appState.media.get(smi.id);
+                  if (media instanceof MediaSong) {
+                    writeSong(
+                      path.join(result.filePaths[0], media.name + ".sinai",),
+                      media
+                    );
+                  } else {
+                    throw new Error(`Somehow was unable to get() smi: ${smi} from  appState.media`);
+                  }
+                  break;
+                case "image":
+                  media = appState.media.get(smi.id);
+                  if (media instanceof MediaImage) {
+                    fs.copyFile(
+                      media.value.path,
+                      path.join(
+                        result.filePaths[0],
+                        path.basename(media.value.path)
+                      ),
+                      fs.constants.COPYFILE_FICLONE,
+                      (err) => {
+                        if (err)
+                          alertMessageBox(err.message);
+                      },
+                    );
+                  } else {
+                    throw new Error(`Somehow was unable to get() smi: ${smi} from  appState.media`);
+                  }
+                  break;
+                default:
+                  break;
+              }
+            } catch (err) {
+              if (err instanceof Error) {
+                errors.push(new Error(`Error writing setlist item: ${err.message}`));
+              }
+            }
+          }
+        );
+        alertMessageBox(
+          errors.join("\n")
+        );
+      }
+    );
+  }
+)
 
 ipcMain.on("move-media", (_event, id: number, index: number) => {
   try {
@@ -508,6 +659,20 @@ ipcMain.on("replace-song", (_event, id: number, song: Song) => {
   updateUISetlist();
 });
 
+function writeSong(filePath: string, media: MediaSong) {
+  try {
+    fs.writeFile(filePath, stringifySong(media.value.song), err => {
+      if (err) {
+        alertMessageBox(`Error saving song: {media.id} {media.name}\n{err.message}`);
+      }
+    });
+  } catch (err) {
+    if (err instanceof Error) {
+      alertMessageBox(`Error saving song: {media.id} {media.name}\n{err.message}`);
+    }
+  }
+}
+
 ipcMain.on("save-song", (_event, id: number) => {
   const media = appState.media.get(id);
   if (media?.type !== "song")
@@ -523,17 +688,7 @@ ipcMain.on("save-song", (_event, id: number) => {
   }).then(result => {
     if (result.canceled)
       return;
-    try {
-      fs.writeFile(result.filePath, stringifySong(media.value.song), err => {
-        if (err) {
-          alertMessageBox(`Error saving song: {media.id} {media.name}\n{err.message}`);
-        }
-      });
-    } catch (err) {
-      if (err instanceof Error) {
-        alertMessageBox(`Error saving song: {media.id} {media.name}\n{err.message}`);
-      }
-    }
+    writeSong(result.filePath, media as MediaSong);
   });
 });
 

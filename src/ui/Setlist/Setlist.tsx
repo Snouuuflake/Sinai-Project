@@ -63,7 +63,7 @@ const SetlistPlusMenu: React.FC<{}> = ({ }) => {
   return <div className="context-menu-default-container setlist-plus-menu-container">
     <button
       onClick={
-        (e) => {
+        (_e) => {
           (window as unknown as UIWindow).electron.sendAddImages();
           hideMenu();
         }
@@ -72,12 +72,21 @@ const SetlistPlusMenu: React.FC<{}> = ({ }) => {
     </button>
     <button
       onClick={
-        (e) => {
+        (_e) => {
           (window as unknown as UIWindow).electron.sendAddSongs();
           hideMenu();
         }
       }>
       Add Songs
+    </button>
+    <button
+      onClick={
+        (_e) => {
+          (window as unknown as UIWindow).electron.sendReadDirectory();
+          hideMenu();
+        }
+      }>
+      Read Folder
     </button>
     <button
       onClick={
@@ -87,7 +96,7 @@ const SetlistPlusMenu: React.FC<{}> = ({ }) => {
         }
       }
     >
-      New Song
+      Create Song
     </button>
   </div>
 }

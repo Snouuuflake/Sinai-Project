@@ -29,6 +29,7 @@ declare global {
     sendSetLogo: (displayId: number, logo: boolean) => void;
     sendAddImages: () => void;
     sendAddSongs: () => void;
+    sendReadDirectory: () => void;
     sendMoveMedia: (id: number, displayId: number) => void;
     sendDeleteMedia: (id: number) => void;
     sendCreateSong: (title: string, author: string) => void;

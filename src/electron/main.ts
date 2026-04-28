@@ -381,19 +381,12 @@ function updateDisplayLogo(displayIndex: number) {
 
 
 // so that windows automatically start displaying upon creation
-ipcws.handleIpcWs("invoke-display-get-init-live-state", (displayIndex): SerializedLiveState => {
+ipcws.handle("invoke-display-get-init-live-state", (displayIndex): SerializedLiveState => {
   return {
     liveElement: appState.getDisplayStateLiveElement(displayIndex),
     logo: appState.getLogoEntry(displayIndex),
   }
 })
-
-// ipcMain.handle("invoke-display-get-init-live-state", (_e, displayIndex): SerializedLiveState => {
-//   return {
-//     liveElement: appState.getDisplayStateLiveElement(displayIndex),
-//     logo: appState.getLogoEntry(displayIndex),
-//   }
-// })
 
 /* on setlist operations */
 

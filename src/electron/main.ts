@@ -205,22 +205,6 @@ function updateDisplayConfig() {
     appState.getSerializedDc()
   )
 }
-function imageDialog(): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    dialog.showOpenDialog(uiWindow, {
-      title: "Add Media Images",
-      filters: [
-        FILTERS["Images"] as any
-      ],
-      properties: ["openFile"]
-    }).then(
-      result => {
-        if (result.canceled) reject();
-        resolve(result.filePaths[0]);
-      }
-    )
-  })
-}
 
 ipcMain.on("ui-port-request", (_event) => {
   updateUIPort();
@@ -258,6 +242,23 @@ ipcMain.on("ui-reset-display-config-entry", (_event, id, index) => {
     }
   }
 });
+
+function imageDialog(): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    dialog.showOpenDialog(uiWindow, {
+      title: "Add Media Images",
+      filters: [
+        FILTERS["Images"] as any
+      ],
+      properties: ["openFile"]
+    }).then(
+      result => {
+        if (result.canceled) reject();
+        resolve(result.filePaths[0]);
+      }
+    )
+  })
+}
 
 ipcMain.on("ui-display-config-input-path", (_event, id, displayId) => {
   imageDialog().then(
@@ -309,10 +310,6 @@ ipcMain.on("ui-general-config-input-path", (_event, id, displayId) => {
 });
 
 /* ------- ui ipc ------- */
-
-function readSetList(path: string) {
-  // TODO: this!
-}
 
 ipcMain.on("new-display-window", (_event, id: number) => {
   createDisplayWindow(id);
@@ -425,8 +422,8 @@ function readSong(filePath: string): Promise<void | Error> {
       fs.readFile(filePath, "utf8",
         (err, data) => {
           if (err) {
-            console.error(`Error parsing song at:\n${filePath}\n${err.message}`);
-            reject(`Error parsing song at: ${path.basename(filePath)}`);
+            console.error(`Error reading song at:\n${filePath}\n${err.message}`);
+            reject(new Error(`Error reading song at: ${path.basename(filePath)}`));
           } else {
             try {
               const song = parseSong(data);
@@ -439,7 +436,7 @@ function readSong(filePath: string): Promise<void | Error> {
             } catch (e) {
               if (e instanceof Error) {
                 console.error(`Error parsing song at:\n${filePath}\n${e.message}`);
-                reject(`Error parsing song at: ${path.basename(filePath)}`);
+                reject(new Error(`Error parsing song at: ${path.basename(filePath)}. ${e.message}`));
               }
             }
             resolve();
@@ -466,11 +463,13 @@ ipcMain.on("add-songs", (_event) => {
         result.filePaths.map<Promise<void | Error>>(readSong)
       ).then(
         results => {
-          alertMessageBox(
-            results.filter(
-              result => result.status === "rejected"
-            ).map(result => `${result.reason}`).join("\n")
+          const errors = results.filter(
+            result => result.status === "rejected"
           );
+          if (errors.length > 0)
+            alertMessageBox(
+              errors.map(result => `${result.reason}`).join("\n")
+            );
           updateUISetlist();
         }
       );
@@ -492,38 +491,32 @@ ipcMain.on(
         if (result.canceled) return;
         fs.readdir(
           result.filePaths[0],
-          (err, files) => {
+          async (err, files) => {
             if (err) {
               alertMessageBox(`Error reading folder: ${err.message}`);
               return;
             }
-            const filePaths = files.map(file => path.resolve(result.filePaths[0], file)).filter(fp => fs.statSync(fp).isFile());
-            Promise.allSettled(
-              filePaths.map<Promise<void | Error>>(
-                (fp): Promise<void | Error> => {
-                  if (matchFilter(fp, "Songs")) {
-                    return readSong(fp);
-                  } else if (matchFilter(fp, "Images")) {
-                    return readImage(fp);
-                  }
-                  // why, typescript
-                  return new Promise<void>((resolve) => { resolve() });
+            const filePaths = files.map(file => path.resolve(result.filePaths[0], file)).filter(fp => fs.statSync(fp).isFile()).sort();
+            const errors: Error[] = [];
+
+            for (const fp of filePaths) {
+              try {
+                if (matchFilter(fp, "Songs")) {
+                  await readSong(fp);
                 }
-              )
-            ).then(
-              results => {
-                const errors = results.filter(
-                  result => result.status === "rejected"
-                ).map(
-                  result => result.reason
-                );
-                if (errors.length > 0)
-                  alertMessageBox(
-                    errors.join("\n")
-                  );
-                updateUISetlist();
+                else if (matchFilter(fp, "Images")) {
+                  await readImage(fp);
+                }
+              } catch (err) {
+                if (err instanceof Error)
+                  errors.push(err);
               }
-            );
+            }
+
+            if (errors.length > 0)
+              alertMessageBox("Errores leyendo setlist: \n" + errors.map(err => err.message).join("\n"));
+
+            updateUISetlist();
           }
         );
       }
@@ -531,31 +524,51 @@ ipcMain.on(
   }
 );
 
+
+
 ipcMain.on(
   "write-setlist",
   (_event) => {
     if (!uiWindow)
       return;
-    dialog.showOpenDialog(uiWindow, {
-      title: "Write Setlist",
+    dialog.showSaveDialog(uiWindow, {
+      title: "Guardar Setlist",
+      buttonLabel: "Guardar",
       filters: [],
-      properties: ["openDirectory"]
+      properties: ["createDirectory"]
     }).then(
-      result => {
+      async result => {
         if (result.canceled) return;
+
+        try {
+          fs.mkdirSync(result.filePath, { recursive: true })
+        } catch (err) {
+          if (err instanceof Error)
+            alertMessageBox("Error writing setlist" + " " + err.message);
+          return;
+        }
+
         const errors: Error[] = [];
+        const setlistLengthDigits = Math.round(Math.log10(appState.getUIStateSetlist().length));
+        const setlistDebugName = result.filePath.slice(-30);
         appState.getUIStateSetlist().forEach(
-          smi => {
+          (smi, i) => {
+            const filePrefix = "sp_" + (i).toString().padStart(
+              setlistLengthDigits, "0"
+            ) + "_"
+
             try {
               let media: Media | undefined = undefined;
               switch (smi.type) {
                 case "song":
                   media = appState.media.get(smi.id);
                   if (media instanceof MediaSong) {
+                    const fileName = path.join(result.filePath, filePrefix + media.name + ".sinai",)
                     writeSong(
-                      path.join(result.filePaths[0], media.name + ".sinai",),
+                      fileName,
                       media
                     );
+                    console.log(`wrote song ${fileName} to setlist ${setlistDebugName}`);
                   } else {
                     throw new Error(`Somehow was unable to get() smi: ${smi} from  appState.media`);
                   }
@@ -563,16 +576,21 @@ ipcMain.on(
                 case "image":
                   media = appState.media.get(smi.id);
                   if (media instanceof MediaImage) {
+                    const fileName = filePrefix + path.basename(media.value.path);
+
                     fs.copyFile(
                       media.value.path,
                       path.join(
-                        result.filePaths[0],
-                        path.basename(media.value.path)
+                        result.filePath,
+                        filePrefix + path.basename(media.value.path)
                       ),
                       fs.constants.COPYFILE_FICLONE,
                       (err) => {
-                        if (err)
-                          alertMessageBox(err.message);
+                        if (err) {
+                          alertMessageBox(` Error copying image ${(media as MediaImage).value.path.slice(-30)} to setlist ${setlistDebugName}: \n${err.message}`);
+                        } else {
+                          console.log(`wrote image ${fileName} to setlist ${setlistDebugName}`);
+                        }
                       },
                     );
                   } else {
@@ -589,9 +607,10 @@ ipcMain.on(
             }
           }
         );
-        alertMessageBox(
-          errors.join("\n")
-        );
+        if (errors.length > 0)
+          alertMessageBox(
+            errors.join("\n")
+          );
       }
     );
   }

@@ -6,6 +6,7 @@ import { useModal } from "../ModalContext";
 import "./Setlist.css";
 
 import SetlistItem from "./SetlistItem";
+import { Ellipsis, Menu, Plus } from "lucide-react";
 
 const NewSongModal: React.FC<{}> = ({ }) => {
   const { hideModal } = useModal();
@@ -57,7 +58,7 @@ const NewSongModal: React.FC<{}> = ({ }) => {
   </div>
 }
 
-const SetlistPlusMenu: React.FC<{}> = ({ }) => {
+const SetlistMenu: React.FC<{}> = ({ }) => {
   const { hideMenu } = useContextMenu();
   const { showModal } = useModal();
   return <div className="context-menu-default-container setlist-plus-menu-container">
@@ -98,6 +99,15 @@ const SetlistPlusMenu: React.FC<{}> = ({ }) => {
     >
       Create Song
     </button>
+    <button
+      onClick={
+        (_e) => {
+          (window as unknown as UIWindow).electron.sendWriteSetlist();
+          hideMenu();
+        }
+      }>
+      Save Setlist
+    </button>
   </div>
 }
 
@@ -110,9 +120,9 @@ const Setlist: React.FC<{ setlist: SerializedMediaIdentifier[] | null }> = ({ se
       <div className="main-container-header-buttons-container">
         <button
           className="setlist-header-plus-button hi-1-button"
-          onClick={(e) => { showMenu(e, <SetlistPlusMenu />) }}
+          onClick={(e) => { showMenu(e, <SetlistMenu />) }}
         >
-          +
+          <Ellipsis size={26} strokeWidth={2} />
         </button>
       </div>
     </div>

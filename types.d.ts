@@ -30,10 +30,11 @@ declare global {
     sendAddImages: () => void;
     sendAddSongs: () => void;
     sendReadDirectory: () => void;
+    sendWriteSetlist: () => void;
     sendMoveMedia: (id: number, displayId: number) => void;
     sendDeleteMedia: (id: number) => void;
     sendCreateSong: (title: string, author: string) => void;
-    sendReplaceSong: (id: number, song: Song) => void;
+    sendReplaceSong: (id: number, song: cc.Song) => void;
     sendSaveSong: (id: number) => void;
 
     onUIUpdatePort: (callback: (port: number | null) => void) => () => void;

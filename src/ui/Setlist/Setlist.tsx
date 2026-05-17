@@ -6,6 +6,7 @@ import { useModal } from "../ModalContext";
 import "./Setlist.css";
 
 import SetlistItem from "./SetlistItem";
+import { Ellipsis, Menu, Plus } from "lucide-react";
 
 const NewSongModal: React.FC<{}> = ({ }) => {
   const { hideModal } = useModal();
@@ -57,13 +58,13 @@ const NewSongModal: React.FC<{}> = ({ }) => {
   </div>
 }
 
-const SetlistPlusMenu: React.FC<{}> = ({ }) => {
+const SetlistMenu: React.FC<{}> = ({ }) => {
   const { hideMenu } = useContextMenu();
   const { showModal } = useModal();
   return <div className="context-menu-default-container setlist-plus-menu-container">
     <button
       onClick={
-        (e) => {
+        (_e) => {
           (window as unknown as UIWindow).electron.sendAddImages();
           hideMenu();
         }
@@ -72,12 +73,30 @@ const SetlistPlusMenu: React.FC<{}> = ({ }) => {
     </button>
     <button
       onClick={
-        (e) => {
+        (_e) => {
           (window as unknown as UIWindow).electron.sendAddSongs();
           hideMenu();
         }
       }>
       Add Songs
+    </button>
+    <button
+      onClick={
+        (_e) => {
+          (window as unknown as UIWindow).electron.sendReadDirectory();
+          hideMenu();
+        }
+      }>
+      Open Setlist
+    </button>
+    <button
+      onClick={
+        (_e) => {
+          (window as unknown as UIWindow).electron.sendWriteSetlist();
+          hideMenu();
+        }
+      }>
+      Save Setlist
     </button>
     <button
       onClick={
@@ -87,7 +106,7 @@ const SetlistPlusMenu: React.FC<{}> = ({ }) => {
         }
       }
     >
-      New Song
+      Create Song
     </button>
   </div>
 }
@@ -100,10 +119,10 @@ const Setlist: React.FC<{ setlist: SerializedMediaIdentifier[] | null }> = ({ se
       <h1 className="main-container-title">Media</h1>
       <div className="main-container-header-buttons-container">
         <button
-          className="setlist-header-plus-button hi-1-button"
-          onClick={(e) => { showMenu(e, <SetlistPlusMenu />) }}
+          className="setlist-header-plus-button "
+          onClick={(e) => { showMenu(e, <SetlistMenu />) }}
         >
-          +
+          <Ellipsis size={26} strokeWidth={2} />
         </button>
       </div>
     </div>

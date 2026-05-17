@@ -59,6 +59,8 @@ contextBridge.exposeInMainWorld("electron", {
   sendSetLogo: makeIpcSend("set-logo"),
   sendAddImages: makeIpcSend("add-images"),
   sendAddSongs: makeIpcSend("add-songs"),
+  sendReadDirectory: makeIpcSend("read-directory"),
+  sendWriteSetlist: makeIpcSend("write-setlist"),
   sendMoveMedia: makeIpcSend("move-media"),
   sendDeleteMedia: makeIpcSend("delete-media"),
   sendCreateSong: makeIpcSend("create-song"),

@@ -20,3 +20,8 @@
 - [ ] setlist
   - [ ] reading 
   - [ ] writing
+
+# for v0.4.0
+- [ ] internationalization
+  - [ ] setup / architecture
+  - [ ] spanish language

@@ -5,6 +5,7 @@ import { useModal } from "../ModalContext";
 import { useUIState } from "../UIStateContext";
 
 import "./SetlistItem.css";
+import { X } from "lucide-react";
 
 type HoveredHalfType = {
   index: number;
@@ -97,7 +98,7 @@ const MoveItemModal: React.FC<{ item: SerializedMediaIdentifier }> = ({ item }) 
           onClick={hideModal}
         >
           {/* TODO: icon */}
-          X
+          <X size={18} />
         </button>
       </div>
     </div>

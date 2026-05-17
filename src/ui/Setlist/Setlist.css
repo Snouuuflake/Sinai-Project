@@ -33,10 +33,11 @@
 }
 
 .setlist-header-plus-button {
-  width: 40px;
+  width: 35px;
   border-radius: 4px 10px 4px 4px;
-  display: grid;
+  display: flex;
   align-items: center;
+  justify-content: center;
   /* TODO: real icon */
   padding: 0;
 }

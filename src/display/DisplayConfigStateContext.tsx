@@ -6,7 +6,7 @@ import {
   ConfigTypesKey,
   SerializedDisplayConfigEntry
 } from "../shared/config-classes";
-import { customipc } from "../shared/IpcWsClient";
+import { CustomIPC } from "../shared/IpcWsClient";
 
 
 class DisplayConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T> {
@@ -52,7 +52,7 @@ class DisplayConfig {
     })
     if (errors.length > 0)
       // (window as unknown as UIWindow).electron.sendAlert(errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim());
-      customipc.send("alert",
+      CustomIPC.send("alert",
         errors.map(err => err.message).reduce((p, c) => p + c + "\n\n", "").trim()
       );
   }
@@ -108,7 +108,7 @@ export const DisplayConfigStateContextProvider: React.FC<{ children: React.React
 
   useEffect(() => {
     // const remover = (window as unknown as UIWindow).electron.onDisplayUpdateDisplayConfig(
-    const remover = customipc.on(
+    const remover = CustomIPC.on(
       "display-update-display-config",
       (newconfig: SerializedDisplayConfigEntry[]) => {
         // this is safe, right?
@@ -121,7 +121,7 @@ export const DisplayConfigStateContextProvider: React.FC<{ children: React.React
         setConfigHash(displayConfigRef.current!.configHash);
       }
     );
-    customipc.send("ui-display-config-request")
+    CustomIPC.send("ui-display-config-request")
     return remover;
   }, [])
 

@@ -87,7 +87,16 @@ const SetlistMenu: React.FC<{}> = ({ }) => {
           hideMenu();
         }
       }>
-      Read Folder
+      Open Setlist
+    </button>
+    <button
+      onClick={
+        (_e) => {
+          (window as unknown as UIWindow).electron.sendWriteSetlist();
+          hideMenu();
+        }
+      }>
+      Save Setlist
     </button>
     <button
       onClick={
@@ -98,15 +107,6 @@ const SetlistMenu: React.FC<{}> = ({ }) => {
       }
     >
       Create Song
-    </button>
-    <button
-      onClick={
-        (_e) => {
-          (window as unknown as UIWindow).electron.sendWriteSetlist();
-          hideMenu();
-        }
-      }>
-      Save Setlist
     </button>
   </div>
 }

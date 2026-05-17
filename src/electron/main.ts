@@ -18,7 +18,6 @@ import { AppState, MainDisplayConfigEntry, MainGeneralConfigEntry } from "./AppS
 import { IpcWs } from "./IpcWs.js";
 
 import express from "express";
-import { Express } from "express";
 import { AddressInfo, WebSocketServer } from "ws";
 import http from "http";
 

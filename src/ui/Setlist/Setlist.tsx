@@ -119,7 +119,7 @@ const Setlist: React.FC<{ setlist: SerializedMediaIdentifier[] | null }> = ({ se
       <h1 className="main-container-title">Media</h1>
       <div className="main-container-header-buttons-container">
         <button
-          className="setlist-header-plus-button hi-1-button"
+          className="setlist-header-plus-button "
           onClick={(e) => { showMenu(e, <SetlistMenu />) }}
         >
           <Ellipsis size={26} strokeWidth={2} />

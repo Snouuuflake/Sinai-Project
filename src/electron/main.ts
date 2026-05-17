@@ -73,7 +73,10 @@ expressApp.get("/local-file/:path", (req, res) => {
 expressApp.use("/mobile", express.static(path.join(app.getAppPath(), "/dist-mobile-ui")));
 expressApp.use(express.static(path.join(app.getAppPath(), "/dist-display")));
 
-const ipcws = new IpcWs();
+const ipcws = new IpcWs(
+  ["ui-state-request", "alert", "set-logo"],
+  ["invoke-display-get-init-live-state"]
+);
 
 let httpServer: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse> | null = null;
 function startServers() {

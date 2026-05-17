@@ -26,7 +26,8 @@ function getWs(): WebSocket {
 
   // WebSocket on same port as client url
   const port = parseInt(window.location.port);
-  ws = new WebSocket(`ws://localhost:${port}`);
+  // FIXME: this cant be localhost
+  ws = new WebSocket(window.location.origin.replace(/^http/, "ws"));
 
   ws.addEventListener("open", () => {
     wsReady = true;

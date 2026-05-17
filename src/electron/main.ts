@@ -70,6 +70,7 @@ expressApp.get("/local-file/:path", (req, res) => {
   console.log("local-file", path);
   res.sendFile(path);
 });
+expressApp.use("/mobile", express.static(path.join(app.getAppPath(), "/dist-mobile-ui")));
 expressApp.use(express.static(path.join(app.getAppPath(), "/dist-display")));
 
 const ipcws = new IpcWs();
@@ -336,7 +337,8 @@ function updateUILiveElements() {
 }
 
 function updateUILogo() {
-  sendToUIWindow("ui-state-update-logo", appState.getLogo())
+  sendToUIWindow("ui-state-update-logo", appState.getLogo());
+  ipcws.broadcastToWsClients("ui-state-update-logo", appState.getLogo());
 }
 
 

@@ -1,0 +1,186 @@
+/* -- blink animation setup ------------ */
+:root {
+  --blink-opacity: 1;
+  --blink-transparent-blend: 0%;
+}
+
+@keyframes blink {
+  50% {
+    --blink-opacity: 0.3;
+  --blink-transparent-blend: 50%;
+  }
+}
+
+body {
+  animation: blink 0.7s step-start 0s infinite;
+}
+/* ------------------------------------- */
+
+@font-face {
+  font-family: "atk";
+  src: url("./assets/AtkinsonHyperlegibleNext-VariableFont_wght.ttf");
+  font-style: normal;
+}
+
+:root {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --br-small: 3px;
+  --br-med: 7px;
+  --hi-1-base: #ff0065ff;
+  --hi-2-base: #00dbffff;
+
+  --main-container-br: 13px;
+}
+
+:root,
+:root[data-theme="dark"] {
+  --text-color: white;
+  --fg: white;
+  --disabled-text: hsl(0 0% 80%);
+  --background: black;
+  --bg: var(--background);
+  --gray-95: hsl(0 0% 5%);
+  --gray-90: hsl(0 0% 15%);
+  --gray-85: hsl(0 0% 18%);
+  --gray-80: hsl(0 0% 25%);
+  --gray-70: hsl(0 0% 30%);
+  --gray-60: hsl(0 0% 40%);
+  --gray-50: hsl(0 0% 50%);
+  --gray-40: hsl(0 0% 60%);
+  --gray-30: hsl(0 0% 70%);
+  --gray-20: hsl(0 0% 80%);
+  --gray-10: hsl(0 0% 90%);
+
+  --hi-1: var(--hi-1-base);
+  --hi-2: color-mix(in oklch, var(--hi-2-base), black 5%);
+}
+
+:root[data-theme="light"] {
+  --text-color: black;
+  --fg: black;
+  --disabled-text: hsl(0 0% 20%);
+  --background: white;
+  --bg: var(--background);
+  --gray-10: hsl(0 0% 10%);
+  --gray-20: hsl(0 0% 20%);
+  --gray-30: hsl(0 0% 30%);
+  --gray-40: hsl(0 0% 40%);
+  --gray-50: hsl(0 0% 50%);
+  --gray-60: hsl(0 0% 60%);
+  --gray-70: hsl(0 0% 70%);
+  --gray-80: hsl(0 0% 77%);
+  --gray-85: hsl(0 0% 82%);
+  --gray-90: hsl(0 0% 88%);
+  --gray-95: hsl(0 0% 95%);
+
+  --hi-1: color-mix(in oklch, var(--hi-1-base), black 5%);
+  --hi-2: color-mix(in oklch, var(--hi-2-base), black 20%);
+}
+
+body {
+  background-color: var(--background);
+}
+
+
+/* because the icons package */
+*:not(svg):not(svg *) {
+  font-family: "atk", Arial;
+  zoom: reset;
+  color: var(--text-color);
+}
+
+:is(input, button, select, textarea):is(:focus, :focus-visible) {
+  box-shadow: none;
+}
+
+:is(input, button, select, textarea):focus-visible {
+  outline-color: var(--hi-1);
+}
+
+*::-webkit-scrollbar {
+  background-color: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--gray-50);
+  border: 4px solid transparent;
+  border-radius: 8px;
+  background-clip: padding-box;  
+}
+
+*::-webkit-scrollbar-button {
+  display: none;
+  background-color: var(--gray-50);
+  border: 4px solid transparent;
+  border-radius: 8px;
+  background-clip: padding-box;  
+}
+
+select, ::picker(select) {
+  appearance: base-select;
+}
+
+body {
+  margin: 0;
+  padding: 8px;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+#root {
+  height: 100%;
+}
+
+button {
+  /* background-color: var(--gray-95); */
+  background-color: var(--gray-90);
+  /* border: 2px solid var(--gray-40); */
+  border: none;
+  border-radius: var(--br-med);
+  font-size: 12pt;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:hover {
+  background-color: color-mix(in srgb, var(--gray-90), var(--fg) 20%)
+}
+button:active {
+  background-color: color-mix(in srgb, var(--gray-90), var(--fg) 60%)
+}
+
+
+input {
+  background-color: var(--gray-90);
+  box-sizing: border-box;
+  border: 2px solid var(--gray-80);
+  border-radius: 4px;
+  padding: 3px;
+}
+
+.hi-1-button {
+  color: white;
+  background-color: var(--hi-1);
+}
+
+.hi-1-button:hover {
+  /* border-color: var(--hi-1); */
+  background-color: color-mix(in srgb, var(--gray-90), var(--hi-1) 70%)
+}
+
+.hi-1-button:active {
+  /* border-color: var(--hi-1); */
+  background-color: color-mix(in srgb, var(--gray-90), var(--hi-1) 30%)
+}
+
+
+.droppable * {
+  pointer-events: none;
+}

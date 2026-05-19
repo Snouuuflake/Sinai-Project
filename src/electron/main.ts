@@ -74,7 +74,7 @@ expressApp.use("/mobile", express.static(path.join(app.getAppPath(), "/dist-mobi
 expressApp.use(express.static(path.join(app.getAppPath(), "/dist-display")));
 
 const ipcws = new IpcWs(
-  ["ui-state-request", "alert", "set-logo"],
+  ["ui-state-request", "alert", "set-logo", "set-open-media"],
   ["invoke-display-get-init-live-state"]
 );
 
@@ -325,6 +325,7 @@ ipcMain.on("alert", (_event, message: string) => {
 function sendToUIWindow(channel: string, ...args: any[]) {
   if (!uiWindow) return;
   uiWindow.webContents.send(channel, ...args);
+  ipcws.broadcastToWsClients(channel, ...args);
 }
 
 function updateUISetlist() {
@@ -341,7 +342,6 @@ function updateUILiveElements() {
 
 function updateUILogo() {
   sendToUIWindow("ui-state-update-logo", appState.getLogo());
-  ipcws.broadcastToWsClients("ui-state-update-logo", appState.getLogo());
 }
 
 

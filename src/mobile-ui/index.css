@@ -32,12 +32,13 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --br-small: 3px;
-  --br-med: 7px;
+  --br-small: 10px;
+  --br-med: 20px;
   --hi-1-base: #ff0065ff;
   --hi-2-base: #00dbffff;
 
-  --main-container-br: 13px;
+  --main-container-br: 30px;
+
 }
 
 :root,
@@ -89,6 +90,17 @@ body {
   background-color: var(--background);
 }
 
+html {
+  font-size: 30px;
+}
+
+button, input, select, textarea {
+  font-size: inherit;
+}
+
+* {
+  user-select: none;
+}
 
 /* because the icons package */
 *:not(svg):not(svg *) {
@@ -145,7 +157,6 @@ button {
   /* border: 2px solid var(--gray-40); */
   border: none;
   border-radius: var(--br-med);
-  font-size: 12pt;
   font-weight: bold;
   cursor: pointer;
 }
@@ -165,6 +176,7 @@ input {
   padding: 3px;
 }
 
+
 .hi-1-button {
   color: white;
   background-color: var(--hi-1);
@@ -183,4 +195,21 @@ input {
 
 .droppable * {
   pointer-events: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+
+.text-only-button {
+  background-color: transparent;
+}
+.text-only-button:hover {
+  color: var(--gray-30);
+  background-color: transparent;
+}
+.text-only-button:active {
+  color: var(--gray-60);
+  background-color: transparent;
 }

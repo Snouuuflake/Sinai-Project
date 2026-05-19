@@ -27,46 +27,38 @@ export const UIStateContextProvider:
 
     const [logo, setLogo] = useState<boolean[]>(Array.from({ length: DISPLAYS }, (_x) => false));
 
-    // useEffect(() => {
-    //   const remover = (window as unknown as UIWindow).electron.onUIStateUpdateSetlist(
-    //     (newValue: SerializedMediaIdentifier[]) => { setSetlist(newValue); }
-    //   );
-    //   return remover;
-    // }, [])
-    //
-    // useEffect(() => {
-    //   const remover = (window as unknown as UIWindow).electron.onUIStateUpdateOpenMedia(
-    //     (newValue: SerializedMediaWithId) => { setOpenMedia(newValue); }
-    //   );
-    //   return remover;
-    // }, [])
-    //
-    // useEffect(() => {
-    //   const remover = (window as unknown as UIWindow).electron.onUIStateUpdateLiveElements(
-    //     (newValue: Array<LiveElementIdentifier | null>) => { setLiveElements(newValue) }
-    //   );
-    //   return remover;
-    // }, [])
-    //
-    // useEffect(() => {
-    //   const remover = (window as unknown as UIWindow).electron.onUIStateUpdateLogo(
-    //     (newValue: Array<boolean>) => { setLogo(newValue) }
-    //   );
-    //   return remover;
-    // }, [])
-    //
-
+    useEffect(() => {
+      const remover = CustomIPC.on("ui-state-update-setlist", (newValue: SerializedMediaIdentifier[]) => {
+        console.log(newValue);
+        setSetlist(newValue);
+      });
+      return remover;
+    });
+    useEffect(() => {
+      const remover = CustomIPC.on("ui-state-update-open-media", (newValue: SerializedMediaWithId) => {
+        console.log(newValue);
+        setOpenMedia(newValue);
+      });
+      return remover;
+    });
+    useEffect(() => {
+      const remover = CustomIPC.on("ui-state-update-live-elements", (newValue: Array<LiveElementIdentifier | null>) => {
+        console.log(newValue);
+        setLiveElements(newValue);
+      });
+      return remover;
+    });
     useEffect(() => {
       const remover = CustomIPC.on("ui-state-update-logo", (newValue: Array<boolean>) => {
         console.log(newValue);
         setLogo(newValue);
       });
       return remover;
-    })
+    });
     useEffect(() => {
       console.log("sending something")
       CustomIPC.send("ui-state-request")      // (window as unknown as UIWindow).electron.sendUIStateRequest();
-    }, [])
+    }, []);
 
     return <UIStateContext.Provider
       value={{ setlist, openMedia, liveElements, logo }}>

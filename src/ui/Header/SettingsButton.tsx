@@ -346,9 +346,10 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
               <>
                 <div>
                   <h3 className="config-heading">Local Server</h3>
+                  <div>PORT: {port ?? "Ninguno"}</div>
                   {
                     port === null ?
-                      "No port is available"
+                      <></>
                       :
                       <div className="conifg-server-urls-container">
                         {

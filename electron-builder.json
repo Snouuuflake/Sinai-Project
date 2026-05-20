@@ -1,10 +1,11 @@
 {
   "appId": "sinai-project",
   "productName": "Sinai Project",
-  "icon": "icon.png",
+  "icon": "./icon.png",
   "files": [
     "dist-electron",
     "dist-ui",
+    "dist-mobile-ui",
     "dist-display"
   ],
   "extraResources": [

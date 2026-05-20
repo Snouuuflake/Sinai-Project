@@ -157,7 +157,10 @@ const ImageControls:
               element={ELEMENT}
             />
             <div className="image-contols-project-button-text">
-              {openMedia.name}
+              {
+                openMedia.name.substring(0, Math.min(50, openMedia.name.length)) +
+                (openMedia.name.length >= 50 ? "..." : "")
+              }
             </div>
           </div>
           <img

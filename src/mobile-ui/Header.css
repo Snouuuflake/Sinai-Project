@@ -108,7 +108,19 @@
 
 @media (orientation: portrait) {
   .header {
-    flex-direction: row;
+    display: grid;
+    grid-template-areas:  "status status" "setlist-button logo-button";
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 25px 1fr;
+  }
+  .setlist-button {
+    grid-area: "setlist-button";
+  }
+  .logo-button {
+    grid-area: "logo-button";
+  }
+  .ws-status-container {
+    grid-area: "status";
   }
   .logo {
     display: none;

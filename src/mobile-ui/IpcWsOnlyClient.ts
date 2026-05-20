@@ -104,5 +104,7 @@ export const CustomIPC = {
       pendingInvokes.set(id, resolve);
       wsSend({ type: "invoke", channel, args, id });
     });
-  }
+  },
+
+  getWsVariable: () => ws,
 };

@@ -2,7 +2,7 @@
   height: 100%;
   width: 100%;
   display: grid;
-  gap: 30px;
+  gap: 20px;
 }
 
 @media (orientation: portrait) {
@@ -23,8 +23,8 @@
 
 .modal-main-container {
   width: 90vw;
-  height: 90vh;
-  max-height: 90vh;
+  height: 90dvh;
+  max-height: 90dvh;
   border-radius: var(--main-container-br);
   border: 5px solid var(--gray-50);
   background-color: var(--gray-95);

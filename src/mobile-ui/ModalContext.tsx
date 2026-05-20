@@ -77,7 +77,7 @@ export const ModalContextProvider: React.FC<{ children: React.ReactNode }> = ({ 
             position: "fixed",
             top: "0",
             left: "0",
-            height: "100vh",
+            height: "100dvh",
             width: "100vw",
             zIndex: 500,
             display: "flex",

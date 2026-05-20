@@ -122,7 +122,7 @@ export const ContextMenuContextProvider:
               position: "fixed",
               top: "0",
               left: "0",
-              height: "100vh",
+              height: "100dvh",
               width: "100vw",
               background: "var(--gray-10)",
               opacity: "30%",

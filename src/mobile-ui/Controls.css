@@ -250,6 +250,7 @@
   display: grid;
   grid-template-areas: "top" "bottom";
   grid-template-rows: auto 1fr;
+  min-height: 0;
 }
 .image-contols-project-button-text {
   color: inherit;
@@ -258,7 +259,7 @@
   min-height: 0;
   max-height: 100%;
   /* word-wrap: break-word; */
-  white-space: no-wrap;
+  /* white-space: nowrap; */
   display: inline-block;
   text-overflow: ellipsis;
   overflow: clip;
@@ -267,8 +268,10 @@
 }
 .image-controls-image {
   grid-area: preview;
-  max-width: min(50vw, 100%);
-  max-height: min(50vh, 100%);
+  max-width: 100%;
+  max-height: 100%;
+  /* max-width: min(50vw, 100%); */
+  /* max-height: min(50dvh, 100%); */
   border-radius: var(--br-small) ;
   overflow: clip;
   object-fit: contain;
@@ -279,7 +282,7 @@
   .image-controls-project-button-inner {
     grid-template-areas: "left" "preview";
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: 1fr 1fr;
     justify-self: center;
   }
 }
@@ -302,7 +305,7 @@
 
 
 .project-element-modal {
-  height: 90vh;
+  height: 90dvh;
   width: 90vw;
   display: grid;
   gap: 20px;

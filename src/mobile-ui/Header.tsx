@@ -6,11 +6,11 @@ import { CustomIPC } from "./IpcWsOnlyClient";
 import { useUIState } from "./UIStateContext";
 import { DISPLAYS } from "../shared/constants";
 import { useModal } from "./ModalContext";
-import { useContextMenu } from "./ContextMenuContext";
 
 import "./Header.css";
 
 import { SerializedMediaIdentifier } from "../shared/media-classes";
+import { useEffect, useState } from "react";
 
 
 const SetlistItem: React.FC<{ maxIdChars: number, item: SerializedMediaIdentifier }> = ({ maxIdChars, item }) => {
@@ -63,8 +63,7 @@ const SetlistButtonModal: React.FC<{}> = () => {
 
 }
 const SetlistButton: React.FC<{}> = () => {
-  const { logo } = useUIState();
-  const { showModal, hideModal } = useModal();
+  const { showModal } = useModal();
   return (
     <button
       className="setlist-button header-button"
@@ -154,6 +153,35 @@ const LogoButton: React.FC<{}> = () => {
   )
 }
 
+const WsIndicator: React.FC<{}> = () => {
+  const [status, setStatus] = useState<number>(0);
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const ws = CustomIPC.getWsVariable();
+      if (ws === null) {
+        setStatus(0); // Doesnt exist
+      } else if (ws.readyState === WebSocket.OPEN) {
+        setStatus(2); // Works
+      } else {
+        setStatus(1); // Connecting or disconnecting
+      }
+    }, 1000)
+    return () => { clearTimeout(timeoutId); }
+  })
+  return (
+    <div
+      style={{
+        height: "18px",
+        width: "26px",
+        borderRadius: "6px",
+        backgroundColor: ["red", "yellow", "green"][status],
+        display: "inline-block"
+      }}
+    >
+    </div>
+  )
+}
+
 const Header: React.FC<{}> = () => {
   return (
     <div
@@ -164,6 +192,26 @@ const Header: React.FC<{}> = () => {
       />
       <LogoButton />
       <SetlistButton />
+      <div
+        className="ws-status-container"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "7px",
+          opacity: "0.9",
+          gridArea: "status"
+        }}
+      >
+        <div
+          style={{
+            fontSize: "15px",
+            fontFamily: "monospace",
+          }}
+        >
+          Status
+        </div>
+        <WsIndicator />
+      </div>
     </div>
   )
 

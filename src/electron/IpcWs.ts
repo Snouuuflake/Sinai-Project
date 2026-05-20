@@ -30,6 +30,8 @@ class IpcWs {
   #wsClients = new Set<WebSocket>();
   #invokeHandlers = new Map<string, (...args: any[]) => any>();
   #wss: WebSocketServer | null = null;
+  #allowedOnChannels: string[];
+  #allowedInvokeChannels: string[];
   initWss(wss: WebSocketServer) {
     this.#wss = wss;
 
@@ -42,11 +44,15 @@ class IpcWs {
         if (msg.type === "send") {
           // emits the normal IPC event for the message's channel
           // which calls all handlers normally
-          ipcMain.emit(msg.channel, {}, ...msg.args);
+          if (this.#allowedOnChannels.includes(msg.channel))
+            ipcMain.emit(msg.channel, {}, ...msg.args);
         } else if (msg.type === "invoke") {
           // invoke handlers are registered with ipcMain.handle for both 
           // Electron and WebSockets in our own IpcWs.handle
           // we call them here and send the result as an invoke-reply messages to the client
+
+          if (!this.#allowedInvokeChannels.includes(msg.channel))
+            return;
           const handler = this.#invokeHandlers.get(msg.channel);
           const result = handler ? await handler(...msg.args) : undefined;
           try {
@@ -60,7 +66,12 @@ class IpcWs {
       });
     });
   }
-  constructor() {
+  constructor(
+    allowedOnChannels: string[],
+    allowedInvokeChannels: string[],
+  ) {
+    this.#allowedOnChannels = allowedOnChannels;
+    this.#allowedInvokeChannels = allowedInvokeChannels;
   }
 
   /**

@@ -70,9 +70,13 @@ expressApp.get("/local-file/:path", (req, res) => {
   console.log("local-file", path);
   res.sendFile(path);
 });
+expressApp.use("/mobile", express.static(path.join(app.getAppPath(), "/dist-mobile-ui")));
 expressApp.use(express.static(path.join(app.getAppPath(), "/dist-display")));
 
-const ipcws = new IpcWs();
+const ipcws = new IpcWs(
+  ["ui-state-request", "alert", "set-logo", "set-open-media", "set-live-element"],
+  ["invoke-display-get-init-live-state"]
+);
 
 let httpServer: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse> | null = null;
 function startServers() {
@@ -321,6 +325,7 @@ ipcMain.on("alert", (_event, message: string) => {
 function sendToUIWindow(channel: string, ...args: any[]) {
   if (!uiWindow) return;
   uiWindow.webContents.send(channel, ...args);
+  ipcws.broadcastToWsClients(channel, ...args);
 }
 
 function updateUISetlist() {
@@ -336,7 +341,7 @@ function updateUILiveElements() {
 }
 
 function updateUILogo() {
-  sendToUIWindow("ui-state-update-logo", appState.getLogo())
+  sendToUIWindow("ui-state-update-logo", appState.getLogo());
 }
 
 

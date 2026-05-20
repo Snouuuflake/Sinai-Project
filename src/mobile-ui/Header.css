@@ -1,0 +1,140 @@
+.header {
+  display: flex;
+  gap: 10px;
+}
+
+.logo {
+  object-fit: contain;
+  min-width: 0;
+  min-height: 0;
+}
+
+.header-button {
+  flex-grow: 1
+}
+
+
+
+.header-button {
+  background-color: var(--gray-90);
+  border: none;
+  border-radius: 30px;
+  font-weight: bold;
+}
+
+.modal-text-exit-button {
+  text-align: right;
+}
+
+.setlist-item {
+  all: unset;
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  /* box-sizing: border-box; */
+}
+.setlist-item:hover {
+  background-color: transparent;
+  color: color-mix(in srgb, var(--gray-70), var(--hi-1));
+}
+.setlist-item:focus-visible {
+  outline: none;
+}
+.setlist-item:focus-visible .setlist-item-id-container  {
+  /* outline: 2px solid var(--hi-1-base) */
+  background-color: color-mix(in srgb, var(--hi-1-base), transparent 50%);
+  color: var(--bg);
+}
+.setlist-item:active {
+  /* background-color: transparent; */
+  color: var(--hi-1);
+}
+/* .setlist-item:active>.setlist-item-id-container, */
+.setlist-item:active>.setlist-item-name-container
+{
+  color: inherit;
+}
+.setlist-item:hover>.setlist-item-name-container,
+.setlist-item:active>.setlist-item-name-container{
+  font-weight: bold;
+}
+
+.setlist-item-id-container {
+  text-align: right;
+  color: var(--gray-50);
+}
+.setlist-item-name-container {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+
+.setlist-items-container {
+  width: 100%;
+  /* flex-grow: 1; */
+  overflow-y: scroll;
+  border-top: 4px solid var(--gray-60);
+  border-bottom: 4px solid var(--gray-60);
+}
+
+.logo-button-modal-display-buttons-container {
+  height: 100%;
+  width: 100%;
+  display: grid; 
+  grid-auto-rows: 1fr;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.logo-button-modal {
+  height: 90vh;
+  width: 90vw;
+  display: grid;
+  gap: 20px;
+  grid-template-rows: 60px;
+  grid-template-columns: 1fr ;
+}
+
+
+.logo-button-modal-display-button {
+  height: 100%;
+  width: 100%;
+  font-size: 60px;
+}
+
+@media (orientation: portrait) {
+  .header {
+    display: grid;
+    grid-template-areas:  "status status" "setlist-button logo-button";
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 25px 1fr;
+  }
+  .setlist-button {
+    grid-area: "setlist-button";
+  }
+  .logo-button {
+    grid-area: "logo-button";
+  }
+  .ws-status-container {
+    grid-area: "status";
+  }
+  .logo {
+    display: none;
+    /* height: 100%; */
+    /* max-height: 100%; */
+  }
+}
+
+@media (orientation: landscape) {
+  .header {
+    flex-direction: column;
+  }
+  .logo {
+    width: 100%;
+    max-width: 100%;
+  }
+}

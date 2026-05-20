@@ -548,7 +548,7 @@ ipcMain.on(
         }
 
         const errors: Error[] = [];
-        const setlistLengthDigits = Math.round(Math.log10(appState.getUIStateSetlist().length));
+        const setlistLengthDigits = Math.ceil(Math.log10(appState.getUIStateSetlist().length + 1));
         const setlistDebugName = result.filePath.slice(-30);
         appState.getUIStateSetlist().forEach(
           (smi, i) => {
@@ -575,13 +575,16 @@ ipcMain.on(
                 case "image":
                   media = appState.media.get(smi.id);
                   if (media instanceof MediaImage) {
-                    const fileName = filePrefix + path.basename(media.value.path);
+                    const basename = path.basename(media.value.path);
+                    const replacedName = basename.replace(/^sp_\d+_/, "");
+                    console.log(basename, replacedName);
+                    const fileName = filePrefix + replacedName;
 
                     fs.copyFile(
                       media.value.path,
                       path.join(
                         result.filePath,
-                        filePrefix + path.basename(media.value.path)
+                        fileName,
                       ),
                       fs.constants.COPYFILE_FICLONE,
                       (err) => {

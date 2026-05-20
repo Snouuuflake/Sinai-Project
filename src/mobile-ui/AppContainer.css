@@ -8,7 +8,7 @@
 @media (orientation: portrait) {
   .app-container {
     grid-template-areas: "header" "controls";
-    grid-template-rows: 1fr 3fr;
+    grid-template-rows: 150px 1fr;
     grid-template-columns: 1fr;
   }
 }

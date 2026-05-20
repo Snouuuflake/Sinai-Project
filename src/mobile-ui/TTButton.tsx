@@ -34,7 +34,12 @@ const TTButton: React.FC<{
 
   }
   return (
-    <button onClick={handleClick} className={className} style={style}>
+    <button onClick={handleClick} className={className}
+      style={{
+        opacity: pending ? "0.4" : "1",
+        ...style
+      }}
+    >
       {children}
     </button>
   )

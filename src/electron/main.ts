@@ -1,9 +1,15 @@
 import { app, BrowserWindow, ipcMain, dialog, protocol, net } from "electron";
-import { DISPLAYS } from "../shared/constants.js";
 import { pathToFileURL } from "url";
 import path from "path";
+import * as fs from "fs";
+import express from "express";
+import { AddressInfo, WebSocketServer } from "ws";
+import http from "http";
+
+
 import { isDev } from "./util.js";
 import { getConfigPath, getPreloadPath } from "./pathResolver.js";
+import { DISPLAYS } from "../shared/constants.js";
 import {
   LiveElementIdentifier,
   MediaImage,
@@ -12,14 +18,13 @@ import {
   SerializedLiveState,
   Media,
 } from "../shared/media-classes.js";
-import * as fs from "fs";
+
 import { parseSong, logSong, stringifySong } from "./parser.js";
+
 import { AppState, MainDisplayConfigEntry, MainGeneralConfigEntry } from "./AppState.js";
+
 import { IpcWs } from "./IpcWs.js";
 
-import express from "express";
-import { AddressInfo, WebSocketServer } from "ws";
-import http from "http";
 
 const FILTERS = {
   "Images": {
@@ -48,10 +53,6 @@ process.on('unhandledRejection', (error: Error) => {
   dialog.showErrorBox('Error', error.message);
 });
 
-function alertMessageBox(message: string) {
-  if (uiWindow)
-    dialog.showMessageBox(uiWindow, { message: message, });
-}
 
 const expressApp = express();
 expressApp.get("/fetch-media/:id", (req, res) => {
@@ -159,7 +160,7 @@ if (fs.existsSync(getConfigPath())) {
       { encoding: "utf8" },
     );
   } catch (err) {
-    if (err instanceof Error) { alertMessageBox(err.message) }
+    if (err instanceof Error) { dialog.showErrorBox("Error", err.message) }
   }
 }
 
@@ -231,7 +232,7 @@ ipcMain.on("ui-set-display-config-entry", (_event, id, index, value) => {
     updateDisplayConfig();
   } catch (err) {
     if (err instanceof Error) {
-      alertMessageBox(err.message);
+      dialog.showErrorBox("Error", err.message);
     }
   }
 });
@@ -241,7 +242,7 @@ ipcMain.on("ui-reset-display-config-entry", (_event, id, index) => {
     updateDisplayConfig();
   } catch (err) {
     if (err instanceof Error) {
-      alertMessageBox(err.message);
+      dialog.showErrorBox("Error", err.message);
     }
   }
 });
@@ -287,7 +288,7 @@ ipcMain.on("ui-set-general-config-entry", (_event, id, value) => {
     updateUIGeneralConfig();
   } catch (err) {
     if (err instanceof Error) {
-      alertMessageBox(err.message);
+      dialog.showErrorBox("Error", err.message);
     }
   }
 });
@@ -297,7 +298,7 @@ ipcMain.on("ui-reset-general-config-entry", (_event, id) => {
     updateUIGeneralConfig();
   } catch (err) {
     if (err instanceof Error) {
-      alertMessageBox(err.message);
+      dialog.showErrorBox("Error", err.message);
     }
   }
 });
@@ -319,7 +320,7 @@ ipcMain.on("new-display-window", (_event, id: number) => {
 });
 
 ipcMain.on("alert", (_event, message: string) => {
-  alertMessageBox(message);
+  dialog.showErrorBox("Error", message);
 });
 
 function sendToUIWindow(channel: string, ...args: any[]) {
@@ -471,7 +472,8 @@ ipcMain.on("add-songs", (_event) => {
             result => result.status === "rejected"
           );
           if (errors.length > 0)
-            alertMessageBox(
+            dialog.showErrorBox(
+              "Error",
               errors.map(result => `${result.reason}`).join("\n")
             );
           updateUISetlist();
@@ -497,7 +499,7 @@ ipcMain.on(
           result.filePaths[0],
           async (err, files) => {
             if (err) {
-              alertMessageBox(`Error reading folder: ${err.message}`);
+              dialog.showErrorBox("Error", `Error reading folder: ${err.message}`);
               return;
             }
             const filePaths = files.map(file => path.resolve(result.filePaths[0], file)).filter(fp => fs.statSync(fp).isFile()).sort();
@@ -518,7 +520,7 @@ ipcMain.on(
             }
 
             if (errors.length > 0)
-              alertMessageBox("Errores leyendo setlist: \n" + errors.map(err => err.message).join("\n"));
+              dialog.showErrorBox("Error", "Errores leyendo setlist: \n" + errors.map(err => err.message).join("\n"));
 
             updateUISetlist();
           }
@@ -548,7 +550,7 @@ ipcMain.on(
           fs.mkdirSync(result.filePath, { recursive: true })
         } catch (err) {
           if (err instanceof Error)
-            alertMessageBox("Error writing setlist" + " " + err.message);
+            dialog.showErrorBox("Error", "Error writing setlist" + " " + err.message);
           return;
         }
 
@@ -594,7 +596,7 @@ ipcMain.on(
                       fs.constants.COPYFILE_FICLONE,
                       (err) => {
                         if (err) {
-                          alertMessageBox(` Error copying image ${(media as MediaImage).value.path.slice(-30)} to setlist ${setlistDebugName}: \n${err.message}`);
+                          dialog.showErrorBox("Error", ` Error copying image ${(media as MediaImage).value.path.slice(-30)} to setlist ${setlistDebugName}: \n${err.message}`);
                         } else {
                           console.log(`wrote image ${fileName} to setlist ${setlistDebugName}`);
                         }
@@ -615,9 +617,7 @@ ipcMain.on(
           }
         );
         if (errors.length > 0)
-          alertMessageBox(
-            errors.join("\n")
-          );
+          dialog.showErrorBox("Error", errors.join("\n"));
       }
     );
   }
@@ -628,7 +628,7 @@ ipcMain.on("move-media", (_event, id: number, index: number) => {
     appState.moveSetlistMedia(id, index);
     updateUISetlist();
   } catch (e) {
-    if (e instanceof Error) alertMessageBox(e.message);
+    if (e instanceof Error) dialog.showErrorBox("Error", e.message);
   }
 })
 
@@ -648,7 +648,7 @@ ipcMain.on("delete-media", (_event, id: number) => {
         updateUISetlist();
         updateUIOpenMedia(); // !!
       } catch (e) {
-        if (e instanceof Error) alertMessageBox(e.message);
+        if (e instanceof Error) dialog.showErrorBox("Error", e.message);
       }
     }
   })
@@ -672,7 +672,7 @@ ipcMain.on("replace-song", (_event, id: number, song: Song) => {
     appState.setSongMediaSong(id, song);
   } catch (e) {
     if (e instanceof Error)
-      alertMessageBox(`Error replacing song: {id} {song.properties.title}\n{err.message}`);
+      dialog.showErrorBox("Error", `Error replacing song: {id} {song.properties.title}\n{err.message}`);
   }
   updateUIOpenMedia();
   updateUISetlist();
@@ -682,12 +682,12 @@ function writeSong(filePath: string, media: MediaSong) {
   try {
     fs.writeFile(filePath, stringifySong(media.value.song), err => {
       if (err) {
-        alertMessageBox(`Error saving song: {media.id} {media.name}\n{err.message}`);
+        dialog.showErrorBox("Error", `Error saving song: {media.id} {media.name}\n{err.message}`);
       }
     });
   } catch (err) {
     if (err instanceof Error) {
-      alertMessageBox(`Error saving song: {media.id} {media.name}\n{err.message}`);
+      dialog.showErrorBox("Error", `Error saving song: {media.id} {media.name}\n{err.message}`);
     }
   }
 }
@@ -716,7 +716,7 @@ ipcMain.on("set-open-media", (_event, id: number | null) => {
     appState.setOpenMedia(id);
     updateUIOpenMedia();
   } catch (e) {
-    if (e instanceof Error) alertMessageBox(e.message);
+    if (e instanceof Error) dialog.showErrorBox("Error", e.message);
   }
 });
 
@@ -726,7 +726,7 @@ ipcMain.on("set-live-element", (_event, displayId: number, liveElementIdentifier
     updateUILiveElements();
     updateDisplayLiveElement(displayId);
   } catch (e) {
-    if (e instanceof Error) alertMessageBox(e.message);
+    if (e instanceof Error) dialog.showErrorBox("Error", e.message);
   }
 })
 
@@ -736,7 +736,7 @@ ipcMain.on("set-logo", (_event, displayIndex: number, logo: boolean) => {
     updateUILogo();
     updateDisplayLogo(displayIndex);
   } catch (e) {
-    if (e instanceof Error) alertMessageBox(e.message);
+    if (e instanceof Error) dialog.showErrorBox("Error", e.message);
   }
 });
 
@@ -753,9 +753,8 @@ app.on("ready", () => {
         appState.media.get(parseInt(requestContent))!.value.path
       ).toString();
     } catch (e) {
-      if (e instanceof Error) alertMessageBox(
-        `Error handling ${request.url}: ${e.message}`
-      );
+      if (e instanceof Error)
+        dialog.showErrorBox("Error", `Error handling ${request.url}: ${e.message}`);
       fileUrl = "";
     }
     return net.fetch(fileUrl);
@@ -812,5 +811,3 @@ app.on("window-all-closed", () => {
   app.quit();
 });
 
-
-export { alertMessageBox };

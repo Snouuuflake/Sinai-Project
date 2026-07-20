@@ -1,8 +1,8 @@
+import { dialog } from "electron";
 import * as fs from "fs";
 
 import { DISPLAYS } from "../shared/constants.js";
 import { getConfigPath } from "./pathResolver.js";
-import { alertMessageBox } from "./main.js";
 import {
   SerializedLiveElement,
   LiveElementIdentifier,
@@ -115,7 +115,7 @@ class AppState {
   readConfigFile() {
     fs.readFile(getConfigPath(), { encoding: "utf8" }, (err, data) => {
       if (err) {
-        alertMessageBox(err.message);
+        dialog.showErrorBox("Error", err.message);
         return;
       }
       const { dc, gc }: { dc: SerializedDisplayConfigEntry[], gc: SerializedGeneralConfigEntry[] } = JSON.parse(data);
@@ -136,9 +136,8 @@ class AppState {
       gc: this.#gc.map(entry => entry.toSerialized()),
     });
     fs.writeFile(getConfigPath(), data, { encoding: "utf8" }, (err) => {
-      if (err) {
-        alertMessageBox(err.message);
-      }
+      if (err)
+        dialog.showErrorBox("Error", err.message);
     });
   }
   //       INFO: dc ------------------------------

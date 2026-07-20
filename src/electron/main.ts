@@ -75,7 +75,7 @@ expressApp.use("/mobile", express.static(path.join(app.getAppPath(), "/dist-mobi
 expressApp.use(express.static(path.join(app.getAppPath(), "/dist-display")));
 
 const ipcws = new IpcWs(
-  ["ui-state-request", "alert", "set-logo", "set-open-media", "set-live-element"],
+  ["ui-state-request", "ui-display-config-request", "alert", "set-logo", "set-open-media", "set-live-element"],
   ["invoke-display-get-init-live-state"]
 );
 

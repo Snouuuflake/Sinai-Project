@@ -12,3 +12,13 @@ Planned features / changes:
 - [ ] Re-do UI with better UI principles, make better base components
 - [ ] Update UX for a faster workflow
 - [ ] Re-do mobile UI from scratch
+
+## Jul 20 2026
+
+Cleaning the main Electron file, modularizing, adding dependency injection, is turning out to be kind of a nightmare, given the inter-dependence of things like the app state object, all the servers, and the async-ness of it all, which seems to beckon me to make 50 global variables.
+
+## Jul 20 2026
+
+I've managed to abstract / modularize the servers starting & stopping via the SeverManager class, which manages HTTP, Express, Websockets, and IPCWS, which will come in handy when I finally implement allowing the user to pick a port. (Since the previous implementation never cleanly shut down the servers, restarting the app would likely leave the user-defined port occupied.)
+
+Adding config entries to AppState has also been moved to another file.

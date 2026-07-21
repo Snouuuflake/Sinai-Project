@@ -5,6 +5,7 @@ import * as fs from "fs";
 import express from "express";
 import { AddressInfo, WebSocketServer } from "ws";
 import http from "http";
+import { initExpressApp } from "./express.js";
 
 
 import { isDev } from "./util.js";
@@ -24,6 +25,8 @@ import { parseSong, logSong, stringifySong } from "./parser.js";
 import { AppState, MainDisplayConfigEntry, MainGeneralConfigEntry } from "./AppState.js";
 
 import { IpcWs } from "./IpcWs.js";
+import { ServerManager } from "./ServerManager.js";
+import { addConfigEntries } from "./appState-config.js";
 
 
 const FILTERS = {
@@ -54,99 +57,16 @@ process.on('unhandledRejection', (error: Error) => {
 });
 
 
-const expressApp = express();
-expressApp.get("/fetch-media/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const media = appState.media.get(id);
-  console.log("fetch-media", id, media?.value);
-  if (!media || media.type !== "image") {
-    console.log("404ing")
-    res.status(404).end();
-    return;
-  }
-  res.sendFile(media.value.path);
-});
-expressApp.get("/local-file/:path", (req, res) => {
-  const path = decodeURIComponent(req.params.path);
-  console.log("local-file", path);
-  res.sendFile(path);
-});
-expressApp.use("/mobile", express.static(path.join(app.getAppPath(), "/dist-mobile-ui")));
-expressApp.use(express.static(path.join(app.getAppPath(), "/dist-display")));
-
+const appState = new AppState();
 const ipcws = new IpcWs(
   ["ui-state-request", "ui-display-config-request", "alert", "set-logo", "set-open-media", "set-live-element"],
   ["invoke-display-get-init-live-state"]
 );
-
-let httpServer: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse> | null = null;
-function startServers() {
-  // if (httpServer) {
-  //   httpServer.close(console.error);
-  // }
-  httpServer = http.createServer(expressApp);
-  const wss = new WebSocketServer({ server: httpServer });
-
-  httpServer!.listen(0, () => {
-    try {
-      const port = (httpServer!.address() as AddressInfo).port; // e.g. 49823
-      console.log(`!!!!!!!!!! listening on port: ${port}`);
-      updatePort(port);
-    } catch (err) {
-      console.error(err);
-    }
-  });
-
-  ipcws.initWss(wss);
-}
-
-function updateUIPort() {
-  sendToUIWindow("ui-update-port", appState.getPort());
-}
-
-function updatePort(port: number | null) {
-  appState.setPort(port);
-  updateUIPort();
-}
+const serverManager = new ServerManager(initExpressApp(appState), ipcws);
 
 
-
-
-let uiWindow: BrowserWindow;
-const displayWindows: BrowserWindow[] = []
-
-const appState = new AppState();
-
-// dc
-//   general
-
-appState.addDcEntry(new MainDisplayConfigEntry("background-color", "hexcolor", "#000000"));
-appState.addDcEntry(new MainDisplayConfigEntry("background-image", "path", ""))
-
-appState.addDcEntry(new MainDisplayConfigEntry("transition-duration", "nnumber", 300));
-
-appState.addDcEntry(new MainDisplayConfigEntry("logo-path", "path", ""));
-appState.addDcEntry(new MainDisplayConfigEntry("logo-size", "nnumber", 50));
-
-//   text
-appState.addDcEntry(new MainDisplayConfigEntry("font-size", "nnumber", 30));
-appState.addDcEntry(new MainDisplayConfigEntry("font", "string", ""));
-appState.addDcEntry(new MainDisplayConfigEntry("bold", "boolean", false));
-appState.addDcEntry(new MainDisplayConfigEntry("text-color", "hexcolor", "#FFFFFF"));
-appState.addDcEntry(new MainDisplayConfigEntry("text-outline-width", "nnumber", 0));
-appState.addDcEntry(new MainDisplayConfigEntry("text-outline-color", "hexcolor", "#000000"));
-
-appState.addDcEntry(new MainDisplayConfigEntry("text-margin-top", "nnumber", 0));
-appState.addDcEntry(new MainDisplayConfigEntry("text-margin-bottom", "nnumber", 0));
-appState.addDcEntry(new MainDisplayConfigEntry("text-margin-left", "nnumber", 0));
-appState.addDcEntry(new MainDisplayConfigEntry("text-margin-right", "nnumber", 0));
-
-appState.addDcEntry(new MainDisplayConfigEntry("text-background-color", "hexcolor", "#00000000"));
-
-// gc
-appState.addGcEntry(new MainGeneralConfigEntry("dark-theme", "boolean", false));
-
-
+addConfigEntries(appState);
+// attempt to read config file
 if (fs.existsSync(getConfigPath())) {
   appState.readConfigFile();
 } else {
@@ -163,6 +83,9 @@ if (fs.existsSync(getConfigPath())) {
     if (err instanceof Error) { dialog.showErrorBox("Error", err.message) }
   }
 }
+
+let uiWindow: BrowserWindow;
+const displayWindows: BrowserWindow[] = []
 
 
 /**
@@ -201,6 +124,30 @@ function createDisplayWindow(displayId: number) {
 }
 
 
+function updateUIPort() {
+  sendToUIWindow("ui-update-port", appState.getPort());
+}
+
+function updatePort(port: number | null) {
+  appState.setPort(port);
+  updateUIPort();
+}
+
+ipcMain.on("ui-port-request", (_event) => {
+  updateUIPort();
+})
+
+ipcMain.on("ui-restart-server-request", (_event) => {
+  serverManager.start();
+})
+
+ipcMain.on("ui-open-devtools", (_event) => {
+  if (uiWindow)
+    uiWindow.webContents.openDevTools();
+})
+
+
+
 function updateDisplayConfig() {
   sendToUIWindow("ui-update-display-config",
     appState.getSerializedDc()
@@ -209,19 +156,6 @@ function updateDisplayConfig() {
     appState.getSerializedDc()
   )
 }
-
-ipcMain.on("ui-port-request", (_event) => {
-  updateUIPort();
-})
-
-ipcMain.on("ui-restart-server-request", (_event) => {
-  startServers();
-})
-
-ipcMain.on("ui-open-devtools", (_event) => {
-  if (uiWindow)
-    uiWindow.webContents.openDevTools();
-})
 
 ipcMain.on("ui-display-config-request", (_event) => {
   updateDisplayConfig();
@@ -313,8 +247,6 @@ ipcMain.on("ui-general-config-input-path", (_event, id, displayId) => {
   );
 });
 
-/* ------- ui ipc ------- */
-
 ipcMain.on("new-display-window", (_event, id: number) => {
   createDisplayWindow(id);
 });
@@ -344,7 +276,6 @@ function updateUILiveElements() {
 function updateUILogo() {
   sendToUIWindow("ui-state-update-logo", appState.getLogo());
 }
-
 
 function updateAllUI() {
   updateUISetlist();
@@ -742,8 +673,9 @@ ipcMain.on("set-logo", (_event, displayIndex: number, logo: boolean) => {
 
 let hasConfirmedUiWindowClose: boolean = false;
 
-app.on("ready", () => {
-  startServers();
+async function main() {
+  serverManager.updatePortCallback = updatePort;
+  await serverManager.start();
 
   protocol.handle('fetch-media', (request) => {
     const requestContent = decodeURIComponent(request.url.replace('fetch-media://', ''));
@@ -805,9 +737,12 @@ app.on("ready", () => {
   } else {
     uiWindow.loadFile(path.join(app.getAppPath(), "/dist-ui/index.html"));
   }
-});
+}
 
-app.on("window-all-closed", () => {
+app.on("ready", main);
+
+app.on("window-all-closed", async () => {
+  await serverManager.stop();
   app.quit();
 });
 

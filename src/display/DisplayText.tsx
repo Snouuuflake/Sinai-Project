@@ -83,8 +83,8 @@ const AutoScaleText: React.FC<{
       fontFamily: "inherit",
       paddingTop: configHash.get("text-margin-top") as number + "vh",
       paddingBottom: configHash.get("text-margin-bottom") as number + "vh",
-      paddingLeft: configHash.get("text-margin-left") as number + "vh",
-      paddingRight: configHash.get("text-margin-right") as number + "vh",
+      paddingLeft: configHash.get("text-margin-left") as number + "vw",
+      paddingRight: configHash.get("text-margin-right") as number + "vw",
     }}>
       <div
         ref={containerRef}

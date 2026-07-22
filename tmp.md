@@ -411,13 +411,13 @@ This is a very thorough analysis. Let me now organize this into a clear, well-st
 Here's a thorough review of `src/electron`. Issues are grouped by severity.
 
 ---
+```
 
 ## Architecture
 
 ### `main.ts` is a God File
 At 748 lines, `main.ts` owns everything: IPC handlers, file I/O, dialog logic, window management, protocol registration, and app lifecycle. It should be decomposed:
 
-```
 src/electron/
   handlers/
     mediaHandlers.ts    # add-images, add-songs, read-directory, etc.

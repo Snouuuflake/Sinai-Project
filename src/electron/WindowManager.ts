@@ -29,6 +29,9 @@ class WindowManager {
       minWidth: 500,
       minHeight: 500,
       webPreferences: {
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
         preload: getPreloadPath("ui"),
       },
     });
@@ -78,6 +81,10 @@ class WindowManager {
     const displayWindow = new BrowserWindow({
       title: `Sinai Project: Display Window ${displayId + 1}`,
       webPreferences: {
+
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
         preload: getPreloadPath("display"),
       },
     });

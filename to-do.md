@@ -22,14 +22,11 @@ In `IpcWs.ts`, WebSocket messages are bridged into Electron via `ipcMain.emit(ch
 - [X] 3 *bugs* "`getConfigPath()` Returns a Directory in Production"
   `pathResolver.ts` returns `path.join(process.resourcesPath, "extraResources")` in production — a directory, not a file. All `fs.writeFile(getConfigPath(), ...)` calls will fail at runtime in packaged builds.
 
-- [ ] 3 *bugs* "Broken Template Literals in Error Messages"
+- [X] 3 *bugs* "Broken Template Literals in Error Messages"
   Multiple error strings use `{id}` / `{media.name}` instead of `${id}` / `${media.name}`. Users see literal `{id}` in error dialogs rather than the actual value. Search `main.ts` for `"{` to find all occurrences.
 
-- [ ] 0 *bugs* `ipcRendererOnS` Has No Channel Allow-List
+- [ ] 0 *bugs* "`ipcRendererOnS` Has No Channel Allow-List" *i don't think there's anything dangerous to listen to*
   `preload-display.cts` validates outgoing channels but not incoming `on` subscriptions. The display renderer can listen on any arbitrary channel name.
-
-
-## Security
 
 - [ ] 9 *security* "Unguarded `local-file` Express Route"
   `express.ts` serves any local file path via `GET /local-file/:path` with no validation:
@@ -38,7 +35,7 @@ In `IpcWs.ts`, WebSocket messages are bridged into Electron via `ipcMain.emit(ch
   ```
   Any browser client connected over WebSocket can read arbitrary files from the filesystem. Add a path allowlist or restrict to a specific base directory.
 
-- [ ] 3 *security* `contextIsolation` / `sandbox` / `nodeIntegration` Are Not Explicitly Set
+- [X] 3 *security* `contextIsolation` / `sandbox` / `nodeIntegration` Are Not Explicitly Set
   These rely on Electron defaults, which have changed across major versions. They should be explicitly declared in every `BrowserWindow` `webPreferences` for clarity and forward-compatibility:
 
   ```typescript
@@ -49,8 +46,6 @@ In `IpcWs.ts`, WebSocket messages are bridged into Electron via `ipcMain.emit(ch
     preload: getPreloadPath("ui"),
   }
   ```
-
-## Code Quality
 
 - [ ] 3 *code quality* "Dead Code"
   - `http-server.ts` — a stub class with no implementation, never imported. Delete it.

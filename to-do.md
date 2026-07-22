@@ -19,7 +19,7 @@ In `IpcWs.ts`, WebSocket messages are bridged into Electron via `ipcMain.emit(ch
   This `let` boolean in `main.ts` would misbehave if the UI window were ever closed and reopened. It belongs as instance state on a `WindowManager` class.
 
 
-- [ ] 3 *bugs* "`getConfigPath()` Returns a Directory in Production"
+- [X] 3 *bugs* "`getConfigPath()` Returns a Directory in Production"
   `pathResolver.ts` returns `path.join(process.resourcesPath, "extraResources")` in production — a directory, not a file. All `fs.writeFile(getConfigPath(), ...)` calls will fail at runtime in packaged builds.
 
 - [ ] 3 *bugs* "Broken Template Literals in Error Messages"

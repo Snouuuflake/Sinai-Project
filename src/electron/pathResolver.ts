@@ -21,7 +21,7 @@ function getConfigPath(): string {
 
     return path.join(
       process.resourcesPath,
-      "extraResources"
+      "config.json"
     );
   }
 }

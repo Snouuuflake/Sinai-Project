@@ -47,7 +47,7 @@ In `IpcWs.ts`, WebSocket messages are bridged into Electron via `ipcMain.emit(ch
   }
   ```
 
-- [ ] 3 *code quality* "Dead Code"
+- [X] 3 *code quality* "Dead Code"
   - `http-server.ts` — a stub class with no implementation, never imported. Delete it.
   - `electron-constants.ts` — defines allow-list arrays that are never consumed (the actual allow-lists are hardcoded in `preload-display.cts` and passed directly in `main.ts`). Either use this file as the single source of truth, or delete it.
 

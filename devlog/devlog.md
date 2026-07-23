@@ -26,3 +26,5 @@ Adding config entries to AppState has also been moved to another file.
 ## Jul 22 2026
 
 - Fixed the import from `electron-constants.js` in `preload-display.cts` by transpiling/bundling separately with esbuild. (Sandboxed mode didn't allow any imports.)
+
+- Added debounce to AppState's operations that write to the config file using setTimeout

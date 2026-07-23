@@ -130,7 +130,21 @@ class AppState {
       gc.forEach(entry => this.updateGcEntry(entry.id, entry.cur));
     });
   }
+  #writeConfigTimer: ReturnType<typeof setTimeout> | null = null;
+  #scheduleWriteConfig() {
+    console.log("AppState.#scheduleWriteConfig()")
+    const DELAY = 500; //ms
+    if (this.#writeConfigTimer !== null) clearTimeout(this.#writeConfigTimer);
+    this.#writeConfigTimer = setTimeout(
+      () => {
+        this.#writeConfigTimer = null;
+        this.writeConfigFile();
+      },
+      DELAY
+    );
+  }
   writeConfigFile() {
+    console.log("AppState.writeConfigFile()")
     const data = JSON.stringify({
       dc: this.#dc.map(entry => entry.toSerialized()),
       gc: this.#gc.map(entry => entry.toSerialized()),
@@ -156,11 +170,11 @@ class AppState {
   }
   updateDcEntry(id: string, index: number, value: unknown) {
     this.#findAssertDcEntry(id).setCurEntry(index, value);
-    this.writeConfigFile();
+    this.#scheduleWriteConfig();
   }
   resetDcEntry(id: string, index: number) {
     this.#findAssertDcEntry(id).reinitEntry(index);
-    this.writeConfigFile();
+    this.#scheduleWriteConfig();
   }
   getSerializedDc() {
     return this.#dc.map(x => x.toSerialized());
@@ -181,11 +195,11 @@ class AppState {
   }
   updateGcEntry(id: string, value: unknown) {
     this.#findAssertGcEntry(id).cur = value;
-    this.writeConfigFile();
+    this.#scheduleWriteConfig();
   }
   resetGcEntry(id: string) {
     this.#findAssertGcEntry(id).reinitEntry();
-    this.writeConfigFile();
+    this.#scheduleWriteConfig();
   }
   getSerializedGc() {
     return this.#gc.map(x => x.toSerialized());

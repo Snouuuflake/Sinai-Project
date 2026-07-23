@@ -3,7 +3,7 @@
 
 ## branch: clean-electron
 
-### ai-revision
+### ai electron suggestions
 
 - [X] 2 *architecture* "`main.ts` is a God File" 
   At 748 lines, `main.ts` owns everything: IPC handlers, file I/O, dialog logic, window management, protocol registration, and app lifecycle. It should be decomposed:
@@ -51,7 +51,7 @@ In `IpcWs.ts`, WebSocket messages are bridged into Electron via `ipcMain.emit(ch
   - `http-server.ts` — a stub class with no implementation, never imported. Delete it.
   - `electron-constants.ts` — defines allow-list arrays that are never consumed (the actual allow-lists are hardcoded in `preload-display.cts` and passed directly in `main.ts`). Either use this file as the single source of truth, or delete it.
 
-- [ ] 1 *code quality* DRY Violation: Allow-Lists Duplicated in Three Places
+- [X] 1 *code quality* DRY Violation: Allow-Lists Duplicated in Three Places
   The display IPC channel allow-lists exist in `electron-constants.ts`, hardcoded in `preload-display.cts`, and as inline literals passed to `IpcWs` in `main.ts`. Only one source should exist and the others should import from it.
 
 - [ ] 3 Config Written on Every Keystroke

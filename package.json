@@ -17,7 +17,7 @@
     "build:display": "vite build --config vite.config.display.ts",
     "build:mobile-ui": "vite build --config vite.config.mobile-ui.ts",
     "bdev": "npm run build:display && npm run dev",
-    "transpile:electron": "tsc --project src/electron/tsconfig.json",
+    "transpile:electron": "tsc --project src/electron/tsconfig.json && esbuild src/electron/preload-display.cts --bundle --platform=node --format=cjs --external:electron --outfile=dist-electron/electron/preload-display.cjs",
     "rmdist": "powershell -Command \"if (Test-Path dist) {Remove-Item -Recurse -Force dist}\"",
     "dist:win": "npm run rmdist && npm run build && electron-builder --win"
   },

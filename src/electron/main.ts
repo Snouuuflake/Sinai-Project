@@ -37,6 +37,8 @@ import { registerUIHandlers } from "./handlers/uiHandlers.js";
 import { registerMiscHandlers } from "./handlers/miscHandlers.js";
 import { registerDisplayHandlers } from "./handlers/displayHandlers.js";
 
+import { ALLOWED_DISPLAY_INVOKE_CHANNELS, ALLOWED_DISPLAY_SEND_CHANNELS } from "./electron-constants.js";
+
 // handling unhandled rejected promises
 process.on('unhandledRejection', (error: Error) => {
   console.error('Unhandled rejection in main process:', error);
@@ -44,13 +46,13 @@ process.on('unhandledRejection', (error: Error) => {
   dialog.showErrorBox('Error', error.message);
 });
 
-let hasConfirmedUiWindowClose: boolean = false;
-
 async function main() {
   const appState = new AppState();
   const ipcws = new IpcWs(
-    ["ui-state-request", "ui-display-config-request", "alert", "set-logo", "set-open-media", "set-live-element"],
-    ["invoke-display-get-init-live-state"]
+    ALLOWED_DISPLAY_SEND_CHANNELS,
+    ALLOWED_DISPLAY_INVOKE_CHANNELS,
+    // ["ui-state-request", "ui-display-config-request", "alert", "set-logo", "set-open-media", "set-live-element"],
+    // ["invoke-display-get-init-live-state"]
   );
 
   addConfigEntries(appState);

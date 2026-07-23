@@ -1,13 +1,20 @@
+/** INFO:
+ *  this file is transpiled/bundled with esbuild in order to
+ *  metaprogramatically insert the electron-constants.js import
+ *  (which sandbox mode doesnt allow).
+ */
 import { ipcRenderer, contextBridge } from "electron";
+// @ts-ignore
+import { ALLOWED_DISPLAY_INVOKE_CHANNELS, ALLOWED_DISPLAY_SEND_CHANNELS } from "./electron-constants.js";
 
-const ALLOWED_DISPLAY_SEND_CHANNELS: string[] = [
-  "alert",
-  "ui-display-config-request"
-] as const;
-
-const ALLOWED_DISPLAY_INVOKE_CHANNELS: string[] = [
-  "invoke-display-get-init-live-state"
-] as const;
+// const ALLOWED_DISPLAY_SEND_CHANNELS: string[] = [
+//   "alert",
+//   "ui-display-config-request"
+// ] as const;
+//
+// const ALLOWED_DISPLAY_INVOKE_CHANNELS: string[] = [
+//   "invoke-display-get-init-live-state"
+// ] as const;
 
 function ipcRendererSendS(channel: string, ...args: any[]) {
   if (!ALLOWED_DISPLAY_SEND_CHANNELS.includes(channel))

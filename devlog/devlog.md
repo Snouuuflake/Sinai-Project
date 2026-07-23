@@ -22,3 +22,7 @@ Cleaning the main Electron file, modularizing, adding dependency injection, is t
 I've managed to abstract / modularize the servers starting & stopping via the SeverManager class, which manages HTTP, Express, Websockets, and IPCWS, which will come in handy when I finally implement allowing the user to pick a port. (Since the previous implementation never cleanly shut down the servers, restarting the app would likely leave the user-defined port occupied.)
 
 Adding config entries to AppState has also been moved to another file.
+
+## Jul 22 2026
+
+- Fixed the import from `electron-constants.js` in `preload-display.cts` by transpiling/bundling separately with esbuild. (Sandboxed mode didn't allow any imports.)

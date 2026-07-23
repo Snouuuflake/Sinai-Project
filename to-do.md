@@ -54,7 +54,7 @@ In `IpcWs.ts`, WebSocket messages are bridged into Electron via `ipcMain.emit(ch
 - [X] 1 *code quality* DRY Violation: Allow-Lists Duplicated in Three Places
   The display IPC channel allow-lists exist in `electron-constants.ts`, hardcoded in `preload-display.cts`, and as inline literals passed to `IpcWs` in `main.ts`. Only one source should exist and the others should import from it.
 
-- [ ] 3 Config Written on Every Keystroke
+- [X] 3 Config Written on Every Keystroke
   `AppState` calls `writeConfigFile()` on every config mutation with no debounce. For text inputs (font size, colors, margins) this triggers a disk write per keystroke. Add a debounce (~300ms).
 
 - [ ] 0 *code quality* "Unbounded `wsQueue` in `IpcWsClient.ts`"

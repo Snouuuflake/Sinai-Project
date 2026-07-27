@@ -5,9 +5,9 @@ import { app } from "electron";
 
 function initExpressApp(appState: AppState) {
   const expressApp = express();
-  expressApp.get("/fetch-media/:id", (req, res) => {
+  expressApp.get("/fetch-setlist-media/:id", (req, res) => {
     const id = parseInt(req.params.id);
-    const media = appState.media.get(id);
+    const media = appState.setlistMedia.get(id);
     console.log("fetch-media", id, media?.value);
     if (!media || media.type !== "image") {
       console.log("404ing")

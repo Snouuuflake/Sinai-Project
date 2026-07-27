@@ -165,7 +165,7 @@ const ImageControls:
           </div>
           <img
             className="image-controls-image"
-            src={`${window.location.origin}/fetch-media/${openMedia.id}`}
+            src={`${window.location.origin}/fetch-setlist-media/${openMedia.id}`}
 
           />
         </div>

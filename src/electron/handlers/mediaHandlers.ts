@@ -14,7 +14,7 @@ export function registerMediaHandlers(
 ) {
   const uiUpdaters = new UIUpdaters(appState, windowManager);
   ipcMain.on("create-song", (_event, title: string, author: string) => {
-    appState.addMedia(new MediaSong(title, {
+    appState.addSetlistMedia(new MediaSong(title, {
       properties: {
         title: title,
         author: author,
@@ -28,7 +28,7 @@ export function registerMediaHandlers(
 
   ipcMain.on("replace-song", (_event, id: number, song: Song) => {
     try {
-      appState.setSongMediaSong(id, song);
+      appState.setSetlistMediaSongMediaSong(id, song);
     } catch (err) {
       if (err instanceof Error)
         dialog.showErrorBox("Error", `Error replacing song: ${id} ${song.properties.title}\n${err.message}`);
@@ -52,7 +52,7 @@ export function registerMediaHandlers(
   }
 
   ipcMain.on("save-song", (_event, id: number) => {
-    const media = appState.media.get(id);
+    const media = appState.setlistMedia.get(id);
     if (media?.type !== "song")
       return;
 
@@ -79,7 +79,7 @@ export function registerMediaHandlers(
   function readImage(filePath: string): Promise<void | Error> {
     return new Promise<void>(
       (resolve, _reject) => {
-        appState.addMedia(
+        appState.addSetlistMedia(
           new MediaImage(filePath.split(path.sep).at(-1) ?? "Image", filePath)
         );
         resolve();
@@ -117,7 +117,7 @@ export function registerMediaHandlers(
               try {
                 const song = parseSong(data);
                 logSong(song);
-                appState.addMedia(
+                appState.addSetlistMedia(
                   new MediaSong(
                     song.properties.title, song
                   )
@@ -251,7 +251,7 @@ export function registerMediaHandlers(
                 let media: Media | undefined = undefined;
                 switch (smi.type) {
                   case "song":
-                    media = appState.media.get(smi.id);
+                    media = appState.setlistMedia.get(smi.id);
                     if (media instanceof MediaSong) {
                       const fileName = path.join(result.filePath, filePrefix + media.name + ".sinai",)
                       writeSong(
@@ -264,7 +264,7 @@ export function registerMediaHandlers(
                     }
                     break;
                   case "image":
-                    media = appState.media.get(smi.id);
+                    media = appState.setlistMedia.get(smi.id);
                     if (media instanceof MediaImage) {
                       const basename = path.basename(media.value.path);
                       const replacedName = basename.replace(/^sp_\d+_/, "");
@@ -312,7 +312,7 @@ export function registerMediaHandlers(
 
   ipcMain.on("move-media", (_event, id: number, index: number) => {
     try {
-      appState.moveSetlistMedia(id, index);
+      appState.moveSetlistEntry(id, index);
       uiUpdaters.updateUISetlist();
     } catch (e) {
       if (e instanceof Error) dialog.showErrorBox("Error", e.message);
@@ -320,7 +320,7 @@ export function registerMediaHandlers(
   })
 
   ipcMain.on("delete-media", (_event, id: number) => {
-    let mediaToDelete = appState.media.get(id);
+    let mediaToDelete = appState.setlistMedia.get(id);
     if (mediaToDelete === undefined)
       throw new Error("delete-media: media id doesn't exist");
 
@@ -334,7 +334,7 @@ export function registerMediaHandlers(
     }).then(value => {
       if (value.response === 0) {
         try {
-          appState.deleteMedia(id);
+          appState.deleteSetlistMedia(id);
           uiUpdaters.updateUISetlist();
           uiUpdaters.updateUIOpenMedia(); // !!
         } catch (e) {

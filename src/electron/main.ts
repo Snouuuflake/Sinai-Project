@@ -48,32 +48,14 @@ process.on('unhandledRejection', (error: Error) => {
 
 async function main() {
   const appState = new AppState();
+
   const ipcws = new IpcWs(
     ALLOWED_DISPLAY_SEND_CHANNELS,
     ALLOWED_DISPLAY_INVOKE_CHANNELS,
-    // ["ui-state-request", "ui-display-config-request", "alert", "set-logo", "set-open-media", "set-live-element"],
-    // ["invoke-display-get-init-live-state"]
   );
 
   addConfigEntries(appState);
 
-  // attempt to read config file
-  if (fs.existsSync(getConfigPath())) {
-    appState.readConfigFile();
-  } else {
-    try {
-      fs.writeFileSync(
-        getConfigPath(),
-        JSON.stringify({
-          dc: [],
-          gc: []
-        }),
-        { encoding: "utf8" },
-      );
-    } catch (err) {
-      if (err instanceof Error) { dialog.showErrorBox("Error", err.message) }
-    }
-  }
 
   const windowManager = new WindowManager(ipcws);
 
@@ -104,12 +86,13 @@ async function main() {
   registerDisplayHandlers(appState, windowManager, ipcws);
   registerMiscHandlers(appState, windowManager);
 
-  protocol.handle('fetch-media', (request) => {
-    const requestContent = decodeURIComponent(request.url.replace('fetch-media://', ''));
+  protocol.handle('fetch-setlist-media', (request) => {
+    const requestContent = decodeURIComponent(request.url.replace('fetch-setlist-media://', ''));
     let fileUrl: string;
     try {
+      console.log(`trying to fetch setlist media - requestContent: ${requestContent}`);
       fileUrl = pathToFileURL(
-        appState.media.get(parseInt(requestContent))!.value.path
+        appState.setlistMedia.get(parseInt(requestContent))!.value.path
       ).toString();
     } catch (e) {
       if (e instanceof Error)
@@ -119,11 +102,58 @@ async function main() {
     return net.fetch(fileUrl);
   });
 
+  protocol.handle('fetch-extra-media', async (request) => {
+    const requestContent = decodeURIComponent(request.url.replace('fetch-extra-media://', '').replace(/\?.*/, ""));
+    let fileUrl: string;
+    try {
+      console.log(`trying to fetch extra media - requestContent: ${requestContent}`);
+      appState.extraMedia.forEach((a, b) => console.log(a, b));
+      fileUrl = pathToFileURL(
+        appState.extraMedia.get(requestContent)!.value.path
+      ).toString();
+    } catch (e) {
+      if (e instanceof Error)
+        dialog.showErrorBox("Error", `Error handling ${request.url}: ${e.message}`);
+      fileUrl = "";
+    }
+
+    // TODO: also avoid caching above
+    const response = await net.fetch(fileUrl);
+    const headers = new Headers(response.headers);
+    headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    headers.set('Pragma', 'no-cache');
+    headers.set('Expires', '0');
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  });
+
   // FIXME: transcendental security risk
   protocol.handle('local-file', request => {
     const pathToMedia = new URL(request.url).pathname
     return net.fetch(`file://${pathToMedia}`)
   });
+
+  // attempt to read config file
+  if (fs.existsSync(getConfigPath())) {
+    appState.readConfigFile();
+  } else {
+    try {
+      fs.writeFileSync(
+        getConfigPath(),
+        JSON.stringify({
+          dc: [],
+          gc: []
+        }),
+        { encoding: "utf8" },
+      );
+    } catch (err) {
+      if (err instanceof Error) { dialog.showErrorBox("Error", err.message) }
+    }
+  }
 
   windowManager.createUiWindow();
 }

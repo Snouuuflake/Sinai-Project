@@ -50,6 +50,13 @@ abstract class Media {
       type: this.type,
     }
   }
+  toSerializedMedia(): SerializedMedia {
+    return {
+      name: this.name,
+      type: this.type,
+      value: this.value,
+    }
+  }
   toSerializedMediaWithId(id: number): SerializedMediaWithId {
     return {
       id: id,
@@ -65,6 +72,12 @@ type SerializedMediaIdentifier = {
   id: number;
   name: string;
   type: MediaTypeType;
+}
+
+type SerializedMedia = {
+  name: string;
+  type: MediaTypeType;
+  value: any;
 }
 
 type SerializedMediaWithId = {
@@ -204,6 +217,7 @@ export type {
   MediaImageValueType,
   SerializedMediaIdentifier,
   SerializedMediaWithId,
+  SerializedMedia,
   SerializedImageMediaWithId,
   SerializedSongMediaWithId,
   LiveElementIdentifier,

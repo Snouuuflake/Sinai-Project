@@ -3,9 +3,9 @@ import { SerializedLiveElement } from "../shared/media-classes"
 
 export function mediaUrl(id: number): string {
   if (isElectron()) {
-    return `fetch-media://${id}`;
+    return `fetch-setlist-media://${id}`;
   }
-  return `${window.location.origin}/fetch-media/${id}`;
+  return `${window.location.origin}/fetch-setlist-media/${id}`;
 }
 
 const DisplayImage: React.FC<{ liveElement: SerializedLiveElement, className: string }> =

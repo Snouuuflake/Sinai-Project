@@ -30,7 +30,7 @@ const ImageControls:
           </div>
           <img
             className="image-controls-image"
-            src={`fetch-media://${openMedia.id}`}
+            src={`fetch-setlist-media://${openMedia.id}`}
           />
         </div>
       </ProjectElementButton>

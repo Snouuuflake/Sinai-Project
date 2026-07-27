@@ -28,3 +28,19 @@ Adding config entries to AppState has also been moved to another file.
 - Fixed the import from `electron-constants.js` in `preload-display.cts` by transpiling/bundling separately with esbuild. (Sandboxed mode didn't allow any imports.)
 
 - Added debounce to AppState's operations that write to the config file using setTimeout
+
+## Jul 23 2026
+
+In order to do away with the horrible API that _fully exposes the filesystem_, I plan to reserve the first hundred media IDs, so that things like the logo, which aren't part of the setlist, can be accessed by the media ID API.
+## Jul 25 2026
+
+I am going to implement callbacks on AppState's general config updating methods.
+
+
+TMP: i need to -> make a dev test button to make sure that logo media actually gets set when changing config
+               -> kill the unsafe protocol
+               -> test logo with the new id implementation
+               -> add background id's 
+               -> but background id's are dynamic, maybe should implement a separate key:str - media map logo and backgrounds and undo the other thing
+                  that would certainly be cleaner to add more fixed media in the future
+                  then there would be two protocols

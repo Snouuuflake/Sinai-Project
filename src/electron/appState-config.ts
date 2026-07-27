@@ -1,4 +1,6 @@
+import { Media, MediaImage } from "../shared/media-classes.js";
 import { AppState, MainDisplayConfigEntry, MainGeneralConfigEntry } from "./AppState.js";
+import path from "path";
 
 function addConfigEntries(appState: AppState) {
   //   general
@@ -8,6 +10,25 @@ function addConfigEntries(appState: AppState) {
   appState.addDcEntry(new MainDisplayConfigEntry("transition-duration", "nnumber", 300));
 
   appState.addDcEntry(new MainDisplayConfigEntry("logo-path", "path", ""));
+
+  appState.addDcCallback(
+    "logo-path",
+    (newValue) => {
+      (newValue as string[]).forEach(
+        (v, i) => {
+          console.log(`dcCalback for "logo-path" setting "logo-media-${i}" with ${v}`);
+          appState.setExtraMedia(
+            `logo-media-${i}`,
+            new MediaImage(
+              path.basename(v),
+              v
+            )
+          )
+        }
+      )
+    }
+  );
+
   appState.addDcEntry(new MainDisplayConfigEntry("logo-size", "nnumber", 50));
 
   //   text

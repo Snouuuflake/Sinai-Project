@@ -119,23 +119,23 @@ async function main() {
 
     // TODO: also avoid caching above
     const response = await net.fetch(fileUrl);
-    const headers = new Headers(response.headers);
-    headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
-    headers.set('Pragma', 'no-cache');
-    headers.set('Expires', '0');
+    // const headers = new Headers(response.headers);
+    // headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    // headers.set('Pragma', 'no-cache');
+    // headers.set('Expires', '0');
 
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
-      headers,
+      // headers,
     });
   });
 
-  // FIXME: transcendental security risk
-  protocol.handle('local-file', request => {
-    const pathToMedia = new URL(request.url).pathname
-    return net.fetch(`file://${pathToMedia}`)
-  });
+  // // transcendental security risk
+  // protocol.handle('local-file', request => {
+  //   const pathToMedia = new URL(request.url).pathname
+  //   return net.fetch(`file://${pathToMedia}`)
+  // });
 
   // attempt to read config file
   if (fs.existsSync(getConfigPath())) {

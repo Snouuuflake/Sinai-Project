@@ -7,6 +7,28 @@ function addConfigEntries(appState: AppState) {
   appState.addDcEntry(new MainDisplayConfigEntry("background-color", "hexcolor", "#000000"));
   appState.addDcEntry(new MainDisplayConfigEntry("background-image", "path", ""))
 
+  appState.addDcCallback(
+    "background-image",
+    (newValue) => {
+      newValue.forEach(
+        (v, i) => {
+          if (typeof v !== "string") {
+            console.error(`dcCalback for "background-image": error - value of index ${i} is not string `);
+            return;
+          }
+          console.log(`dcCalback for "background-image" setting "background-image-${i}" with ${v}`);
+          appState.setExtraMedia(
+            `background-image-${i}`,
+            new MediaImage(
+              path.basename(v),
+              v
+            )
+          )
+        }
+      )
+    }
+  );
+
   appState.addDcEntry(new MainDisplayConfigEntry("transition-duration", "nnumber", 300));
 
   appState.addDcEntry(new MainDisplayConfigEntry("logo-path", "path", ""));
@@ -14,8 +36,12 @@ function addConfigEntries(appState: AppState) {
   appState.addDcCallback(
     "logo-path",
     (newValue) => {
-      (newValue as string[]).forEach(
+      newValue.forEach(
         (v, i) => {
+          if (typeof v !== "string") {
+            console.error(`dcCalback for "logo-path": error - value of index ${i} is not string `);
+            return;
+          }
           console.log(`dcCalback for "logo-path" setting "logo-media-${i}" with ${v}`);
           appState.setExtraMedia(
             `logo-media-${i}`,

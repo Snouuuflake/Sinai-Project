@@ -7,11 +7,11 @@ import { formatSrcPath } from "./util";
 import { CustomIPC } from "../shared/IpcWsClient";
 import { isElectron } from "../shared/isElectron";
 
-export function extraMediaUrl(id: string): string {
+export function extraMediaUrl(id: string, x: number = 0): string {
   if (isElectron()) {
-    return `fetch-extra-media://${id}?t=${Date.now()}`;
+    return `fetch-extra-media://${id}?x=${x}`;
   }
-  return `${window.location.origin}/fetch-extra-media/${encodeURIComponent(id)}?t=${Date.now()}`;
+  return `${window.location.origin}/fetch-extra-media/${encodeURIComponent(id)}?x=${x}`;
 }
 
 const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
@@ -57,10 +57,27 @@ const Body: React.FC<{}> = () => {
   const [prevLiveElement, setPrevLiveElement] = useState<SerializedLiveElement | null>(null);
   const hasRequestedLiveState = useRef<boolean>(false);
 
+  const backgroundPathRef = useRef<string>((configHash.get("background-image") as string) ?? "");
+  // // janky but it doesnt save useRef's initial value?? ever ??
+  // backgroundPathRef.current = (configHash.get("background-image") as string) ?? "";
+  console.log("ref current", backgroundPathRef.current)
+  const [backgroundUrlX, setBackgroundUrlX] = useState<number>(0);
+
+
   const [logoIsVisible, setLogoIsVisible] = useState<boolean>(false);
 
   const curLiveElementRef = useRef<SerializedLiveElement | null>(null);
 
+  useEffect(
+    () => {
+      if (backgroundPathRef.current !== ((configHash.get("background-image") as string) ?? "")) {
+        console.log(backgroundPathRef.current, "|", (configHash.get("background-image") as string) ?? "");
+        setBackgroundUrlX(backgroundUrlX + 1),
+          backgroundPathRef.current = (configHash.get("background-image") as string) ?? "";
+        console.log("background change!")
+      }
+    }, [configHash]
+  )
 
   useEffect(() => {
     // const remover = (window as unknown as UIWindow).electron.onDisplayStateUpdateLiveElement(
@@ -104,7 +121,7 @@ const Body: React.FC<{}> = () => {
 
   return <div className="body" style={{
     backgroundColor: configHash.get("background-color") as string,
-    backgroundImage: `url("local-file://${formatSrcPath(configHash.get("background-image") as string)}")`
+    backgroundImage: `url("${extraMediaUrl("background-image-" + DISPLAY_ID, backgroundUrlX)}")`
   }}>
     <style>
       {

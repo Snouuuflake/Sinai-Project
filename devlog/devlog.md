@@ -36,11 +36,8 @@ In order to do away with the horrible API that _fully exposes the filesystem_, I
 
 I am going to implement callbacks on AppState's general config updating methods.
 
+## Jul 27 2026
 
-TMP: i need to -> make a dev test button to make sure that logo media actually gets set when changing config
-               -> kill the unsafe protocol
-               -> test logo with the new id implementation
-               -> add background id's 
-               -> but background id's are dynamic, maybe should implement a separate key:str - media map logo and backgrounds and undo the other thing
-                  that would certainly be cleaner to add more fixed media in the future
-                  then there would be two protocols
+I did away with the horrible, unsafe (full fs) access protocol in favor of storing all non-setlist media (logos, backgrounds) in a separate Map in AppState, and adding a protocol that let's clients request them only by their ID in that map.
+
+Since the URl for, say, a logo is always the same, the client code detects changes to the background and logo paths in the config and changes a ?x= parameter in the URL, which is ignored by the server / main process, but causes Chromium to cache the response separately.

@@ -17,7 +17,7 @@ export function registerServerHandlers(
     updateUIPort();
   })
 
-  ipcMain.on("ui-restart-server-request", (_event) => {
-    serverManager.start();
-  })
+  // ipcMain.on("ui-restart-server-request", (_event) => {
+  //   serverManager.start(12345);
+  // })
 }

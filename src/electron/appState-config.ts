@@ -1,8 +1,9 @@
 import { Media, MediaImage } from "../shared/media-classes.js";
 import { AppState, MainDisplayConfigEntry, MainGeneralConfigEntry } from "./AppState.js";
 import path from "path";
+import { ServerManager } from "./ServerManager.js";
 
-function addConfigEntries(appState: AppState) {
+function addConfigEntries(appState: AppState, serverManager: ServerManager) {
   //   general
   appState.addDcEntry(new MainDisplayConfigEntry("background-color", "hexcolor", "#000000"));
   appState.addDcEntry(new MainDisplayConfigEntry("background-image", "path", ""))
@@ -74,6 +75,15 @@ function addConfigEntries(appState: AppState) {
 
   // gc
   appState.addGcEntry(new MainGeneralConfigEntry("dark-theme", "boolean", false));
+  appState.addGcEntry(new MainGeneralConfigEntry("port", "nnumber", 10730));
+  // FIXME: this could be more cleanly implemented
+  //        (this _is_ garbage-collected, right?)
+  appState.addGcCallback("port", (newValue) => {
+    if (typeof newValue !== "number")
+      return;
+    if (newValue !== serverManager.port)
+      serverManager.scheduleStart(newValue);
+  });
 }
 
 export { addConfigEntries };

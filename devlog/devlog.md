@@ -41,3 +41,9 @@ I am going to implement callbacks on AppState's general config updating methods.
 I did away with the horrible, unsafe (full fs) access protocol in favor of storing all non-setlist media (logos, backgrounds) in a separate Map in AppState, and adding a protocol that let's clients request them only by their ID in that map.
 
 Since the URl for, say, a logo is always the same, the client code detects changes to the background and logo paths in the config and changes a ?x= parameter in the URL, which is ignored by the server / main process, but causes Chromium to cache the response separately.
+
+## Jul 28 2026
+
+Users now must set a port manually.
+
+ServerManager now schedules starts and stops in a promise chain to prevent bad memory usage. A start is called whenever the port field in the config is changed by the user (with 1s debouncing).

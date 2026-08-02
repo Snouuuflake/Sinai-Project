@@ -54,37 +54,44 @@ async function main() {
     ALLOWED_DISPLAY_INVOKE_CHANNELS,
   );
 
-  addConfigEntries(appState);
-
-
   const windowManager = new WindowManager(ipcws);
 
   const serverManager = new ServerManager(initExpressApp(appState), ipcws);
 
-  serverManager.updatePortCallback = updatePort;
+  addConfigEntries(appState, serverManager);
 
   function updatePort(port: number | null) {
-    windowManager.sendToUIWindow("ui-update-port", appState.getPort());
-    appState.setPort(port);
+    // appState.setPort(port);
+    windowManager.sendToUIWindow("ui-update-port", serverManager.port);
   }
 
-  await serverManager.start();
+  serverManager.updatePortCallback = updatePort;
 
-  app.on("window-all-closed", async () => {
-    console.log("stopping servers...");
-    await serverManager.stop();
-    console.log("quitting...");
-    app.quit();
-  });
-
-
-  registerConfigHandlers(appState, windowManager);
+  registerConfigHandlers(appState, windowManager, serverManager);
   registerServerHandlers(appState, windowManager, serverManager);
   registerMediaHandlers(appState, windowManager);
   registerLiveHandlers(appState, windowManager);
   registerUIHandlers(appState, windowManager);
   registerDisplayHandlers(appState, windowManager, ipcws);
   registerMiscHandlers(appState, windowManager);
+
+  // attempt to read config file
+  if (fs.existsSync(getConfigPath())) {
+    appState.readConfigFile();
+  } else {
+    try {
+      fs.writeFileSync(
+        getConfigPath(),
+        JSON.stringify({
+          dc: [],
+          gc: []
+        }),
+        { encoding: "utf8" },
+      );
+    } catch (err) {
+      if (err instanceof Error) { dialog.showErrorBox("Error", err.message) }
+    }
+  }
 
   protocol.handle('fetch-setlist-media', (request) => {
     const requestContent = decodeURIComponent(request.url.replace('fetch-setlist-media://', ''));
@@ -117,12 +124,7 @@ async function main() {
       fileUrl = "";
     }
 
-    // TODO: also avoid caching above
     const response = await net.fetch(fileUrl);
-    // const headers = new Headers(response.headers);
-    // headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
-    // headers.set('Pragma', 'no-cache');
-    // headers.set('Expires', '0');
 
     return new Response(response.body, {
       status: response.status,
@@ -131,29 +133,13 @@ async function main() {
     });
   });
 
-  // // transcendental security risk
-  // protocol.handle('local-file', request => {
-  //   const pathToMedia = new URL(request.url).pathname
-  //   return net.fetch(`file://${pathToMedia}`)
-  // });
+  app.on("window-all-closed", async () => {
+    console.log("stopping servers...");
+    await serverManager.stop();
+    console.log("quitting...");
+    app.quit();
+  });
 
-  // attempt to read config file
-  if (fs.existsSync(getConfigPath())) {
-    appState.readConfigFile();
-  } else {
-    try {
-      fs.writeFileSync(
-        getConfigPath(),
-        JSON.stringify({
-          dc: [],
-          gc: []
-        }),
-        { encoding: "utf8" },
-      );
-    } catch (err) {
-      if (err instanceof Error) { dialog.showErrorBox("Error", err.message) }
-    }
-  }
 
   windowManager.createUiWindow();
 }

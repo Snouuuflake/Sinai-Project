@@ -2,10 +2,12 @@ import { dialog, ipcMain } from "electron";
 import { AppState } from "../AppState.js";
 import { WindowManager } from "../WindowManager.js";
 import { FILTERS } from "../filters.js";
+import { ServerManager } from "../ServerManager.js";
 
 export function registerConfigHandlers(
   appState: AppState,
-  windowManager: WindowManager
+  windowManager: WindowManager,
+  serverManager: ServerManager
 ) {
   function updateDisplayConfig() {
     windowManager.sendToUIWindow("ui-update-display-config",
@@ -14,6 +16,7 @@ export function registerConfigHandlers(
     windowManager.sendToDisplayWindows("display-update-display-config",
       appState.getSerializedDc()
     )
+    windowManager.sendToUIWindow("ui-update-port", serverManager.port);
   }
 
   ipcMain.on("ui-display-config-request", (_event) => {

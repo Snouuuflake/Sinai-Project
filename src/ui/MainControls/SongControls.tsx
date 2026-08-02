@@ -1,4 +1,4 @@
-import { encodeVerseId, SerializedSongMediaWithId, SongSection, SongVerse, Song } from "../../shared/media-classes";
+import { encodeOrderedVerseId, SerializedSongMediaWithId, SongSection, SongVerse, Song, getSectionFromOrderedSection } from "../../shared/media-classes";
 
 import ProjectElementButton from "./ProjectElementButton";
 import LiveDisplayIndexArray from "./LiveDisplayIndexArray";
@@ -468,18 +468,19 @@ const ProjectVerseButton:
   React.FC<{
     id: number;
     sectionId: number,
+    orderedSectionId: number,
     verse: SongVerse,
   }>
-  = ({ id, sectionId, verse }) => {
+  = ({ id, sectionId, orderedSectionId, verse }) => {
     return (
       <ProjectElementButton
         id={id}
-        element={encodeVerseId(sectionId, verse.id)}
+        element={encodeOrderedVerseId(orderedSectionId, verse.id)}
       >
         <div className="song-project-button-inner">
           <LiveDisplayIndexArray
             id={id}
-            element={encodeVerseId(sectionId, verse.id)}
+            element={encodeOrderedVerseId(orderedSectionId, verse.id)}
           />
           <div>{
             verse.lines.reduce<any[]>((p, c, i) => {
@@ -494,14 +495,15 @@ const ProjectVerseButton:
   }
 
 const SectionContainer:
-  React.FC<{ id: number, section: SongSection }>
-  = ({ id, section }) => {
+  React.FC<{ id: number, section: SongSection, orderedSectionId: number }>
+  = ({ id, section, orderedSectionId }) => {
     const verseButtons = section.verses.map(
       (v) => (
         <ProjectVerseButton
           id={id}
           key={`verse-${v.id}`}
           sectionId={section.id}
+          orderedSectionId={orderedSectionId}
           verse={v}
         />
       )
@@ -555,6 +557,7 @@ const SongControls:
             id={openMedia.id}
             key={`section-${i}`}
             section={openMedia.value.song.sections.find(s => s.id == id)!}
+            orderedSectionId={i}
           />
         )}
         {<div style={{ height: "5px" }}></div>}

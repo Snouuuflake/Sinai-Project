@@ -13,6 +13,8 @@ import {
   MediaSong,
   MediaImage,
   Song,
+  // encodeVerseId,
+  // decodeVerseId,
 } from "../shared/media-classes.js";
 import {
   ConfigEntryBase,
@@ -109,11 +111,41 @@ class AppState {
   #mediaIdCounter: number = MAX_RESERVED_MEDIA_ID + 1;
   // id of media being viewed in main UI window controls
   #openMedia: number | null = null;
+  // currently selected liveElement in ui
+  #selectedLiveElementId: number | null = null;
   // elements being projected
   #liveElements: Array<LiveElementIdentifier | null> = Array.from({ length: DISPLAYS }, (_x) => null);
   // logo on or off for each display
   #logoIsVisible: boolean[] = Array.from({ length: DISPLAYS }, (_x) => false);
-
+  // setSelectedLiveElement(liveElementId: number | null) {
+  //   this.#selectedLiveElementId = liveElementId;
+  // }
+  // incrementOpenLiveElement() {
+  //   if (this.#selectedLiveElementId === null || this.#openMedia === null)
+  //     return;
+  //   const openMedia = this.#setlistMedia.get(this.#openMedia);
+  //   if (!openMedia)
+  //     return;
+  //
+  //   if (openMedia instanceof MediaSong) {
+  //     const decodedVerseId = decodeVerseId(this.#selectedLiveElementId);
+  //     const curSectionMaxVerse = openMedia.value.song.sections[decodedVerseId.section].verses.length - 1;
+  //     if (decodedVerseId.verse < curSectionMaxVerse) {
+  //       this.setSelectedLiveElement(
+  //         encodeVerseId(
+  //           decodedVerseId.section,
+  //           decodedVerseId.verse + 1,
+  //         )
+  //       )
+  //       return;
+  //     }
+  //   }
+  // }
+  // decrementOpenLiveElement() {
+  //   if (this.#openLiveElement === null || this.#openMedia === null)
+  //     return;
+  //
+  // }
   constructor() {
   }
 

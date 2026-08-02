@@ -5,6 +5,23 @@ import { app } from "electron";
 
 function initExpressApp(appState: AppState) {
   const expressApp = express();
+
+  expressApp.get("/previous-open-element/", (req, res) => {
+    res.status(200).end();
+
+  });
+  expressApp.get("/next-open-element/", (req, res) => {
+    res.status(200).end();
+
+  });
+  expressApp.get("/previous-live-element/", (req, res) => {
+    res.status(200).end();
+
+  });
+  expressApp.get("/next-live-element/", (req, res) => {
+    res.status(200).end();
+
+  });
   expressApp.get("/fetch-setlist-media/:id", (req, res) => {
     const id = parseInt(req.params.id);
     const media = appState.setlistMedia.get(id);

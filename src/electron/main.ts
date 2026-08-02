@@ -102,8 +102,10 @@ async function main() {
         appState.setlistMedia.get(parseInt(requestContent))!.value.path
       ).toString();
     } catch (e) {
-      if (e instanceof Error)
-        dialog.showErrorBox("Error", `Error handling ${request.url}: ${e.message}`);
+      if (e instanceof Error) {
+        console.error("Error", `Error handling ${request.url}: ${e.message}`);
+        // dialog.showErrorBox("Error", `Error handling ${request.url}: ${e.message}`);
+      }
       fileUrl = "";
     }
     return net.fetch(fileUrl);
@@ -114,13 +116,18 @@ async function main() {
     let fileUrl: string;
     try {
       console.log(`trying to fetch extra media - requestContent: ${requestContent}`);
+      // console.log(`trying to fetch extra media - printing full extraMedia: *******************`);
+      // console.log(appState.extraMedia);
+      // console.log(`***************************************************************************`);
       appState.extraMedia.forEach((a, b) => console.log(a, b));
       fileUrl = pathToFileURL(
         appState.extraMedia.get(requestContent)!.value.path
       ).toString();
     } catch (e) {
-      if (e instanceof Error)
-        dialog.showErrorBox("Error", `Error handling ${request.url}: ${e.message}`);
+      if (e instanceof Error) {
+        console.error("Error", `Error handling ${request.url}: ${e.message}`);
+        // dialog.showErrorBox("Error", `Error handling ${request.url}: ${e.message}`);
+      }
       fileUrl = "";
     }
 

@@ -23,6 +23,23 @@ const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
 
   const logoPath = configHash.get("logo-path") as string;
 
+
+  const logoPathRef = useRef<string>((configHash.get("background-image") as string) ?? "");
+  console.log("Logo Reload - logo path ref current:", logoPathRef.current)
+  const [logoUrlX, setLogoUrlX] = useState<number>(0);
+
+  useEffect(
+    () => {
+      if (logoPathRef.current !== ((configHash.get("logo-path") as string) ?? "")) {
+        console.log(logoPathRef.current, "|", (configHash.get("logo-path") as string) ?? "");
+        setLogoUrlX(logoUrlX + 1),
+          logoPathRef.current = (configHash.get("logo-path") as string) ?? "";
+        console.log("logo change!")
+      }
+    }, [configHash]
+  )
+
+
   return <div
     className={`display-logo display-element-container ${logoIsVisible ? "logo-animation-in" : "logo-animation-out"}`}
   >
@@ -31,7 +48,7 @@ const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
         height: `${configHash.get("logo-size") as number}vh`,
         opacity: logoHasBeenVisible.current && logoPath !== "" ? "100%" : "0", // "/" for avoiding error icon on empty src
       }}
-      src={extraMediaUrl(`logo-media-${DISPLAY_ID}`)} />
+      src={extraMediaUrl(`logo-media-${DISPLAY_ID}`, logoUrlX)} />
   </div>
 }
 

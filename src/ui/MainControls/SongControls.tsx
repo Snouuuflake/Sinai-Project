@@ -8,6 +8,7 @@ import { useModal } from "../ModalContext";
 import { useEffect, useRef, useState } from "react";
 
 import { GripVertical, SquarePen, Copy, Trash2, Plus, ZapIcon } from "lucide-react";
+import { useUIState } from "../UIStateContext";
 
 
 const EditSongModalSectionListItem:
@@ -472,22 +473,49 @@ const ProjectVerseButton:
     verse: SongVerse,
   }>
   = ({ id, sectionId, orderedSectionId, verse }) => {
+    const { selectedLiveElementId } = useUIState();
+    const buttonToFocus = useRef<HTMLButtonElement>(null);
+    const selected = encodeOrderedVerseId(orderedSectionId, verse.id) === selectedLiveElementId;
+    useEffect(
+      () => {
+        if (buttonToFocus.current === null)
+          return;
+        if (selected) {
+          buttonToFocus.current.scrollIntoView(
+            {
+              behavior: "smooth",
+              block: "center"
+            }
+          );
+        }
+      },
+      [selectedLiveElementId]
+    );
+    useEffect(
+      () => {
+      },
+      [selectedLiveElementId]
+    );
     return (
       <ProjectElementButton
         id={id}
         element={encodeOrderedVerseId(orderedSectionId, verse.id)}
+        ref={buttonToFocus}
+        selected={selected}
       >
-        <div className="song-project-button-inner">
+        <div className="song-project-button-inner" >
           <LiveDisplayIndexArray
             id={id}
             element={encodeOrderedVerseId(orderedSectionId, verse.id)}
           />
-          <div>{
-            verse.lines.reduce<any[]>((p, c, i) => {
-              p.push(<div key={i}>{c}</div>)
-              return p;
-            }, [])
-          }</div>
+          <div
+          >
+            {
+              verse.lines.reduce<any[]>((p, c, i) => {
+                p.push(<div key={i}>{c}</div>)
+                return p;
+              }, [])
+            }</div>
         </div>
 
       </ProjectElementButton>
@@ -510,7 +538,7 @@ const SectionContainer:
     )
     return (
       <div>
-        <h2 className="song-controls-section-header">{section.name}</h2>
+        <h2 className="controls-section-header">{section.name}</h2>
         <div className="song-controls-section-verses-container">
           {verseButtons}
         </div>
@@ -551,7 +579,7 @@ const SongControls:
           </button>
         </div>
       </div>
-      <div className="song-controls-song-container">
+      <div className="song-controls-song-container" tabIndex={-1}>
         {openMedia.value.song.elementOrder.map((id, i) =>
           <SectionContainer
             id={openMedia.id}

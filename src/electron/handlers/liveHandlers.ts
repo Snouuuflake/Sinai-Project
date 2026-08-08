@@ -14,6 +14,8 @@ export function registerLiveHandlers(
 
   ipcMain.on("set-live-element", (_event, displayId: number, liveElementIdentifier: LiveElementIdentifier | null) => {
     try {
+      console.log("DEBUG! displayId in handler", liveElementIdentifier)
+      console.log("DEBUG! lei in ipc handler:", liveElementIdentifier)
       appState.setLiveElement(displayId, liveElementIdentifier);
       uiUpdaters.updateUILiveElements();
       displayUpdaters.updateDisplayLiveElement(displayId);

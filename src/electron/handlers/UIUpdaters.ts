@@ -18,6 +18,10 @@ export class UIUpdaters {
     this.#windowManager.sendToUIWindow("ui-state-update-open-media", this.#appState.getUIStateOpenMedia());
   }
 
+  updateUISelectedLiveElementId() {
+    this.#windowManager.sendToUIWindow("ui-state-update-selected-live-element-id", this.#appState.getUIStateSelectedLiveElementId());
+  }
+
   updateUILiveElements() {
     this.#windowManager.sendToUIWindow("ui-state-update-live-elements", this.#appState.getUIStateLiveElements());
   }

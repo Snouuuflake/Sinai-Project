@@ -5,6 +5,7 @@ declare global {
   interface UIElectron {
     onUIStateUpdateSetlist: (callback: (newValue: mc.SerializedMediaIdentifier[]) => void) => () => void;
     onUIStateUpdateOpenMedia: (callback: (newValue: mc.SerializedMediaWithId) => void) => () => void;
+    onUIStateUpdateSelectedLiveElementId: (callback: (newValue: number | null) => void) => () => void;
     onUIStateUpdateLiveElements: (callback: (newValue: Array<mc.LiveElementIdentifier | null>) => void) => () => void;
     onUIStateUpdateLogo: (callback: (newValue: Array<boolean>) => void) => () => void;
     sendUIStateRequest: () => void;
@@ -36,6 +37,8 @@ declare global {
     sendCreateSong: (title: string, author: string) => void;
     sendReplaceSong: (id: number, song: cc.Song) => void;
     sendSaveSong: (id: number) => void;
+
+    sendSetSelectedLiveElementId: (liveElementId: number) => void;
 
     onUIUpdatePort: (callback: (port: number | null) => void) => () => void;
     sendUIPortRequest: () => void;

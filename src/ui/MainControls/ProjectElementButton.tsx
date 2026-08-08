@@ -1,6 +1,8 @@
 import { useUIState } from "../UIStateContext";
 import { useContextMenu } from "../ContextMenuContext";
 import { DISPLAYS } from "../../shared/constants";
+import { forwardRef } from "react";
+import { ChevronRight } from "lucide-react";
 
 const ProjectToDisplayButton:
   React.FC<{
@@ -78,13 +80,19 @@ const ProjectElementButtonContextMenu:
     )
   }
 
-const ProjectElementButton:
-  React.FC<{
+const ProjectElementButton = forwardRef<
+  HTMLButtonElement,
+  {
     children: React.ReactNode;
     id: number;
     element: number;
-  }>
-  = ({ children, id, element }) => {
+    selected: boolean;
+  }
+>(
+  (
+    { children, id, element, selected },
+    ref
+  ) => {
     const { liveElements } = useUIState();
     const { showMenu } = useContextMenu();
     const isFullActive = liveElements.reduce(
@@ -96,35 +104,61 @@ const ProjectElementButton:
       false
     );
 
-    return <button
-      className={`project-element-button ${isFullActive ?
-        "project-element-button-full-active" :
-        isPartlyActive ?
-          "project-element-button-partly-active" :
-          ""
-        }`}
-      onContextMenu={
-        (e) => {
-          showMenu(e, <ProjectElementButtonContextMenu id={id} element={element} />)
-        }
-      }
-      onClick={
-        () => {
-          for (let i = 0; i < DISPLAYS; i++) {
-            (window as unknown as UIWindow).electron.sendSetLiveElement(i, {
-              id: id,
-              element: element,
-            });
-          }
-        }
-      }
-    >
+    return (
       <div
-        className={`project-element-button-inner `}
+        className="project-element-button-container"
       >
-        {children}
+        {
+          selected ?
+            <ChevronRight
+              className="project-element-button-caret"
+              strokeWidth={3}
+              size={"30px"}
+              color={"var(--gray-40)"}
+            /> :
+            <></>
+        }
+        <button
+          ref={ref}
+          tabIndex={-1}
+          className={`project-element-button ${isFullActive ?
+            "project-element-button-full-active" :
+            isPartlyActive ?
+              "project-element-button-partly-active" :
+              ""
+            }`}
+          onContextMenu={
+            (e) => {
+              showMenu(e, <ProjectElementButtonContextMenu id={id} element={element} />)
+            }
+          }
+          onClick={
+            () => {
+              console.log("!!!!!!");
+              (window as unknown as UIWindow).electron.sendSetSelectedLiveElementId(element);
+              for (let i = 0; i < DISPLAYS; i++) {
+                (window as unknown as UIWindow).electron.sendSetLiveElement(i, {
+                  id: id,
+                  element: element,
+                });
+              }
+            }
+          }
+        >
+          <div
+            className="project-element-button-blob"
+          >
+          </div>
+          <div
+            className={`project-element-button-inner `}
+          >
+            {children}
+          </div>
+        </button >
       </div>
-    </button >
+    )
   }
+)
+
 
 export default ProjectElementButton;

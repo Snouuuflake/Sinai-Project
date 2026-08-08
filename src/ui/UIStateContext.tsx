@@ -10,6 +10,7 @@ type UIStateContextType = {
   setlist: SerializedMediaIdentifier[];
   openMedia: SerializedMediaWithId | null;
   liveElements: Array<LiveElementIdentifier | null>;
+  selectedLiveElementId: number | null;
   logo: boolean[];
 }
 
@@ -20,6 +21,7 @@ export const UIStateContextProvider:
   React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [setlist, setSetlist] = useState<SerializedMediaIdentifier[]>([]);
     const [openMedia, setOpenMedia] = useState<SerializedMediaWithId | null>(null);
+    const [selectedLiveElementId, setSelectedLiveElementId] = useState<number | null>(null);
     const [liveElements, setLiveElements] = useState<
       Array<LiveElementIdentifier | null>
     >(Array.from({ length: DISPLAYS }, (_x) => null));
@@ -36,6 +38,13 @@ export const UIStateContextProvider:
     useEffect(() => {
       const remover = (window as unknown as UIWindow).electron.onUIStateUpdateOpenMedia(
         (newValue: SerializedMediaWithId) => { setOpenMedia(newValue); }
+      );
+      return remover;
+    }, [])
+
+    useEffect(() => {
+      const remover = (window as unknown as UIWindow).electron.onUIStateUpdateSelectedLiveElementId(
+        (newValue: number | null) => { setSelectedLiveElementId(newValue); }
       );
       return remover;
     }, [])
@@ -59,7 +68,7 @@ export const UIStateContextProvider:
     }, [])
 
     return <UIStateContext.Provider
-      value={{ setlist, openMedia, liveElements, logo }}>
+      value={{ setlist, openMedia, selectedLiveElementId, liveElements, logo }}>
       {children}
     </UIStateContext.Provider >
   };

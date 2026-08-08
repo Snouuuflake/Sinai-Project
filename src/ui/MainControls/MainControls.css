@@ -1,4 +1,15 @@
+.project-element-button-container {
+  display: grid;
+  grid-template-areas: "caret button";
+  grid-template-columns: 30px 1fr;
+}
+.project-element-button-caret {
+  grid-area: caret;
+  align-self: center;
+  justify-self: center;
+}
 .project-element-button {
+  grid-area: button;
   /* max-height: 100%; */
   box-sizing: border-box;
   width: 100%;
@@ -7,38 +18,51 @@
   font-weight: normal;
 
   border-radius: 3px;
-  border: 3px solid var(--gray-40);
-  padding: 0;
+  /* border: 3px solid var(--gray-40); */
+  padding: 5px;
 
   overflow: clip;
+
+  display: flex;
+  gap: 5px;
+  border-radius: 10px;
 }
 .project-element-button:hover {
-  background-color: color-mix(in oklch, var(--hi-2), var(--bg))
+  background-color: var(--gray-85)
 }
 .project-element-button:active {
-  background-color: var(--hi-2);
+  /* background-color: var(--hi-2); */
 }
 .project-element-button-full-active {
-  border-color: var(--hi-2);
+  /* border-color: var(--hi-2); */
 }
 .project-element-button-full-active 
 .project-element-button-inner {
-  border-left-color: var(--hi-2);
+  /* border-left-color: var(--hi-2); */
 }
 .project-element-button-partly-active {
-  border-color: var(--hi-1);
+  /* border-color: var(--hi-1); */
 }
 .project-element-button-partly-active 
-.project-element-button-inner {
-  border-left-color: color-mix(in oklch, var(--hi-1), transparent var(--blink-transparent-blend));
+.project-element-button-blob {
+  background-color: color-mix(in oklch, var(--hi-1), transparent var(--blink-transparent-blend));
+}
+.project-element-button-full-active 
+.project-element-button-blob {
+  background-color: var(--hi-2)
 }
 .project-element-button-inner {
   height: 100%;
   width: 100%;
   box-sizing: border-box;
   overflow: clip;
-  border-left: 14px solid var(--gray-40);
+  /* border-left: 14px solid var(--gray-40); */
   padding: 0;
+}
+.project-element-button-blob {
+  width: 10px;
+  border-radius: 5px;
+  background-color: var(--gray-80);
 }
 
 .project-element-button-context-menu {
@@ -52,3 +76,20 @@
   display: flex;
   gap: 7px;
 }
+
+
+
+.controls-section-header {
+  margin: 0;
+  min-width: 0;
+  width: 100%;
+  overflow: clip;
+  text-overflow: ellipsis;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  padding: 0;
+  font-weight: bold;
+  font-size: 14pt;
+  color: var(--gray-20)
+}
+

@@ -15,8 +15,41 @@ export function registerUIHandlers(
     try {
       appState.setOpenMedia(id);
       uiUpdaters.updateUIOpenMedia();
+      uiUpdaters.updateUISelectedLiveElementId();
     } catch (e) {
       if (e instanceof Error) dialog.showErrorBox("Error", e.message);
     }
   });
+  ipcMain.on("set-selected-live-element-id", (_event, id: number) => {
+    appState.setSelectedLiveElementId(id);
+    uiUpdaters.updateUISelectedLiveElementId();
+  });
+
+  ipcMain.on("prev-open-media", (_event) => {
+    try {
+      appState.decrementOpenMedia();
+      uiUpdaters.updateUIOpenMedia();
+      uiUpdaters.updateUISelectedLiveElementId();
+    } catch (e) {
+      if (e instanceof Error) dialog.showErrorBox("Error", e.message);
+    }
+  });
+  ipcMain.on("next-open-media", (_event) => {
+    try {
+      appState.incrementOpenMedia();
+      uiUpdaters.updateUIOpenMedia();
+      uiUpdaters.updateUISelectedLiveElementId();
+    } catch (e) {
+      if (e instanceof Error) dialog.showErrorBox("Error", e.message);
+    }
+  });
+  ipcMain.on("next-selected-element", (_event) => {
+    appState.incrementSelectedLiveElementId();
+    uiUpdaters.updateUISelectedLiveElementId();
+  });
+  ipcMain.on("prev-selected-element", (_event) => {
+    appState.decrementSelectedLiveElement();
+    uiUpdaters.updateUISelectedLiveElementId();
+  });
+
 }

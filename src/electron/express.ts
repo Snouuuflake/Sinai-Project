@@ -1,27 +1,68 @@
 import express from "express";
 import path from "path";
 import { AppState } from "./AppState.js";
-import { app } from "electron";
+import { app, ipcMain } from "electron";
+import { LiveElementIdentifier } from "../shared/media-classes.js";
+import { DISPLAYS } from "../shared/constants.js";
 
 function initExpressApp(appState: AppState) {
   const expressApp = express();
 
-  expressApp.get("/previous-open-element/", (req, res) => {
+  expressApp.get("/next-open-media/", (req, res) => {
     res.status(200).end();
+    console.log("expressApp: GET /next-open-media/");
+    ipcMain.emit("next-open-media");
+  });
+  expressApp.get("/prev-open-media/", (req, res) => {
+    res.status(200).end();
+    console.log("expressApp: GET /prev-open-media/");
+    ipcMain.emit("prev-open-media");
+  });
+  expressApp.get("/next-selected-element/", (req, res) => {
+    res.status(200).end();
+    console.log("expressApp: GET /next-selected-element/");
+    ipcMain.emit("next-selected-element");
+  });
+  expressApp.get("/prev-selected-element/", (req, res) => {
+    res.status(200).end();
+    console.log("expressApp: GET /prev-selected-element/");
+    ipcMain.emit("prev-selected-element");
+  });
+  expressApp.get("/toggle-logo-to-all/", (req, res) => {
+    /*
+     * if any !logo, sets logo to true for all, else, false
+     */
+    res.status(200).end();
+    console.log(`expressApp: GET /toggle-logo-to-all/`);
+    if (appState.getLogo().every(x => x)) {
+      for (let i = 0; i < DISPLAYS; i++) {
+        ipcMain.emit("set-logo", {}, i, false);
+      }
+    } else {
+      for (let i = 0; i < DISPLAYS; i++) {
+        ipcMain.emit("set-logo", {}, i, true);
+      }
+    }
 
   });
-  expressApp.get("/next-open-element/", (req, res) => {
+  expressApp.get("/project-selected-element-to-all/", (req, res) => {
     res.status(200).end();
+    console.log(`expressApp: GET /project-selected-element-to-all/`);
 
+    const lei: LiveElementIdentifier | null = appState.openMedia === null ?
+      null :
+      appState.selectedLiveElementId === null ?
+        null :
+        {
+          id: appState.openMedia,
+          element: appState.selectedLiveElementId,
+        }
+    console.log("DEBUG! lei:", lei);
+    for (let i = 0; i < DISPLAYS; i++) {
+      ipcMain.emit("set-live-element", {}, i, lei);
+    }
   });
-  expressApp.get("/previous-live-element/", (req, res) => {
-    res.status(200).end();
 
-  });
-  expressApp.get("/next-live-element/", (req, res) => {
-    res.status(200).end();
-
-  });
   expressApp.get("/fetch-setlist-media/:id", (req, res) => {
     const id = parseInt(req.params.id);
     const media = appState.setlistMedia.get(id);
@@ -33,6 +74,7 @@ function initExpressApp(appState: AppState) {
     }
     res.sendFile(media.value.path);
   });
+
   expressApp.get("/fetch-extra-media/:id", (req, res) => {
     const id = req.params.id;
     const media = appState.extraMedia.get(id);
@@ -68,6 +110,7 @@ function initExpressApp(appState: AppState) {
     res.sendFile(path);
   });
   expressApp.use("/mobile", express.static(path.join(app.getAppPath(), "/dist-mobile-ui")));
+  expressApp.use("/simple-http-controls", express.static(path.join(app.getAppPath(), "/dist-simple-http-controls")));
   expressApp.use(express.static(path.join(app.getAppPath(), "/dist-display")));
   return expressApp;
 }

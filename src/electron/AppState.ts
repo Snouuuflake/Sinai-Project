@@ -11,8 +11,12 @@ import {
   SerializedMediaWithId,
   SerializedMedia,
   MediaSong,
-  MediaImage,
   Song,
+  decodeOrderedVerseId,
+  getSectionFromOrderedSection,
+  encodeOrderedVerseId,
+  SongSection,
+  MediaImage,
   // encodeVerseId,
   // decodeVerseId,
 } from "../shared/media-classes.js";
@@ -117,36 +121,13 @@ class AppState {
   #liveElements: Array<LiveElementIdentifier | null> = Array.from({ length: DISPLAYS }, (_x) => null);
   // logo on or off for each display
   #logoIsVisible: boolean[] = Array.from({ length: DISPLAYS }, (_x) => false);
-  // setSelectedLiveElement(liveElementId: number | null) {
-  //   this.#selectedLiveElementId = liveElementId;
-  // }
-  // incrementOpenLiveElement() {
-  //   if (this.#selectedLiveElementId === null || this.#openMedia === null)
-  //     return;
-  //   const openMedia = this.#setlistMedia.get(this.#openMedia);
-  //   if (!openMedia)
-  //     return;
-  //
-  //   if (openMedia instanceof MediaSong) {
-  //     const decodedVerseId = decodeVerseId(this.#selectedLiveElementId);
-  //     const curSectionMaxVerse = openMedia.value.song.sections[decodedVerseId.section].verses.length - 1;
-  //     if (decodedVerseId.verse < curSectionMaxVerse) {
-  //       this.setSelectedLiveElement(
-  //         encodeVerseId(
-  //           decodedVerseId.section,
-  //           decodedVerseId.verse + 1,
-  //         )
-  //       )
-  //       return;
-  //     }
-  //   }
-  // }
-  // decrementOpenLiveElement() {
-  //   if (this.#openLiveElement === null || this.#openMedia === null)
-  //     return;
-  //
-  // }
+
+
   constructor() {
+  }
+
+  get openMedia(): number | null {
+    return this.#openMedia;
   }
 
   // INFO: configs -------------------------
@@ -310,6 +291,9 @@ class AppState {
     return this.#setlistMedia.get(this.#openMedia)!
       .toSerializedMediaWithId(this.#openMedia);
   }
+  getUIStateSelectedLiveElementId(): number | null {
+    return this.#selectedLiveElementId;
+  }
   // returns copy of live elements (already serializable)
   getUIStateLiveElements(): Array<LiveElementIdentifier | null> {
     return [...this.#liveElements];
@@ -350,13 +334,285 @@ class AppState {
       throw new Error("setOpenMedia: id not in this.media")
     }
     this.#openMedia = id;
+
+    const openMedia = this.#setlistMedia.get(id);
+    if (openMedia instanceof MediaImage) {
+      const song = openMedia.value.path;
+      this.setSelectedLiveElementId(0);
+      return;
+    }
+    if (openMedia instanceof MediaSong) {
+      const song = openMedia.value.song;
+
+      this.setSelectedLiveElementId(null);
+
+      let nextNonEmptyOrderedSectionId: number | null = null;
+      // will otherwise find the next non-empty section
+      for (let index = 0; index < song.elementOrder.length; index++) {
+        const sectionId = openMedia.value.song.elementOrder[
+          index
+        ];
+        const section = song.sections.find(s => s.id === sectionId);
+        if (section === undefined)
+          // do nothing
+          continue;
+        if (section.verses.length === 0)
+          continue;
+        nextNonEmptyOrderedSectionId = index;
+        break;
+      }
+      // nextSection.verses.length > 0.
+
+      // this should never happen but i dont think it makes sense to raise anything
+      if (nextNonEmptyOrderedSectionId === null)
+        return;
+      console.log("DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+      console.log("nextNoneEmptyOrderedSectionId after loop", nextNonEmptyOrderedSectionId);
+
+      this.setSelectedLiveElementId(
+        encodeOrderedVerseId(
+          nextNonEmptyOrderedSectionId,
+          0,
+        )
+      )
+    }
   }
+
+  get selectedLiveElementId() {
+    return this.#selectedLiveElementId;
+  }
+
+  setSelectedLiveElementId(liveElementId: number | null) {
+    this.#selectedLiveElementId = liveElementId;
+  }
+
+  incrementSelectedLiveElementId() {
+    console.log("AppState.incrementOpenLiveElement()");
+    try {
+      if (this.#selectedLiveElementId === null || this.#openMedia === null)
+        return;
+      const openMedia = this.#setlistMedia.get(this.#openMedia);
+      if (!openMedia)
+        return;
+
+
+      if (openMedia instanceof MediaSong) {
+        // if song is empty
+        if (openMedia.value.song.elementOrder.length === 0)
+          return;
+        // if song has sections but no verses
+        if (openMedia.value.song.sections.every(s => s.verses.length === 0))
+          return;
+
+        const decodedVerseId = decodeOrderedVerseId(this.#selectedLiveElementId);
+        // gets current open verse's section object
+        const curSection = getSectionFromOrderedSection(
+          openMedia.value.song,
+          decodedVerseId.sectionOrderIndex
+        );
+        // if it doesn't exist, returns. should probably log
+        if (curSection === undefined)
+          return;
+
+        const curSectionMaxVerse = curSection.verses.length - 1;
+
+        // if it can increment a verse, does so
+        if (decodedVerseId.verse < curSectionMaxVerse) {
+          console.log("AppState.incrementOpenLiveElement(): can increment verse in same section");
+          this.setSelectedLiveElementId(
+            encodeOrderedVerseId(
+              decodedVerseId.sectionOrderIndex,
+              decodedVerseId.verse + 1,
+            )
+          )
+          return;
+        }
+
+        console.log("AppState.incrementOpenLiveElement(): looking for next non-empty section");
+
+        let nextNonEmptyOrderedSectionId: number | null = null;
+        // will otherwise find the next non-empty section
+        for (let index = 0; index < openMedia.value.song.elementOrder.length; index++) {
+          const elementOrderIndex = (decodedVerseId.sectionOrderIndex + index + 1) % openMedia.value.song.elementOrder.length;
+          console.log("DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+          console.log("elementOrderIndex", elementOrderIndex);
+
+          const sectionId = openMedia.value.song.elementOrder[
+            elementOrderIndex
+          ];
+          const section = openMedia.value.song.sections.find(s => s.id === sectionId);
+          if (section === undefined)
+            // do nothing
+            continue;
+          if (section.verses.length === 0)
+            continue;
+          nextNonEmptyOrderedSectionId = elementOrderIndex;
+          break;
+        }
+
+        console.log("DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        console.log("nextNoneEmptyOrderedSectionId after loop", nextNonEmptyOrderedSectionId);
+
+        // nextSection.verses.length > 0.
+
+        // this should never happen but i dont think it makes sense to raise anything
+        if (nextNonEmptyOrderedSectionId === null)
+          return;
+
+        this.setSelectedLiveElementId(
+          encodeOrderedVerseId(
+            nextNonEmptyOrderedSectionId,
+            0,
+          )
+        )
+      }
+    } catch (err) {
+      console.error(err);
+      if (err instanceof Error)
+        dialog.showErrorBox("Error", err.message);
+    }
+  }
+  decrementSelectedLiveElement() {
+    console.log("AppState.decrementOpenLiveElement()");
+    try {
+      if (this.#selectedLiveElementId === null || this.#openMedia === null)
+        return;
+      const openMedia = this.#setlistMedia.get(this.#openMedia);
+      if (!openMedia)
+        return;
+
+
+      if (openMedia instanceof MediaSong) {
+        // if song is empty
+        if (openMedia.value.song.elementOrder.length === 0)
+          return;
+        // if song has sections but no verses
+        if (openMedia.value.song.sections.every(s => s.verses.length === 0))
+          return;
+
+        const decodedVerseId = decodeOrderedVerseId(this.#selectedLiveElementId);
+        // gets current open verse's section object
+        const curSection = getSectionFromOrderedSection(
+          openMedia.value.song,
+          decodedVerseId.sectionOrderIndex
+        );
+        // if it doesn't exist, returns. should probably log
+        if (curSection === undefined)
+          return;
+
+        // const curSectionMaxVerse = curSection.verses.length - 1;
+
+        // if it can increment a verse, does so
+        if (decodedVerseId.verse > 0) {
+          console.log("AppState.decrementOpenLiveElement(): can decrement verse in same section");
+          this.setSelectedLiveElementId(
+            encodeOrderedVerseId(
+              decodedVerseId.sectionOrderIndex,
+              decodedVerseId.verse - 1,
+            )
+          )
+          return;
+        }
+
+        console.log("AppState.decrementOpenLiveElement(): looking for previous non-empty section");
+
+        let previousNonEmptyOrderedSectionId: number | null = null;
+        // will otherwise find the next non-empty section
+        for (let index = 0; index < openMedia.value.song.elementOrder.length; index++) {
+          const x = decodedVerseId.sectionOrderIndex - (index + 1);
+          const mod = x % openMedia.value.song.elementOrder.length;
+          const elementOrderIndex = (mod < 0) ? openMedia.value.song.elementOrder.length + mod : mod;
+          console.log("DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+          console.log("elementOrderIndex", elementOrderIndex);
+
+          const sectionId = openMedia.value.song.elementOrder[
+            elementOrderIndex
+          ];
+          const section = openMedia.value.song.sections.find(s => s.id === sectionId);
+          if (section === undefined)
+            // do nothing
+            continue;
+          if (section.verses.length === 0)
+            continue;
+          previousNonEmptyOrderedSectionId = elementOrderIndex;
+          break;
+        }
+
+        console.log("DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        console.log("previousNonEmptyOrderedSectionId after loop", previousNonEmptyOrderedSectionId);
+
+        // nextSection.verses.length > 0.
+
+        // this should never happen but i dont think it makes sense to raise anything
+        if (previousNonEmptyOrderedSectionId === null)
+          return;
+
+        const previousNonEmptySection = openMedia.value.song.sections
+          .find(s =>
+            s.id === openMedia.value.song.elementOrder[previousNonEmptyOrderedSectionId]
+          );
+
+        if (previousNonEmptySection === undefined)
+          return;
+
+        this.setSelectedLiveElementId(
+          encodeOrderedVerseId(
+            previousNonEmptyOrderedSectionId,
+            previousNonEmptySection.verses.length - 1,
+          )
+        )
+      }
+    } catch (err) {
+      console.error(err);
+      if (err instanceof Error)
+        dialog.showErrorBox("Error", err.message);
+    }
+
+  }
+
+  decrementOpenMedia() {
+    if (this.#openMedia === null) {
+      if (this.#setlist.length === 0)
+        return;
+      this.setOpenMedia(this.#setlist[0]);
+      return;
+    }
+
+    const curOpenMediaSetlistIndex = this.#setlist.findIndex(x => x === this.#openMedia)
+    if (curOpenMediaSetlistIndex === -1) {
+      console.log("AppState.incrementOpenMedia(): curOpenMediaSetlistIndex = -1");
+      return;
+    }
+
+    const x = curOpenMediaSetlistIndex - 1;
+    const mod = x % this.#setlist.length;
+    const newIndex = (mod < 0) ? this.#setlist.length + mod : mod;
+    this.setOpenMedia(this.#setlist[newIndex]);
+  }
+
+  incrementOpenMedia() {
+    if (this.#openMedia === null) {
+      if (this.#setlist.length === 0)
+        return;
+      this.setOpenMedia(this.#setlist[0]);
+      return;
+    }
+
+    const curOpenMediaSetlistIndex = this.#setlist.findIndex(x => x === this.#openMedia)
+    if (curOpenMediaSetlistIndex === -1) {
+      console.log("AppState.incrementOpenMedia(): curOpenMediaSetlistIndex = -1");
+      return;
+    }
+    this.setOpenMedia(this.#setlist[(curOpenMediaSetlistIndex + 1) % this.#setlist.length]);
+  }
+
   /**
    * @param displayIndex display window index to set 
    * @param id media id of new live media
    * @throws if invalid display index or live element id invalid
    */
   setLiveElement(displayIndex: number, liveElementIdentifier: LiveElementIdentifier | null) {
+    console.log("DEBUG! lei in setLiveElement:", liveElementIdentifier)
     if (displayIndex < 0 || displayIndex >= DISPLAYS) {
       throw new Error("setLiveElements: index is invalid");
     }

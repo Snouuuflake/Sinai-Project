@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title></title>
+		<link href="css/style.css" rel="stylesheet">
+		<style>
+			* {
+				font-family: sans-serif;
+			}
+		</style>
+	</head>
+	<body style="background: black; color: white; font-family: sans-serif; display: flex; flex-direction: column; width: 200px; gap: 5px;">
+		<div style="display: flex; gap: 5px;">
+			<div>Port:</div>
+			<input id="port-input" style="flex-grow: 1; box-sizing: border-box; min-width: 0;">
+		</div>
+		<button id="next-open">Next Open Media</button>
+		<button id="prev-open">Previous Open Media</button>
+		<button id="next-element">Next Element</button>
+		<button id="prev-element">Previous Element</button>
+		<button id="project">Select</button>
+		<button id="toggle-logo-to-all">Logo</button>
+		<script>
+			function getPort() {
+				return document.getElementById("port-input").value.trim();
+			}
+			document.getElementById("next-open").addEventListener( "click", () => {
+				fetch(`http://localhost:${getPort()}/next-open-media`);
+			}
+			);
+			document.getElementById("prev-open").addEventListener("click", () => {
+				fetch(`http://localhost:${getPort()}/prev-open-media`);
+			}
+			);
+			document.getElementById("next-element").addEventListener("click", () => {
+				fetch(`http://localhost:${getPort()}/next-selected-element`);
+			}
+			);
+			document.getElementById("prev-element").addEventListener("click", () => {
+				fetch(`http://localhost:${getPort()}/prev-selected-element`);
+			}
+			);
+			document.getElementById("project").addEventListener("click", () => {
+				fetch(`http://localhost:${getPort()}/project-selected-element-to-all`);
+			}
+			);
+			document.getElementById("toggle-logo-to-all").addEventListener("click", () => {
+				fetch(`http://localhost:${getPort()}/toggle-logo-to-all`);
+			}
+			);
+		</script>
+	</body>
+</html>

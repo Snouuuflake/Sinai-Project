@@ -179,17 +179,23 @@ const SetlistItemMenu:
     </div>
   }
 
-const SetlistItem: React.FC<{ maxIdChars: number, item: SerializedMediaIdentifier }> = ({ maxIdChars, item }) => {
+const SetlistItem: React.FC<{
+  maxIdChars: number,
+  item: SerializedMediaIdentifier
+}> = ({ maxIdChars, item }) => {
   const { showMenu } = useContextMenu();
   const { openMedia } = useUIState();
   return <button
     className="setlist-item"
+    tabIndex={-1}
     onContextMenu={(e) => {
       showMenu(e, <SetlistItemMenu item={item} />)
     }}
     onClick={
       () => {
-        (window as unknown as UIWindow).electron.sendSetOpenMedia(item.id);
+        (window as unknown as UIWindow)
+          .electron
+          .sendSetOpenMedia(item.id);
       }
     }
   >

@@ -166,7 +166,7 @@ const encodeOrderedVerseId =
   (orderedSection: number, verse: number) => (orderedSection * SECTION_MULTIPLIER) + verse;
 const decodeOrderedVerseId =
   (id: number) => ({
-    section: Math.floor(id / SECTION_MULTIPLIER),
+    sectionOrderIndex: Math.floor(id / SECTION_MULTIPLIER),
     verse: id % SECTION_MULTIPLIER
   });
 const getSectionFromOrderedSection = (song: Song, orderedSectionId: number) => {

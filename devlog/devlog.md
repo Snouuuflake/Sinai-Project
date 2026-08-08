@@ -59,7 +59,8 @@ There are now 6 HTTP GET endpoints:
 - `/project-selected-element-to-all`
 - `/toggle-logo-to-all`
 
-which basically trigger ipcMain events via ipcMain.emit.
+which basically trigger ipcMain events via ipcMain.emit. In order for this to work, appState how also keeps track of a "selected element".
 
 The idea is for this, along with the fixed port, to allow controling the app's basic functionality via Companion.
 
+There was also a minor overhaul to element projection buttons to show the selected element clearly with an arrow.

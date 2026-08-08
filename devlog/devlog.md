@@ -47,3 +47,19 @@ Since the URl for, say, a logo is always the same, the client code detects chang
 Users now must set a port manually.
 
 ServerManager now schedules starts and stops in a promise chain to prevent bad memory usage. A start is called whenever the port field in the config is changed by the user (with 1s debouncing).
+
+## Aug 08 26
+
+There are now 6 HTTP GET endpoints:
+
+- `/next-open-media`
+- `/prev-open-media`
+- `/next-selected-element`
+- `/prev-selected-element`
+- `/project-selected-element-to-all`
+- `/toggle-logo-to-all`
+
+which basically trigger ipcMain events via ipcMain.emit.
+
+The idea is for this, along with the fixed port, to allow controling the app's basic functionality via Companion.
+

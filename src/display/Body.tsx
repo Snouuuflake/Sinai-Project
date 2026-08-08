@@ -7,23 +7,39 @@ import { formatSrcPath } from "./util";
 import { CustomIPC } from "../shared/IpcWsClient";
 import { isElectron } from "../shared/isElectron";
 
-export function localFileUrl(path: string): string {
+export function extraMediaUrl(id: string, x: number = 0): string {
   if (isElectron()) {
-    return `local-file://${formatSrcPath(path)}`;
+    return `fetch-extra-media://${id}?x=${x}`;
   }
-  return `${window.location.origin}/local-file/${encodeURIComponent(path)}`;
+  return `${window.location.origin}/fetch-extra-media/${encodeURIComponent(id)}?x=${x}`;
 }
 
 const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
-  const { configHash } = useDisplayConfigState();
+  const { DISPLAY_ID, configHash } = useDisplayConfigState();
   const logoHasBeenVisible = useRef<boolean>(logoIsVisible);
 
   if (logoIsVisible)
     logoHasBeenVisible.current = true;
 
   const logoPath = configHash.get("logo-path") as string;
-  // logo only has fade animation i think that's reasonable
-  console.log(logoPath, "logopath")
+
+
+  const logoPathRef = useRef<string>((configHash.get("background-image") as string) ?? "");
+  console.log("Logo Reload - logo path ref current:", logoPathRef.current)
+  const [logoUrlX, setLogoUrlX] = useState<number>(0);
+
+  useEffect(
+    () => {
+      if (logoPathRef.current !== ((configHash.get("logo-path") as string) ?? "")) {
+        console.log(logoPathRef.current, "|", (configHash.get("logo-path") as string) ?? "");
+        setLogoUrlX(logoUrlX + 1),
+          logoPathRef.current = (configHash.get("logo-path") as string) ?? "";
+        console.log("logo change!")
+      }
+    }, [configHash]
+  )
+
+
   return <div
     className={`display-logo display-element-container ${logoIsVisible ? "logo-animation-in" : "logo-animation-out"}`}
   >
@@ -32,7 +48,7 @@ const Logo: React.FC<{ logoIsVisible: boolean }> = ({ logoIsVisible }) => {
         height: `${configHash.get("logo-size") as number}vh`,
         opacity: logoHasBeenVisible.current && logoPath !== "" ? "100%" : "0", // "/" for avoiding error icon on empty src
       }}
-      src={logoPath ? localFileUrl(logoPath) : ""} />
+      src={extraMediaUrl(`logo-media-${DISPLAY_ID}`, logoUrlX)} />
   </div>
 }
 
@@ -58,10 +74,27 @@ const Body: React.FC<{}> = () => {
   const [prevLiveElement, setPrevLiveElement] = useState<SerializedLiveElement | null>(null);
   const hasRequestedLiveState = useRef<boolean>(false);
 
+  const backgroundPathRef = useRef<string>((configHash.get("background-image") as string) ?? "");
+  // // janky but it doesnt save useRef's initial value?? ever ??
+  // backgroundPathRef.current = (configHash.get("background-image") as string) ?? "";
+  console.log("ref current", backgroundPathRef.current)
+  const [backgroundUrlX, setBackgroundUrlX] = useState<number>(0);
+
+
   const [logoIsVisible, setLogoIsVisible] = useState<boolean>(false);
 
   const curLiveElementRef = useRef<SerializedLiveElement | null>(null);
 
+  useEffect(
+    () => {
+      if (backgroundPathRef.current !== ((configHash.get("background-image") as string) ?? "")) {
+        console.log(backgroundPathRef.current, "|", (configHash.get("background-image") as string) ?? "");
+        setBackgroundUrlX(backgroundUrlX + 1),
+          backgroundPathRef.current = (configHash.get("background-image") as string) ?? "";
+        console.log("background change!")
+      }
+    }, [configHash]
+  )
 
   useEffect(() => {
     // const remover = (window as unknown as UIWindow).electron.onDisplayStateUpdateLiveElement(
@@ -105,7 +138,7 @@ const Body: React.FC<{}> = () => {
 
   return <div className="body" style={{
     backgroundColor: configHash.get("background-color") as string,
-    backgroundImage: `url("local-file://${formatSrcPath(configHash.get("background-image") as string)}")`
+    backgroundImage: `url("${extraMediaUrl("background-image-" + DISPLAY_ID, backgroundUrlX)}")`
   }}>
     <style>
       {

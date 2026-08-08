@@ -203,6 +203,7 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
   if (generalConfigRef.current === null) {
     generalConfigRef.current = new UIGeneralConfig();
     generalConfigRef.current.addEntry(new UIGeneralConfigEntry("dark-theme", "boolean", "Dark Theme"));
+    generalConfigRef.current.addEntry(new UIGeneralConfigEntry("port", "nnumber", "Port"));
   }
 
   const [generalConfig, setGeneralConfig] = useState<ReadonlyUIGeneralConfigType>(generalConfigRef.current.config);

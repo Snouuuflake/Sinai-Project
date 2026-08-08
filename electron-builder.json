@@ -10,8 +10,7 @@
   ],
   "extraResources": [
     "dist-electron/electron/preload-ui.cjs",
-    "dist-electron/electron/preload-display.cjs",
-    "dist-electron/electron/config.json"
+    "dist-electron/electron/preload-display.cjs"
   ],
   "win": {
     "target": [

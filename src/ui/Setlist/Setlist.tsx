@@ -126,7 +126,7 @@ const Setlist: React.FC<{ setlist: SerializedMediaIdentifier[] | null }> = ({ se
         </button>
       </div>
     </div>
-    <div className="setlist-items-container">
+    <div className="setlist-items-container" tabIndex={-1}>
       {setlist?.map((x, i) => <SetlistItem key={i} maxIdChars={maxIdChars} item={x} />) ?? <></>}
     </div>
   </div >

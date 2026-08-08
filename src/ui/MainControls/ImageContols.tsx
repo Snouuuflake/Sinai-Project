@@ -1,14 +1,17 @@
-import { SerializedImageMediaWithId } from "../../shared/media-classes"
+import { encodeOrderedVerseId, SerializedImageMediaWithId } from "../../shared/media-classes"
 
 import ProjectElementButton from "./ProjectElementButton";
 import LiveDisplayIndexArray from "./LiveDisplayIndexArray";
 
 import "./ImageContols.css";
+import { useUIState } from "../UIStateContext";
 
 const ImageControls:
   React.FC<{ openMedia: SerializedImageMediaWithId }>
   = ({ openMedia }) => {
     const ELEMENT = 0; // because it's only this one button
+    const { selectedLiveElementId } = useUIState();
+    const selected = selectedLiveElementId === selectedLiveElementId;
     return <div className="image-controls">
       <div className="main-container-header ">
         {/* TODO: icon */}
@@ -17,6 +20,7 @@ const ImageControls:
       <ProjectElementButton
         id={openMedia.id}
         element={ELEMENT}
+        selected={selected}
       >
         <div className={`image-controls-project-button-inner `}>
           <div className="image-controls-project-button-left">
@@ -30,7 +34,7 @@ const ImageControls:
           </div>
           <img
             className="image-controls-image"
-            src={`fetch-media://${openMedia.id}`}
+            src={`fetch-setlist-media://${openMedia.id}`}
           />
         </div>
       </ProjectElementButton>

@@ -50,6 +50,13 @@ abstract class Media {
       type: this.type,
     }
   }
+  toSerializedMedia(): SerializedMedia {
+    return {
+      name: this.name,
+      type: this.type,
+      value: this.value,
+    }
+  }
   toSerializedMediaWithId(id: number): SerializedMediaWithId {
     return {
       id: id,
@@ -65,6 +72,12 @@ type SerializedMediaIdentifier = {
   id: number;
   name: string;
   type: MediaTypeType;
+}
+
+type SerializedMedia = {
+  name: string;
+  type: MediaTypeType;
+  value: any;
 }
 
 type SerializedMediaWithId = {
@@ -130,7 +143,7 @@ class MediaSong extends Media {
       type: "text",
       value: {
         lines: this.value.song.sections
-          .find(s => s.id === decodedElement.section)?.
+          .find(s => s.id === this.value.song.elementOrder[decodedElement.section])?.
           verses.find(v => v.id === decodedElement.verse)?.
           lines
           ?? []
@@ -149,6 +162,16 @@ const decodeVerseId =
     section: Math.floor(id / SECTION_MULTIPLIER),
     verse: id % SECTION_MULTIPLIER
   });
+const encodeOrderedVerseId =
+  (orderedSection: number, verse: number) => (orderedSection * SECTION_MULTIPLIER) + verse;
+const decodeOrderedVerseId =
+  (id: number) => ({
+    sectionOrderIndex: Math.floor(id / SECTION_MULTIPLIER),
+    verse: id % SECTION_MULTIPLIER
+  });
+const getSectionFromOrderedSection = (song: Song, orderedSectionId: number) => {
+  return song.sections.find(s => s.id === song.elementOrder[orderedSectionId]);
+}
 
 // live elements keep the id of the media they come from
 // the element value should be unique within the media
@@ -197,13 +220,15 @@ export {
   Media,
   MediaImage,
   MediaSong,
-  encodeVerseId,
-  decodeVerseId,
+  encodeOrderedVerseId,
+  decodeOrderedVerseId,
+  getSectionFromOrderedSection
 };
 export type {
   MediaImageValueType,
   SerializedMediaIdentifier,
   SerializedMediaWithId,
+  SerializedMedia,
   SerializedImageMediaWithId,
   SerializedSongMediaWithId,
   LiveElementIdentifier,

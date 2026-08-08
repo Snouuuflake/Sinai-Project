@@ -15,12 +15,6 @@
   padding-left: 7px;
 }
 
-.song-controls-section-header {
-  all: unset;
-  font-weight: bold;
-  font-size: 14pt;
-}
-
 .song-controls-section-verses-container {
   display: flex;
   flex-direction: column;

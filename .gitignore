@@ -26,3 +26,5 @@ test-files
 *.njsproj
 *.sln
 *.sw?
+
+config.json

@@ -1,9 +1,6 @@
 /**
  * Server / main process module for allowing IPC (-style) communication from both Electron 
  * BrowserWindow(s) and windows served from Electron to an actual browser (Chrome, Firefox, etc)
- *
- * Requires the client to have a url with an explicit port (localhost:8000)
- * (this could easilty be abstracted i think but its not requiered for this project)
  */
 
 import { ipcMain } from "electron";
@@ -32,8 +29,22 @@ class IpcWs {
   #wss: WebSocketServer | null = null;
   #allowedOnChannels: string[];
   #allowedInvokeChannels: string[];
+
+  constructor(
+    allowedOnChannels: string[],
+    allowedInvokeChannels: string[],
+  ) {
+    this.#allowedOnChannels = allowedOnChannels;
+    this.#allowedInvokeChannels = allowedInvokeChannels;
+  }
+
+  /**
+   * (re-)inits "ipc" via the proviede WSS.
+   * deletes any old connections upon being called.
+   */
   initWss(wss: WebSocketServer) {
     this.#wss = wss;
+    this.#wsClients.clear();
 
     this.#wss.on("connection", (ws) => {
       this.#wsClients.add(ws);
@@ -65,13 +76,6 @@ class IpcWs {
         return;
       });
     });
-  }
-  constructor(
-    allowedOnChannels: string[],
-    allowedInvokeChannels: string[],
-  ) {
-    this.#allowedOnChannels = allowedOnChannels;
-    this.#allowedInvokeChannels = allowedInvokeChannels;
   }
 
   /**

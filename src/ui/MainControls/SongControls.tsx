@@ -1,4 +1,4 @@
-import { encodeVerseId, SerializedSongMediaWithId, SongSection, SongVerse, Song } from "../../shared/media-classes";
+import { encodeOrderedVerseId, SerializedSongMediaWithId, SongSection, SongVerse, Song, getSectionFromOrderedSection } from "../../shared/media-classes";
 
 import ProjectElementButton from "./ProjectElementButton";
 import LiveDisplayIndexArray from "./LiveDisplayIndexArray";
@@ -8,6 +8,7 @@ import { useModal } from "../ModalContext";
 import { useEffect, useRef, useState } from "react";
 
 import { GripVertical, SquarePen, Copy, Trash2, Plus, ZapIcon } from "lucide-react";
+import { useUIState } from "../UIStateContext";
 
 
 const EditSongModalSectionListItem:
@@ -468,25 +469,53 @@ const ProjectVerseButton:
   React.FC<{
     id: number;
     sectionId: number,
+    orderedSectionId: number,
     verse: SongVerse,
   }>
-  = ({ id, sectionId, verse }) => {
+  = ({ id, sectionId, orderedSectionId, verse }) => {
+    const { selectedLiveElementId } = useUIState();
+    const buttonToFocus = useRef<HTMLButtonElement>(null);
+    const selected = encodeOrderedVerseId(orderedSectionId, verse.id) === selectedLiveElementId;
+    useEffect(
+      () => {
+        if (buttonToFocus.current === null)
+          return;
+        if (selected) {
+          buttonToFocus.current.scrollIntoView(
+            {
+              behavior: "smooth",
+              block: "center"
+            }
+          );
+        }
+      },
+      [selectedLiveElementId]
+    );
+    useEffect(
+      () => {
+      },
+      [selectedLiveElementId]
+    );
     return (
       <ProjectElementButton
         id={id}
-        element={encodeVerseId(sectionId, verse.id)}
+        element={encodeOrderedVerseId(orderedSectionId, verse.id)}
+        ref={buttonToFocus}
+        selected={selected}
       >
-        <div className="song-project-button-inner">
+        <div className="song-project-button-inner" >
           <LiveDisplayIndexArray
             id={id}
-            element={encodeVerseId(sectionId, verse.id)}
+            element={encodeOrderedVerseId(orderedSectionId, verse.id)}
           />
-          <div>{
-            verse.lines.reduce<any[]>((p, c, i) => {
-              p.push(<div key={i}>{c}</div>)
-              return p;
-            }, [])
-          }</div>
+          <div
+          >
+            {
+              verse.lines.reduce<any[]>((p, c, i) => {
+                p.push(<div key={i}>{c}</div>)
+                return p;
+              }, [])
+            }</div>
         </div>
 
       </ProjectElementButton>
@@ -494,21 +523,22 @@ const ProjectVerseButton:
   }
 
 const SectionContainer:
-  React.FC<{ id: number, section: SongSection }>
-  = ({ id, section }) => {
+  React.FC<{ id: number, section: SongSection, orderedSectionId: number }>
+  = ({ id, section, orderedSectionId }) => {
     const verseButtons = section.verses.map(
       (v) => (
         <ProjectVerseButton
           id={id}
           key={`verse-${v.id}`}
           sectionId={section.id}
+          orderedSectionId={orderedSectionId}
           verse={v}
         />
       )
     )
     return (
       <div>
-        <h2 className="song-controls-section-header">{section.name}</h2>
+        <h2 className="controls-section-header">{section.name}</h2>
         <div className="song-controls-section-verses-container">
           {verseButtons}
         </div>
@@ -549,12 +579,13 @@ const SongControls:
           </button>
         </div>
       </div>
-      <div className="song-controls-song-container">
+      <div className="song-controls-song-container" tabIndex={-1}>
         {openMedia.value.song.elementOrder.map((id, i) =>
           <SectionContainer
             id={openMedia.id}
             key={`section-${i}`}
             section={openMedia.value.song.sections.find(s => s.id == id)!}
+            orderedSectionId={i}
           />
         )}
         {<div style={{ height: "5px" }}></div>}

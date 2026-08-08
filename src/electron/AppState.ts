@@ -1,16 +1,24 @@
+import { dialog } from "electron";
 import * as fs from "fs";
 
-import { DISPLAYS } from "../shared/constants.js";
+import { DISPLAYS, MAX_RESERVED_MEDIA_ID } from "../shared/constants.js";
 import { getConfigPath } from "./pathResolver.js";
-import { alertMessageBox } from "./main.js";
 import {
   SerializedLiveElement,
   LiveElementIdentifier,
   Media,
   SerializedMediaIdentifier,
   SerializedMediaWithId,
+  SerializedMedia,
   MediaSong,
   Song,
+  decodeOrderedVerseId,
+  getSectionFromOrderedSection,
+  encodeOrderedVerseId,
+  SongSection,
+  MediaImage,
+  // encodeVerseId,
+  // decodeVerseId,
 } from "../shared/media-classes.js";
 import {
   ConfigEntryBase,
@@ -20,6 +28,8 @@ import {
   SerializedGeneralConfigEntry
 } from "../shared/config-classes.js";
 
+type GeneralConfigEntryCallback = (newValue: unknown) => void;
+type DisplayConfigEntryCallback = (newValue: unknown[]) => void;
 
 class MainDisplayConfigEntry<T extends ConfigTypesKey> extends ConfigEntryBase<T> {
   #init: ConfigTypePrimitiveType<T>;
@@ -100,22 +110,31 @@ class AppState {
   // order (by id) of media in the UIWindow setlist
   #setlist: number[] = [];
   // set of all media (files, songs, images, etc) loaded by the user
-  #media: Map<number, Media> = new Map();
+  #setlistMedia: Map<number, Media> = new Map();
   // for generating unique id's for each media loaded
-  #mediaIdCounter: number = 0;
+  #mediaIdCounter: number = MAX_RESERVED_MEDIA_ID + 1;
   // id of media being viewed in main UI window controls
   #openMedia: number | null = null;
+  // currently selected liveElement in ui
+  #selectedLiveElementId: number | null = null;
   // elements being projected
   #liveElements: Array<LiveElementIdentifier | null> = Array.from({ length: DISPLAYS }, (_x) => null);
   // logo on or off for each display
-  #logo: boolean[] = Array.from({ length: DISPLAYS }, (_x) => false);
+  #logoIsVisible: boolean[] = Array.from({ length: DISPLAYS }, (_x) => false);
+
+
   constructor() {
   }
+
+  get openMedia(): number | null {
+    return this.#openMedia;
+  }
+
   // INFO: configs -------------------------
   readConfigFile() {
     fs.readFile(getConfigPath(), { encoding: "utf8" }, (err, data) => {
       if (err) {
-        alertMessageBox(err.message);
+        dialog.showErrorBox("Error", err.message);
         return;
       }
       const { dc, gc }: { dc: SerializedDisplayConfigEntry[], gc: SerializedGeneralConfigEntry[] } = JSON.parse(data);
@@ -130,19 +149,55 @@ class AppState {
       gc.forEach(entry => this.updateGcEntry(entry.id, entry.cur));
     });
   }
+
+  #writeConfigTimer: ReturnType<typeof setTimeout> | null = null;
+
+  #scheduleWriteConfig() {
+    console.log("AppState.#scheduleWriteConfig()")
+    const DELAY = 500; //ms
+    if (this.#writeConfigTimer !== null) clearTimeout(this.#writeConfigTimer);
+    this.#writeConfigTimer = setTimeout(
+      () => {
+        this.#writeConfigTimer = null;
+        this.writeConfigFile();
+      },
+      DELAY
+    );
+  }
   writeConfigFile() {
+    console.log("AppState.writeConfigFile()")
     const data = JSON.stringify({
       dc: this.#dc.map(entry => entry.toSerialized()),
       gc: this.#gc.map(entry => entry.toSerialized()),
     });
     fs.writeFile(getConfigPath(), data, { encoding: "utf8" }, (err) => {
-      if (err) {
-        alertMessageBox(err.message);
-      }
+      if (err)
+        dialog.showErrorBox("Error", err.message);
     });
   }
+
   //       INFO: dc ------------------------------
   #dc: MainDisplayConfigEntry<ConfigTypesKey>[] = [];
+  #dcCallbacks: { id: string, callback: DisplayConfigEntryCallback }[] = [];
+  addDcCallback(id: string, callback: DisplayConfigEntryCallback) {
+    this.#dcCallbacks.push({ id, callback });
+  }
+  removeDcCallback(id: string, callback: DisplayConfigEntryCallback) {
+    const callbackIndex = this.#dcCallbacks.findIndex(value => value.id === id && value.callback === callback);
+    if (callbackIndex === -1)
+      return;
+    this.#dcCallbacks.splice(callbackIndex, 1);
+  }
+  #runDcCallbacks(id: string) {
+    const dcEntry = this.#dc.find(value => value.id === id)
+    if (!dcEntry)
+      return;
+    const dcEntryValue = dcEntry.cur;
+    for (const callback of this.#dcCallbacks) {
+      if (callback.id === id)
+        callback.callback(dcEntryValue);
+    }
+  }
   #findAssertDcEntry(id: string) {
     const findRes = this.#dc.find(x => x.id === id);
     if (!findRes)
@@ -154,20 +209,44 @@ class AppState {
     if (findRes)
       throw new Error("dc entry id already exists");
     this.#dc.push(entry);
+    this.#runDcCallbacks(entry.id);
   }
   updateDcEntry(id: string, index: number, value: unknown) {
     this.#findAssertDcEntry(id).setCurEntry(index, value);
-    this.writeConfigFile();
+    this.#scheduleWriteConfig();
+    this.#runDcCallbacks(id);
   }
   resetDcEntry(id: string, index: number) {
     this.#findAssertDcEntry(id).reinitEntry(index);
-    this.writeConfigFile();
+    this.#scheduleWriteConfig();
+    this.#runDcCallbacks(id);
   }
   getSerializedDc() {
     return this.#dc.map(x => x.toSerialized());
   }
+
   //       INFO: gc ------------------------------
   #gc: MainGeneralConfigEntry<ConfigTypesKey>[] = [];
+  #gcCallbacks: { id: string, callback: GeneralConfigEntryCallback }[] = [];
+  addGcCallback(id: string, callback: GeneralConfigEntryCallback) {
+    this.#gcCallbacks.push({ id, callback });
+  }
+  removeGcCallback(id: string, callback: GeneralConfigEntryCallback) {
+    const callbackIndex = this.#gcCallbacks.findIndex(value => value.id === id && value.callback === callback);
+    if (callbackIndex === -1)
+      return;
+    this.#gcCallbacks.splice(callbackIndex, 1);
+  }
+  #runGcCallbacks(id: string) {
+    const gcEntry = this.#gc.find(value => value.id === id)
+    if (!gcEntry)
+      return;
+    const gcEntryValue = gcEntry.cur;
+    for (const callback of this.#gcCallbacks) {
+      if (callback.id === id)
+        callback.callback(gcEntryValue);
+    }
+  }
   #findAssertGcEntry(id: string) {
     const findRes = this.#gc.find(x => x.id === id);
     if (!findRes)
@@ -179,31 +258,41 @@ class AppState {
     if (findRes)
       throw new Error("addgcEntry: id already exists");
     this.#gc.push(entry);
+    this.#runGcCallbacks(entry.id)
   }
   updateGcEntry(id: string, value: unknown) {
     this.#findAssertGcEntry(id).cur = value;
-    this.writeConfigFile();
+    this.#scheduleWriteConfig();
+    this.#runGcCallbacks(id)
   }
   resetGcEntry(id: string) {
     this.#findAssertGcEntry(id).reinitEntry();
-    this.writeConfigFile();
+    this.#scheduleWriteConfig();
+    this.#runGcCallbacks(id)
   }
   getSerializedGc() {
     return this.#gc.map(x => x.toSerialized());
   }
+
+  // INFO: media / setlist
+
   // returns copy of this.#media
-  get media(): Map<number, Media> {
-    return new Map(this.#media);
+  // TODO: UNUSED - can rename
+  get setlistMedia(): Map<number, Media> {
+    return new Map(this.#setlistMedia);
   }
   // returns setlist as serializable media identiers (no value) for sending to ui browser window
   getUIStateSetlist(): SerializedMediaIdentifier[] {
-    return this.#setlist.map(id => this.#media.get(id)!.toSerializedMediaIdentifier(id));
+    return this.#setlist.map(id => this.#setlistMedia.get(id)!.toSerializedMediaIdentifier(id));
   }
   // returns openMedia as serializable media for sending to ui browser window
   getUIStateOpenMedia(): SerializedMediaWithId | null {
     if (this.#openMedia === null) return null;
-    return this.#media.get(this.#openMedia)!
+    return this.#setlistMedia.get(this.#openMedia)!
       .toSerializedMediaWithId(this.#openMedia);
+  }
+  getUIStateSelectedLiveElementId(): number | null {
+    return this.#selectedLiveElementId;
   }
   // returns copy of live elements (already serializable)
   getUIStateLiveElements(): Array<LiveElementIdentifier | null> {
@@ -214,15 +303,15 @@ class AppState {
   getDisplayStateLiveElement(displayId: number): SerializedLiveElement | null {
     const le = this.#liveElements[displayId] ?? null;
     if (le === null) return null;
-    return this.#media.get(le.id)?.toSerializedLiveElement(le.id, le.element) ?? null;
+    return this.#setlistMedia.get(le.id)?.toSerializedLiveElement(le.id, le.element) ?? null;
   }
   /**
     * sets song of media song in media
     * song is maybe the only media that will be edited by the user
     * @throws if id doesn't exist or is not MediaSong
     */
-  setSongMediaSong(id: number, song: Song) {
-    const targetMedia = this.#media.get(id);
+  setSetlistMediaSongMediaSong(id: number, song: Song) {
+    const targetMedia = this.#setlistMedia.get(id);
     if (targetMedia === undefined) {
       throw new Error("setSongMediaSong: invalid id")
     }
@@ -241,17 +330,289 @@ class AppState {
       this.#openMedia = null;
       return;
     }
-    if (!this.#media.get(id)) {
+    if (!this.#setlistMedia.get(id)) {
       throw new Error("setOpenMedia: id not in this.media")
     }
     this.#openMedia = id;
+
+    const openMedia = this.#setlistMedia.get(id);
+    if (openMedia instanceof MediaImage) {
+      const song = openMedia.value.path;
+      this.setSelectedLiveElementId(0);
+      return;
+    }
+    if (openMedia instanceof MediaSong) {
+      const song = openMedia.value.song;
+
+      this.setSelectedLiveElementId(null);
+
+      let nextNonEmptyOrderedSectionId: number | null = null;
+      // will otherwise find the next non-empty section
+      for (let index = 0; index < song.elementOrder.length; index++) {
+        const sectionId = openMedia.value.song.elementOrder[
+          index
+        ];
+        const section = song.sections.find(s => s.id === sectionId);
+        if (section === undefined)
+          // do nothing
+          continue;
+        if (section.verses.length === 0)
+          continue;
+        nextNonEmptyOrderedSectionId = index;
+        break;
+      }
+      // nextSection.verses.length > 0.
+
+      // this should never happen but i dont think it makes sense to raise anything
+      if (nextNonEmptyOrderedSectionId === null)
+        return;
+      console.log("DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+      console.log("nextNoneEmptyOrderedSectionId after loop", nextNonEmptyOrderedSectionId);
+
+      this.setSelectedLiveElementId(
+        encodeOrderedVerseId(
+          nextNonEmptyOrderedSectionId,
+          0,
+        )
+      )
+    }
   }
+
+  get selectedLiveElementId() {
+    return this.#selectedLiveElementId;
+  }
+
+  setSelectedLiveElementId(liveElementId: number | null) {
+    this.#selectedLiveElementId = liveElementId;
+  }
+
+  incrementSelectedLiveElementId() {
+    console.log("AppState.incrementOpenLiveElement()");
+    try {
+      if (this.#selectedLiveElementId === null || this.#openMedia === null)
+        return;
+      const openMedia = this.#setlistMedia.get(this.#openMedia);
+      if (!openMedia)
+        return;
+
+
+      if (openMedia instanceof MediaSong) {
+        // if song is empty
+        if (openMedia.value.song.elementOrder.length === 0)
+          return;
+        // if song has sections but no verses
+        if (openMedia.value.song.sections.every(s => s.verses.length === 0))
+          return;
+
+        const decodedVerseId = decodeOrderedVerseId(this.#selectedLiveElementId);
+        // gets current open verse's section object
+        const curSection = getSectionFromOrderedSection(
+          openMedia.value.song,
+          decodedVerseId.sectionOrderIndex
+        );
+        // if it doesn't exist, returns. should probably log
+        if (curSection === undefined)
+          return;
+
+        const curSectionMaxVerse = curSection.verses.length - 1;
+
+        // if it can increment a verse, does so
+        if (decodedVerseId.verse < curSectionMaxVerse) {
+          console.log("AppState.incrementOpenLiveElement(): can increment verse in same section");
+          this.setSelectedLiveElementId(
+            encodeOrderedVerseId(
+              decodedVerseId.sectionOrderIndex,
+              decodedVerseId.verse + 1,
+            )
+          )
+          return;
+        }
+
+        console.log("AppState.incrementOpenLiveElement(): looking for next non-empty section");
+
+        let nextNonEmptyOrderedSectionId: number | null = null;
+        // will otherwise find the next non-empty section
+        for (let index = 0; index < openMedia.value.song.elementOrder.length; index++) {
+          const elementOrderIndex = (decodedVerseId.sectionOrderIndex + index + 1) % openMedia.value.song.elementOrder.length;
+          console.log("DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+          console.log("elementOrderIndex", elementOrderIndex);
+
+          const sectionId = openMedia.value.song.elementOrder[
+            elementOrderIndex
+          ];
+          const section = openMedia.value.song.sections.find(s => s.id === sectionId);
+          if (section === undefined)
+            // do nothing
+            continue;
+          if (section.verses.length === 0)
+            continue;
+          nextNonEmptyOrderedSectionId = elementOrderIndex;
+          break;
+        }
+
+        console.log("DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        console.log("nextNoneEmptyOrderedSectionId after loop", nextNonEmptyOrderedSectionId);
+
+        // nextSection.verses.length > 0.
+
+        // this should never happen but i dont think it makes sense to raise anything
+        if (nextNonEmptyOrderedSectionId === null)
+          return;
+
+        this.setSelectedLiveElementId(
+          encodeOrderedVerseId(
+            nextNonEmptyOrderedSectionId,
+            0,
+          )
+        )
+      }
+    } catch (err) {
+      console.error(err);
+      if (err instanceof Error)
+        dialog.showErrorBox("Error", err.message);
+    }
+  }
+  decrementSelectedLiveElement() {
+    console.log("AppState.decrementOpenLiveElement()");
+    try {
+      if (this.#selectedLiveElementId === null || this.#openMedia === null)
+        return;
+      const openMedia = this.#setlistMedia.get(this.#openMedia);
+      if (!openMedia)
+        return;
+
+
+      if (openMedia instanceof MediaSong) {
+        // if song is empty
+        if (openMedia.value.song.elementOrder.length === 0)
+          return;
+        // if song has sections but no verses
+        if (openMedia.value.song.sections.every(s => s.verses.length === 0))
+          return;
+
+        const decodedVerseId = decodeOrderedVerseId(this.#selectedLiveElementId);
+        // gets current open verse's section object
+        const curSection = getSectionFromOrderedSection(
+          openMedia.value.song,
+          decodedVerseId.sectionOrderIndex
+        );
+        // if it doesn't exist, returns. should probably log
+        if (curSection === undefined)
+          return;
+
+        // const curSectionMaxVerse = curSection.verses.length - 1;
+
+        // if it can increment a verse, does so
+        if (decodedVerseId.verse > 0) {
+          console.log("AppState.decrementOpenLiveElement(): can decrement verse in same section");
+          this.setSelectedLiveElementId(
+            encodeOrderedVerseId(
+              decodedVerseId.sectionOrderIndex,
+              decodedVerseId.verse - 1,
+            )
+          )
+          return;
+        }
+
+        console.log("AppState.decrementOpenLiveElement(): looking for previous non-empty section");
+
+        let previousNonEmptyOrderedSectionId: number | null = null;
+        // will otherwise find the next non-empty section
+        for (let index = 0; index < openMedia.value.song.elementOrder.length; index++) {
+          const x = decodedVerseId.sectionOrderIndex - (index + 1);
+          const mod = x % openMedia.value.song.elementOrder.length;
+          const elementOrderIndex = (mod < 0) ? openMedia.value.song.elementOrder.length + mod : mod;
+          console.log("DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+          console.log("elementOrderIndex", elementOrderIndex);
+
+          const sectionId = openMedia.value.song.elementOrder[
+            elementOrderIndex
+          ];
+          const section = openMedia.value.song.sections.find(s => s.id === sectionId);
+          if (section === undefined)
+            // do nothing
+            continue;
+          if (section.verses.length === 0)
+            continue;
+          previousNonEmptyOrderedSectionId = elementOrderIndex;
+          break;
+        }
+
+        console.log("DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        console.log("previousNonEmptyOrderedSectionId after loop", previousNonEmptyOrderedSectionId);
+
+        // nextSection.verses.length > 0.
+
+        // this should never happen but i dont think it makes sense to raise anything
+        if (previousNonEmptyOrderedSectionId === null)
+          return;
+
+        const previousNonEmptySection = openMedia.value.song.sections
+          .find(s =>
+            s.id === openMedia.value.song.elementOrder[previousNonEmptyOrderedSectionId]
+          );
+
+        if (previousNonEmptySection === undefined)
+          return;
+
+        this.setSelectedLiveElementId(
+          encodeOrderedVerseId(
+            previousNonEmptyOrderedSectionId,
+            previousNonEmptySection.verses.length - 1,
+          )
+        )
+      }
+    } catch (err) {
+      console.error(err);
+      if (err instanceof Error)
+        dialog.showErrorBox("Error", err.message);
+    }
+
+  }
+
+  decrementOpenMedia() {
+    if (this.#openMedia === null) {
+      if (this.#setlist.length === 0)
+        return;
+      this.setOpenMedia(this.#setlist[0]);
+      return;
+    }
+
+    const curOpenMediaSetlistIndex = this.#setlist.findIndex(x => x === this.#openMedia)
+    if (curOpenMediaSetlistIndex === -1) {
+      console.log("AppState.incrementOpenMedia(): curOpenMediaSetlistIndex = -1");
+      return;
+    }
+
+    const x = curOpenMediaSetlistIndex - 1;
+    const mod = x % this.#setlist.length;
+    const newIndex = (mod < 0) ? this.#setlist.length + mod : mod;
+    this.setOpenMedia(this.#setlist[newIndex]);
+  }
+
+  incrementOpenMedia() {
+    if (this.#openMedia === null) {
+      if (this.#setlist.length === 0)
+        return;
+      this.setOpenMedia(this.#setlist[0]);
+      return;
+    }
+
+    const curOpenMediaSetlistIndex = this.#setlist.findIndex(x => x === this.#openMedia)
+    if (curOpenMediaSetlistIndex === -1) {
+      console.log("AppState.incrementOpenMedia(): curOpenMediaSetlistIndex = -1");
+      return;
+    }
+    this.setOpenMedia(this.#setlist[(curOpenMediaSetlistIndex + 1) % this.#setlist.length]);
+  }
+
   /**
    * @param displayIndex display window index to set 
    * @param id media id of new live media
    * @throws if invalid display index or live element id invalid
    */
   setLiveElement(displayIndex: number, liveElementIdentifier: LiveElementIdentifier | null) {
+    console.log("DEBUG! lei in setLiveElement:", liveElementIdentifier)
     if (displayIndex < 0 || displayIndex >= DISPLAYS) {
       throw new Error("setLiveElements: index is invalid");
     }
@@ -259,7 +620,7 @@ class AppState {
       this.#liveElements[displayIndex] = null;
       return;
     }
-    if (!this.#media.get(liveElementIdentifier.id)) {
+    if (!this.#setlistMedia.get(liveElementIdentifier.id)) {
       throw new Error("setLiveElements: id not in this.#media");
     }
     this.#liveElements[displayIndex] = liveElementIdentifier;
@@ -267,30 +628,30 @@ class AppState {
     return;
   }
   getLogo(): readonly boolean[] {
-    return this.#logo as readonly boolean[];
+    return this.#logoIsVisible as readonly boolean[];
   }
   getLogoEntry(displayIndex: number): boolean {
     if (displayIndex < 0 || displayIndex >= DISPLAYS) {
       throw new Error("getLogo: index is invalid");
     }
-    return this.#logo[displayIndex];
+    return this.#logoIsVisible[displayIndex];
   }
   setLogo(displayIndex: number, logoIsVisible: boolean) {
     if (displayIndex < 0 || displayIndex >= DISPLAYS) {
       throw new Error("setLogo: index is invalid");
     }
-    this.#logo[displayIndex] = logoIsVisible
+    this.#logoIsVisible[displayIndex] = logoIsVisible
   }
   /**
    * @param id id of media to be moved 
    * @param index index isnide setlist to put it's id 
    * @throws throws if id not in setlist or media or if invalid index
    */
-  moveSetlistMedia(id: number, index: number) {
+  moveSetlistEntry(id: number, index: number) {
     if (this.#setlist.indexOf(id) == -1) {
       throw new Error("moveSetlistMedia: id not in this.#setlist")
     }
-    if (!this.#media.get(id)) {
+    if (!this.#setlistMedia.get(id)) {
       throw new Error("moveSetlistMedia: id not in this.#media")
     }
     if (index >= this.#setlist.length) {
@@ -304,8 +665,8 @@ class AppState {
     this.#setlist.splice(itemSetlistIndex, 1);
     this.#setlist.splice(index, 0, id);
   }
-  addMedia(media: Media) {
-    this.#media.set(this.#mediaIdCounter, media);
+  addSetlistMedia(media: Media) {
+    this.#setlistMedia.set(this.#mediaIdCounter, media);
     this.#setlist.push(this.#mediaIdCounter);
     this.#mediaIdCounter++;
   }
@@ -313,20 +674,50 @@ class AppState {
    * @param id id of item to remove 
    * @throws throws if id not in setlist or in media
    */
-  deleteMedia(id: number) {
+  deleteSetlistMedia(id: number) {
     if (this.#setlist.indexOf(id) == -1) {
       throw new Error("deleteMedia: id not in this.#setlist")
     }
-    if (!this.#media.get(id)) {
+    if (!this.#setlistMedia.get(id)) {
       throw new Error("deleteMedia: id not in this.#media")
     }
     this.#setlist.splice(this.#setlist.indexOf(id), 1);
-    this.#media.delete(id);
+    this.#setlistMedia.delete(id);
 
     if (this.#openMedia === id) {
       this.setOpenMedia(null);
     }
   }
+
+  #extraMedia: Map<string, Media> = new Map();
+  get extraMedia(): Map<string, Media> {
+    return new Map(this.#extraMedia);
+  }
+  setExtraMedia(id: string, media: Media) {
+    this.#extraMedia.set(id, media);
+  }
+  getSerializedExtraMedia(id: string): SerializedMedia | null {
+    this.#extraMedia.get(id);
+    return this.#extraMedia.get(id)?.toSerializedMedia() ?? null;
+  }
+  getSerializedLogoMedia(): SerializedMedia | null {
+    return this.#extraMedia.get("logo-media")?.toSerializedMedia() ?? null;
+  }
+
+  /**
+   * @throws if id > MAX_RESERVED_MEDIA_ID
+   */
+  setFixedIdMedia(id: number, media: Media | null): void {
+    if (id > MAX_RESERVED_MEDIA_ID)
+      throw new Error("AppState.getFixedIdMedia(): id > MAX_RESERVED_MEDIA_ID");
+    if (media === null) {
+      this.#setlistMedia.delete(id);
+      return;
+    } else {
+      this.#setlistMedia.set(id, media);
+    }
+  }
+
   #port: number | null = null;
   setPort(port: number | null) {
     this.#port = port

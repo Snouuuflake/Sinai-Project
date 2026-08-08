@@ -346,7 +346,14 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
               <>
                 <div>
                   <h3 className="config-heading">Local Server</h3>
-                  <div>PORT: {port ?? "Ninguno"}</div>
+                  <div>
+                    Server Status: {" "}
+                    {
+                      port !== null ?
+                        <><span style={{ color: "#26d926" }}>Online</span> at port {port}</> :
+                        <span style={{ color: "#d92626" }}>Offline</span>
+                    }
+                  </div>
                   {
                     port === null ?
                       <></>
@@ -372,14 +379,14 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
                       </div>
                   }
                 </div>
-                <button
-                  style={{ width: "100%" }}
-                  onClick={() => {
-                    (window as unknown as UIWindow).electron.sendUIRestartServerRequest();
-                  }}
-                >
-                  Restart Server
-                </button>
+                {/* <button */}
+                {/*   style={{ width: "100%" }} */}
+                {/*   onClick={() => { */}
+                {/*     (window as unknown as UIWindow).electron.sendUIRestartServerRequest(); */}
+                {/*   }} */}
+                {/* > */}
+                {/*   Restart Server */}
+                {/* </button> */}
                 <h3 className="config-heading">Debug</h3>
                 <button
                   style={{ width: "100%" }}

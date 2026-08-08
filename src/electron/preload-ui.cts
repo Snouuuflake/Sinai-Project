@@ -35,6 +35,7 @@ function makeIpcOn(channel: string) {
 contextBridge.exposeInMainWorld("electron", {
   onUIStateUpdateSetlist: makeIpcOn("ui-state-update-setlist"),
   onUIStateUpdateOpenMedia: makeIpcOn("ui-state-update-open-media"),
+  onUIStateUpdateSelectedLiveElementId: makeIpcOn("ui-state-update-selected-live-element-id"),
   onUIStateUpdateLiveElements: makeIpcOn("ui-state-update-live-elements"),
   onUIStateUpdateLogo: makeIpcOn("ui-state-update-logo"),
   sendUIStateRequest: makeIpcSend("ui-state-request"),
@@ -66,6 +67,8 @@ contextBridge.exposeInMainWorld("electron", {
   sendCreateSong: makeIpcSend("create-song"),
   sendReplaceSong: makeIpcSend("replace-song"),
   sendSaveSong: makeIpcSend("save-song"),
+
+  sendSetSelectedLiveElementId: makeIpcSend("set-selected-live-element-id"),
 
 
   onUIUpdatePort: makeIpcOn("ui-update-port"),

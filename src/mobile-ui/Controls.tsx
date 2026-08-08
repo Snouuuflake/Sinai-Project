@@ -1,7 +1,7 @@
 
 
 import { DISPLAYS } from "../shared/constants";
-import { encodeVerseId, SerializedImageMediaWithId, SerializedMediaWithId, SerializedSongMediaWithId, SongSection, SongVerse } from "../shared/media-classes";
+import { encodeOrderedVerseId, SerializedImageMediaWithId, SerializedMediaWithId, SerializedSongMediaWithId, SongSection, SongVerse } from "../shared/media-classes";
 import "./Controls.css";
 import { CustomIPC } from "./IpcWsOnlyClient";
 import LiveDisplayIndexArray from "./LiveDisplayIndexArray";
@@ -165,7 +165,7 @@ const ImageControls:
           </div>
           <img
             className="image-controls-image"
-            src={`${window.location.origin}/fetch-media/${openMedia.id}`}
+            src={`${window.location.origin}/fetch-setlist-media/${openMedia.id}`}
 
           />
         </div>
@@ -209,18 +209,19 @@ const ProjectVerseButton:
   React.FC<{
     id: number;
     sectionId: number,
+    orderedSectionId: number,
     verse: SongVerse,
   }>
-  = ({ id, sectionId, verse }) => {
+  = ({ id, sectionId, orderedSectionId, verse }) => {
     return (
       <ProjectElementButton
         id={id}
-        element={encodeVerseId(sectionId, verse.id)}
+        element={encodeOrderedVerseId(orderedSectionId, verse.id)}
       >
         <div className="song-project-button-inner">
           <LiveDisplayIndexArray
             id={id}
-            element={encodeVerseId(sectionId, verse.id)}
+            element={encodeOrderedVerseId(orderedSectionId, verse.id)}
           />
           <div>{
             verse.lines.reduce<any[]>((p, c, i) => {
@@ -235,14 +236,15 @@ const ProjectVerseButton:
   }
 
 const SectionContainer:
-  React.FC<{ id: number, section: SongSection }>
-  = ({ id, section }) => {
+  React.FC<{ id: number, section: SongSection, orderedSectionId: number }>
+  = ({ id, section, orderedSectionId }) => {
     const verseButtons = section.verses.map(
       (v) => (
         <ProjectVerseButton
           id={id}
           key={`verse-${v.id}`}
           sectionId={section.id}
+          orderedSectionId={orderedSectionId}
           verse={v}
         />
       )
@@ -267,6 +269,7 @@ const SongControls: React.FC<{
           id={openMedia.id}
           key={`section-${i}`}
           section={openMedia.value.song.sections.find(s => s.id == id)!}
+          orderedSectionId={i}
         />
       )}
       {<div style={{ height: "5px" }}></div>}

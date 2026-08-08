@@ -1,9 +1,16 @@
 import { app, BrowserWindow, ipcMain, dialog, protocol, net } from "electron";
-import { DISPLAYS } from "../shared/constants.js";
 import { pathToFileURL } from "url";
 import path from "path";
+import * as fs from "fs";
+import express from "express";
+import { AddressInfo, WebSocketServer } from "ws";
+import http from "http";
+import { initExpressApp } from "./express.js";
+
+
 import { isDev } from "./util.js";
 import { getConfigPath, getPreloadPath } from "./pathResolver.js";
+import { DISPLAYS } from "../shared/constants.js";
 import {
   LiveElementIdentifier,
   MediaImage,
@@ -12,34 +19,25 @@ import {
   SerializedLiveState,
   Media,
 } from "../shared/media-classes.js";
-import * as fs from "fs";
+
 import { parseSong, logSong, stringifySong } from "./parser.js";
+
 import { AppState, MainDisplayConfigEntry, MainGeneralConfigEntry } from "./AppState.js";
+
 import { IpcWs } from "./IpcWs.js";
+import { ServerManager } from "./ServerManager.js";
+import { addConfigEntries } from "./appState-config.js";
+import { registerConfigHandlers } from "./handlers/configHandlers.js";
+import { WindowManager } from "./WindowManager.js";
+import { FILTERS, matchFilter } from "./filters.js";
+import { registerMediaHandlers } from "./handlers/mediaHandlers.js";
+import { registerServerHandlers } from "./handlers/serverHandlers.js";
+import { registerLiveHandlers } from "./handlers/liveHandlers.js";
+import { registerUIHandlers } from "./handlers/uiHandlers.js";
+import { registerMiscHandlers } from "./handlers/miscHandlers.js";
+import { registerDisplayHandlers } from "./handlers/displayHandlers.js";
 
-import express from "express";
-import { AddressInfo, WebSocketServer } from "ws";
-import http from "http";
-
-const FILTERS = {
-  "Images": {
-    name: "Images",
-    extensions: [
-      "apng", "gif", "ico", "cur", "jpg", "jpeg", "jfif", "pjpeg", "pjp", "png", "svg",
-    ]
-  },
-  "Songs": {
-    name: "Songs",
-    extensions: [
-      "sinai", "txt", "mss"
-    ]
-  }
-} as const;
-
-function matchFilter(str: string, filter: keyof typeof FILTERS): boolean {
-  const regexp = new RegExp("\." + (FILTERS[filter].extensions.join("|")) + "$");
-  return !!str.match(regexp);
-}
+import { ALLOWED_DISPLAY_INVOKE_CHANNELS, ALLOWED_DISPLAY_SEND_CHANNELS } from "./electron-constants.js";
 
 // handling unhandled rejected promises
 process.on('unhandledRejection', (error: Error) => {
@@ -48,769 +46,109 @@ process.on('unhandledRejection', (error: Error) => {
   dialog.showErrorBox('Error', error.message);
 });
 
-function alertMessageBox(message: string) {
-  if (uiWindow)
-    dialog.showMessageBox(uiWindow, { message: message, });
-}
+async function main() {
+  const appState = new AppState();
 
-const expressApp = express();
-expressApp.get("/fetch-media/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const media = appState.media.get(id);
-  console.log("fetch-media", id, media?.value);
-  if (!media || media.type !== "image") {
-    console.log("404ing")
-    res.status(404).end();
-    return;
+  const ipcws = new IpcWs(
+    ALLOWED_DISPLAY_SEND_CHANNELS,
+    ALLOWED_DISPLAY_INVOKE_CHANNELS,
+  );
+
+  const windowManager = new WindowManager(ipcws);
+
+  const serverManager = new ServerManager(initExpressApp(appState), ipcws);
+
+  addConfigEntries(appState, serverManager);
+
+  function updatePort(port: number | null) {
+    // appState.setPort(port);
+    windowManager.sendToUIWindow("ui-update-port", serverManager.port);
   }
-  res.sendFile(media.value.path);
-});
-expressApp.get("/local-file/:path", (req, res) => {
-  const path = decodeURIComponent(req.params.path);
-  console.log("local-file", path);
-  res.sendFile(path);
-});
-expressApp.use("/mobile", express.static(path.join(app.getAppPath(), "/dist-mobile-ui")));
-expressApp.use(express.static(path.join(app.getAppPath(), "/dist-display")));
 
-const ipcws = new IpcWs(
-  ["ui-state-request", "ui-display-config-request", "alert", "set-logo", "set-open-media", "set-live-element"],
-  ["invoke-display-get-init-live-state"]
-);
+  serverManager.updatePortCallback = updatePort;
 
-let httpServer: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse> | null = null;
-function startServers() {
-  // if (httpServer) {
-  //   httpServer.close(console.error);
-  // }
-  httpServer = http.createServer(expressApp);
-  const wss = new WebSocketServer({ server: httpServer });
+  registerConfigHandlers(appState, windowManager, serverManager);
+  registerServerHandlers(appState, windowManager, serverManager);
+  registerMediaHandlers(appState, windowManager);
+  registerLiveHandlers(appState, windowManager);
+  registerUIHandlers(appState, windowManager);
+  registerDisplayHandlers(appState, windowManager, ipcws);
+  registerMiscHandlers(appState, windowManager);
 
-  httpServer!.listen(0, () => {
-    try {
-      const port = (httpServer!.address() as AddressInfo).port; // e.g. 49823
-      console.log(`!!!!!!!!!! listening on port: ${port}`);
-      updatePort(port);
-    } catch (err) {
-      console.error(err);
-    }
-  });
-
-  ipcws.initWss(wss);
-}
-
-function updateUIPort() {
-  sendToUIWindow("ui-update-port", appState.getPort());
-}
-
-function updatePort(port: number | null) {
-  appState.setPort(port);
-  updateUIPort();
-}
-
-
-
-
-let uiWindow: BrowserWindow;
-const displayWindows: BrowserWindow[] = []
-
-const appState = new AppState();
-
-// dc
-//   general
-
-appState.addDcEntry(new MainDisplayConfigEntry("background-color", "hexcolor", "#000000"));
-appState.addDcEntry(new MainDisplayConfigEntry("background-image", "path", ""))
-
-appState.addDcEntry(new MainDisplayConfigEntry("transition-duration", "nnumber", 300));
-
-appState.addDcEntry(new MainDisplayConfigEntry("logo-path", "path", ""));
-appState.addDcEntry(new MainDisplayConfigEntry("logo-size", "nnumber", 50));
-
-//   text
-appState.addDcEntry(new MainDisplayConfigEntry("font-size", "nnumber", 30));
-appState.addDcEntry(new MainDisplayConfigEntry("font", "string", ""));
-appState.addDcEntry(new MainDisplayConfigEntry("bold", "boolean", false));
-appState.addDcEntry(new MainDisplayConfigEntry("text-color", "hexcolor", "#FFFFFF"));
-appState.addDcEntry(new MainDisplayConfigEntry("text-outline-width", "nnumber", 0));
-appState.addDcEntry(new MainDisplayConfigEntry("text-outline-color", "hexcolor", "#000000"));
-
-appState.addDcEntry(new MainDisplayConfigEntry("text-margin-top", "nnumber", 0));
-appState.addDcEntry(new MainDisplayConfigEntry("text-margin-bottom", "nnumber", 0));
-appState.addDcEntry(new MainDisplayConfigEntry("text-margin-left", "nnumber", 0));
-appState.addDcEntry(new MainDisplayConfigEntry("text-margin-right", "nnumber", 0));
-
-appState.addDcEntry(new MainDisplayConfigEntry("text-background-color", "hexcolor", "#00000000"));
-
-// gc
-appState.addGcEntry(new MainGeneralConfigEntry("dark-theme", "boolean", false));
-
-
-if (fs.existsSync(getConfigPath())) {
-  appState.readConfigFile();
-} else {
-  try {
-    fs.writeFileSync(
-      getConfigPath(),
-      JSON.stringify({
-        dc: [],
-        gc: []
-      }),
-      { encoding: "utf8" },
-    );
-  } catch (err) {
-    if (err instanceof Error) { alertMessageBox(err.message) }
-  }
-}
-
-
-/**
- * creates a display window and pushes it to displayWindows
- */
-function createDisplayWindow(displayId: number) {
-  const displayWindow = new BrowserWindow({
-    title: `Sinai Project: Display Window ${displayId + 1}`,
-    webPreferences: {
-      preload: getPreloadPath("display"),
-    },
-  });
-
-  displayWindow.setMenu(null);
-
-  displayWindow.on("close", () => {
-    displayWindows.splice(displayWindows.indexOf(displayWindow), 1);
-  })
-  displayWindow.webContents.addListener("before-input-event", (_event, input) => {
-    if (input.type === "keyDown" && input.control && input.key === "i")
-      displayWindow.webContents.openDevTools();
-  })
-
-  if (isDev()) {
-    displayWindow.loadURL(`http://localhost:5124?displayId=${displayId}`);
-    displayWindow.webContents.openDevTools();
+  // attempt to read config file
+  if (fs.existsSync(getConfigPath())) {
+    appState.readConfigFile();
   } else {
-    displayWindow.loadFile(
-      path.join(app.getAppPath(), "/dist-display/index.html"),
-      { query: { displayId: displayId.toString() } }
-    );
-  }
-
-  displayWindows.push(displayWindow);
-  return displayWindow;
-}
-
-
-function updateDisplayConfig() {
-  sendToUIWindow("ui-update-display-config",
-    appState.getSerializedDc()
-  )
-  sendToDisplayWindows("display-update-display-config",
-    appState.getSerializedDc()
-  )
-}
-
-ipcMain.on("ui-port-request", (_event) => {
-  updateUIPort();
-})
-
-ipcMain.on("ui-restart-server-request", (_event) => {
-  startServers();
-})
-
-ipcMain.on("ui-open-devtools", (_event) => {
-  if (uiWindow)
-    uiWindow.webContents.openDevTools();
-})
-
-ipcMain.on("ui-display-config-request", (_event) => {
-  updateDisplayConfig();
-});
-ipcMain.on("ui-set-display-config-entry", (_event, id, index, value) => {
-  try {
-    appState.updateDcEntry(id, index, value);
-    updateDisplayConfig();
-  } catch (err) {
-    if (err instanceof Error) {
-      alertMessageBox(err.message);
-    }
-  }
-});
-ipcMain.on("ui-reset-display-config-entry", (_event, id, index) => {
-  try {
-    appState.resetDcEntry(id, index);
-    updateDisplayConfig();
-  } catch (err) {
-    if (err instanceof Error) {
-      alertMessageBox(err.message);
-    }
-  }
-});
-
-function imageDialog(): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    dialog.showOpenDialog(uiWindow, {
-      title: "Add Media Images",
-      filters: [
-        FILTERS["Images"] as any
-      ],
-      properties: ["openFile"]
-    }).then(
-      result => {
-        if (result.canceled) reject();
-        resolve(result.filePaths[0]);
-      }
-    )
-  })
-}
-
-ipcMain.on("ui-display-config-input-path", (_event, id, displayId) => {
-  imageDialog().then(
-    res => {
-      appState.updateDcEntry(id, displayId, res);
-      updateDisplayConfig();
-    },
-    (reason) => { }
-  );
-});
-
-function updateUIGeneralConfig() {
-  sendToUIWindow("ui-update-general-config",
-    appState.getSerializedGc()
-  )
-}
-ipcMain.on("ui-general-config-request", (_event) => {
-  updateUIGeneralConfig();
-});
-ipcMain.on("ui-set-general-config-entry", (_event, id, value) => {
-  try {
-    appState.updateGcEntry(id, value);
-    updateUIGeneralConfig();
-  } catch (err) {
-    if (err instanceof Error) {
-      alertMessageBox(err.message);
-    }
-  }
-});
-ipcMain.on("ui-reset-general-config-entry", (_event, id) => {
-  try {
-    appState.resetGcEntry(id);
-    updateUIGeneralConfig();
-  } catch (err) {
-    if (err instanceof Error) {
-      alertMessageBox(err.message);
-    }
-  }
-});
-
-ipcMain.on("ui-general-config-input-path", (_event, id, displayId) => {
-  imageDialog().then(
-    res => {
-      appState.updateGcEntry(id, res);
-      updateUIGeneralConfig();
-    },
-    (_reason) => { }
-  );
-});
-
-/* ------- ui ipc ------- */
-
-ipcMain.on("new-display-window", (_event, id: number) => {
-  createDisplayWindow(id);
-});
-
-ipcMain.on("alert", (_event, message: string) => {
-  alertMessageBox(message);
-});
-
-function sendToUIWindow(channel: string, ...args: any[]) {
-  if (!uiWindow) return;
-  uiWindow.webContents.send(channel, ...args);
-  ipcws.broadcastToWsClients(channel, ...args);
-}
-
-function updateUISetlist() {
-  sendToUIWindow("ui-state-update-setlist", appState.getUIStateSetlist());
-}
-
-function updateUIOpenMedia() {
-  sendToUIWindow("ui-state-update-open-media", appState.getUIStateOpenMedia());
-}
-
-function updateUILiveElements() {
-  sendToUIWindow("ui-state-update-live-elements", appState.getUIStateLiveElements());
-}
-
-function updateUILogo() {
-  sendToUIWindow("ui-state-update-logo", appState.getLogo());
-}
-
-
-function updateAllUI() {
-  updateUISetlist();
-  updateUIOpenMedia();
-  updateUILiveElements();
-  updateUILogo();
-}
-
-ipcMain.on("ui-state-request", (_event) => { updateAllUI(); });
-
-/* ----- display ipc ----- */
-
-function sendToDisplayWindows(channel: string, ...args: any[]) {
-  displayWindows.forEach(dw => {
-    if (dw)
-      dw.webContents.send(channel, ...args);
-  })
-  ipcws.broadcastToWsClients(channel, ...args);
-}
-
-function updateDisplayLiveElement(displayIndex: number) {
-  sendToDisplayWindows(
-    "display-state-update-live-elements",
-    displayIndex,
-    appState.getDisplayStateLiveElement(displayIndex)
-  );
-}
-
-function updateDisplayLogo(displayIndex: number) {
-  sendToDisplayWindows(
-    "display-state-update-logo",
-    displayIndex,
-    appState.getLogoEntry(displayIndex)
-  )
-}
-
-
-// so that windows automatically start displaying upon creation
-ipcws.handle("invoke-display-get-init-live-state", (displayIndex): SerializedLiveState => {
-  return {
-    liveElement: appState.getDisplayStateLiveElement(displayIndex),
-    logo: appState.getLogoEntry(displayIndex),
-  }
-})
-
-/* on setlist operations */
-
-function readImage(filePath: string): Promise<void | Error> {
-  return new Promise<void>(
-    (resolve, _reject) => {
-      appState.addMedia(
-        new MediaImage(filePath.split(path.sep).at(-1) ?? "Image", filePath)
+    try {
+      fs.writeFileSync(
+        getConfigPath(),
+        JSON.stringify({
+          dc: [],
+          gc: []
+        }),
+        { encoding: "utf8" },
       );
-      resolve();
-    }
-  );
-}
-
-ipcMain.on("add-images", (_event) => {
-  if (!uiWindow)
-    return;
-  dialog.showOpenDialog(uiWindow, {
-    title: "Add Media Images",
-    filters: [
-      FILTERS["Images"] as any
-    ],
-    properties: ["openFile", "multiSelections"]
-  }).then(
-    result => {
-      if (result.canceled) return;
-      result.filePaths.forEach(readImage);
-      updateUISetlist();
-    }
-  )
-});
-
-function readSong(filePath: string): Promise<void | Error> {
-  return new Promise<void>(
-    (resolve, reject) => {
-      fs.readFile(filePath, "utf8",
-        (err, data) => {
-          if (err) {
-            console.error(`Error reading song at:\n${filePath}\n${err.message}`);
-            reject(new Error(`Error reading song at: ${path.basename(filePath)}`));
-          } else {
-            try {
-              const song = parseSong(data);
-              logSong(song);
-              appState.addMedia(
-                new MediaSong(
-                  song.properties.title, song
-                )
-              );
-            } catch (e) {
-              if (e instanceof Error) {
-                console.error(`Error parsing song at:\n${filePath}\n${e.message}`);
-                reject(new Error(`Error parsing song at: ${path.basename(filePath)}. ${e.message}`));
-              }
-            }
-            resolve();
-          }
-        }
-      );
-    }
-  )
-}
-
-ipcMain.on("add-songs", (_event) => {
-  if (!uiWindow)
-    return;
-  dialog.showOpenDialog(uiWindow, {
-    title: "Add Media Songs",
-    filters: [
-      FILTERS["Songs"] as any
-    ],
-    properties: ["openFile", "multiSelections"]
-  }).then(
-    result => {
-      if (result.canceled) return;
-      Promise.allSettled(
-        result.filePaths.map<Promise<void | Error>>(readSong)
-      ).then(
-        results => {
-          const errors = results.filter(
-            result => result.status === "rejected"
-          );
-          if (errors.length > 0)
-            alertMessageBox(
-              errors.map(result => `${result.reason}`).join("\n")
-            );
-          updateUISetlist();
-        }
-      );
-    }
-  )
-});
-
-ipcMain.on(
-  "read-directory",
-  (_event) => {
-    if (!uiWindow)
-      return;
-    dialog.showOpenDialog(uiWindow, {
-      title: "Read Folder",
-      filters: [],
-      properties: ["openDirectory"]
-    }).then(
-      result => {
-        if (result.canceled) return;
-        fs.readdir(
-          result.filePaths[0],
-          async (err, files) => {
-            if (err) {
-              alertMessageBox(`Error reading folder: ${err.message}`);
-              return;
-            }
-            const filePaths = files.map(file => path.resolve(result.filePaths[0], file)).filter(fp => fs.statSync(fp).isFile()).sort();
-            const errors: Error[] = [];
-
-            for (const fp of filePaths) {
-              try {
-                if (matchFilter(fp, "Songs")) {
-                  await readSong(fp);
-                }
-                else if (matchFilter(fp, "Images")) {
-                  await readImage(fp);
-                }
-              } catch (err) {
-                if (err instanceof Error)
-                  errors.push(err);
-              }
-            }
-
-            if (errors.length > 0)
-              alertMessageBox("Errores leyendo setlist: \n" + errors.map(err => err.message).join("\n"));
-
-            updateUISetlist();
-          }
-        );
-      }
-    )
-  }
-);
-
-
-
-ipcMain.on(
-  "write-setlist",
-  (_event) => {
-    if (!uiWindow)
-      return;
-    dialog.showSaveDialog(uiWindow, {
-      title: "Guardar Setlist",
-      buttonLabel: "Guardar",
-      filters: [],
-      properties: ["createDirectory"]
-    }).then(
-      async result => {
-        if (result.canceled) return;
-
-        try {
-          fs.mkdirSync(result.filePath, { recursive: true })
-        } catch (err) {
-          if (err instanceof Error)
-            alertMessageBox("Error writing setlist" + " " + err.message);
-          return;
-        }
-
-        const errors: Error[] = [];
-        const setlistLengthDigits = Math.ceil(Math.log10(appState.getUIStateSetlist().length + 1));
-        const setlistDebugName = result.filePath.slice(-30);
-        appState.getUIStateSetlist().forEach(
-          (smi, i) => {
-            const filePrefix = "sp_" + (i).toString().padStart(
-              setlistLengthDigits, "0"
-            ) + "_"
-
-            try {
-              let media: Media | undefined = undefined;
-              switch (smi.type) {
-                case "song":
-                  media = appState.media.get(smi.id);
-                  if (media instanceof MediaSong) {
-                    const fileName = path.join(result.filePath, filePrefix + media.name + ".sinai",)
-                    writeSong(
-                      fileName,
-                      media
-                    );
-                    console.log(`wrote song ${fileName} to setlist ${setlistDebugName}`);
-                  } else {
-                    throw new Error(`Somehow was unable to get() smi: ${smi} from  appState.media`);
-                  }
-                  break;
-                case "image":
-                  media = appState.media.get(smi.id);
-                  if (media instanceof MediaImage) {
-                    const basename = path.basename(media.value.path);
-                    const replacedName = basename.replace(/^sp_\d+_/, "");
-                    console.log(basename, replacedName);
-                    const fileName = filePrefix + replacedName;
-
-                    fs.copyFile(
-                      media.value.path,
-                      path.join(
-                        result.filePath,
-                        fileName,
-                      ),
-                      fs.constants.COPYFILE_FICLONE,
-                      (err) => {
-                        if (err) {
-                          alertMessageBox(` Error copying image ${(media as MediaImage).value.path.slice(-30)} to setlist ${setlistDebugName}: \n${err.message}`);
-                        } else {
-                          console.log(`wrote image ${fileName} to setlist ${setlistDebugName}`);
-                        }
-                      },
-                    );
-                  } else {
-                    throw new Error(`Somehow was unable to get() smi: ${smi} from  appState.media`);
-                  }
-                  break;
-                default:
-                  break;
-              }
-            } catch (err) {
-              if (err instanceof Error) {
-                errors.push(new Error(`Error writing setlist item: ${err.message}`));
-              }
-            }
-          }
-        );
-        if (errors.length > 0)
-          alertMessageBox(
-            errors.join("\n")
-          );
-      }
-    );
-  }
-)
-
-ipcMain.on("move-media", (_event, id: number, index: number) => {
-  try {
-    appState.moveSetlistMedia(id, index);
-    updateUISetlist();
-  } catch (e) {
-    if (e instanceof Error) alertMessageBox(e.message);
-  }
-})
-
-ipcMain.on("delete-media", (_event, id: number) => {
-  let mediaToDelete = appState.media.get(id);
-  if (mediaToDelete === undefined)
-    throw new Error("delete-media: media id doesn't exist");
-  dialog.showMessageBox(uiWindow, {
-    message: `¿Está seguro que desea eliminar ${mediaToDelete.name}?\n\n Esta acción es irreversible.`,
-    buttons: ["Ok", "Cancel"],
-    defaultId: 1,
-    cancelId: 1,
-  }).then(value => {
-    if (value.response === 0) {
-      try {
-        appState.deleteMedia(id);
-        updateUISetlist();
-        updateUIOpenMedia(); // !!
-      } catch (e) {
-        if (e instanceof Error) alertMessageBox(e.message);
-      }
-    }
-  })
-});
-
-ipcMain.on("create-song", (_event, title: string, author: string) => {
-  appState.addMedia(new MediaSong(title, {
-    properties: {
-      title: title,
-      author: author,
-    },
-    sections: [],
-    elementOrder: []
-  }));
-  updateUISetlist();
-  updateUIOpenMedia(); // !!
-})
-
-ipcMain.on("replace-song", (_event, id: number, song: Song) => {
-  try {
-    appState.setSongMediaSong(id, song);
-  } catch (e) {
-    if (e instanceof Error)
-      alertMessageBox(`Error replacing song: {id} {song.properties.title}\n{err.message}`);
-  }
-  updateUIOpenMedia();
-  updateUISetlist();
-});
-
-function writeSong(filePath: string, media: MediaSong) {
-  try {
-    fs.writeFile(filePath, stringifySong(media.value.song), err => {
-      if (err) {
-        alertMessageBox(`Error saving song: {media.id} {media.name}\n{err.message}`);
-      }
-    });
-  } catch (err) {
-    if (err instanceof Error) {
-      alertMessageBox(`Error saving song: {media.id} {media.name}\n{err.message}`);
+    } catch (err) {
+      if (err instanceof Error) { dialog.showErrorBox("Error", err.message) }
     }
   }
-}
 
-ipcMain.on("save-song", (_event, id: number) => {
-  const media = appState.media.get(id);
-  if (media?.type !== "song")
-    return;
-  dialog.showSaveDialog(uiWindow, {
-    title: "Save song",
-    filters: [
-      {
-        name: "Sinai Project Song",
-        extensions: ["sinai"]
-      }
-    ]
-  }).then(result => {
-    if (result.canceled)
-      return;
-    writeSong(result.filePath, media as MediaSong);
-  });
-});
-
-ipcMain.on("set-open-media", (_event, id: number | null) => {
-  try {
-    appState.setOpenMedia(id);
-    updateUIOpenMedia();
-  } catch (e) {
-    if (e instanceof Error) alertMessageBox(e.message);
-  }
-});
-
-ipcMain.on("set-live-element", (_event, displayId: number, liveElementIdentifier: LiveElementIdentifier | null) => {
-  try {
-    appState.setLiveElement(displayId, liveElementIdentifier);
-    updateUILiveElements();
-    updateDisplayLiveElement(displayId);
-  } catch (e) {
-    if (e instanceof Error) alertMessageBox(e.message);
-  }
-})
-
-ipcMain.on("set-logo", (_event, displayIndex: number, logo: boolean) => {
-  try {
-    appState.setLogo(displayIndex, logo);
-    updateUILogo();
-    updateDisplayLogo(displayIndex);
-  } catch (e) {
-    if (e instanceof Error) alertMessageBox(e.message);
-  }
-});
-
-let hasConfirmedUiWindowClose: boolean = false;
-
-app.on("ready", () => {
-  startServers();
-
-  protocol.handle('fetch-media', (request) => {
-    const requestContent = decodeURIComponent(request.url.replace('fetch-media://', ''));
+  protocol.handle('fetch-setlist-media', (request) => {
+    const requestContent = decodeURIComponent(request.url.replace('fetch-setlist-media://', ''));
     let fileUrl: string;
     try {
+      console.log(`trying to fetch setlist media - requestContent: ${requestContent}`);
       fileUrl = pathToFileURL(
-        appState.media.get(parseInt(requestContent))!.value.path
+        appState.setlistMedia.get(parseInt(requestContent))!.value.path
       ).toString();
     } catch (e) {
-      if (e instanceof Error) alertMessageBox(
-        `Error handling ${request.url}: ${e.message}`
-      );
+      if (e instanceof Error) {
+        console.error("Error", `Error handling ${request.url}: ${e.message}`);
+        // dialog.showErrorBox("Error", `Error handling ${request.url}: ${e.message}`);
+      }
       fileUrl = "";
     }
     return net.fetch(fileUrl);
   });
 
-  protocol.handle('local-file', request => {
-    const pathToMedia = new URL(request.url).pathname
-    return net.fetch(`file://${pathToMedia}`)
-  });
-
-  uiWindow = new BrowserWindow({
-    title: `Sinai Project`,
-    minWidth: 500,
-    minHeight: 500,
-    webPreferences: {
-      preload: getPreloadPath("ui"),
-    },
-  });
-  uiWindow.setMenu(null);
-
-
-  uiWindow.on("close", (event) => {
-    if (!hasConfirmedUiWindowClose) {
-      event.preventDefault();
-      dialog.showMessageBox(uiWindow, {
-        message: "Estás seguro que quieres cerrar Sinai Project?",
-        type: "warning",
-        buttons: ["Ok", "Cancel"],
-        defaultId: 1,
-        cancelId: 1,
-      }).then(value => {
-        if (value.response === 0) {
-          hasConfirmedUiWindowClose = true;
-          uiWindow.close();
-          // FIXME: looks to do nothing
-          // for (let i = 0; i < DISPLAYS; i++) {
-          //   ipcMain.emit("set-live-element", i, null);
-          // }
-          app.quit();
-        }
-      })
+  protocol.handle('fetch-extra-media', async (request) => {
+    const requestContent = decodeURIComponent(request.url.replace('fetch-extra-media://', '').replace(/\?.*/, ""));
+    let fileUrl: string;
+    try {
+      console.log(`trying to fetch extra media - requestContent: ${requestContent}`);
+      // console.log(`trying to fetch extra media - printing full extraMedia: *******************`);
+      // console.log(appState.extraMedia);
+      // console.log(`***************************************************************************`);
+      appState.extraMedia.forEach((a, b) => console.log(a, b));
+      fileUrl = pathToFileURL(
+        appState.extraMedia.get(requestContent)!.value.path
+      ).toString();
+    } catch (e) {
+      if (e instanceof Error) {
+        console.error("Error", `Error handling ${request.url}: ${e.message}`);
+        // dialog.showErrorBox("Error", `Error handling ${request.url}: ${e.message}`);
+      }
+      fileUrl = "";
     }
-  })
 
-  if (isDev()) {
-    uiWindow.loadURL("http://localhost:5123");
-    uiWindow.webContents.openDevTools();
-  } else {
-    uiWindow.loadFile(path.join(app.getAppPath(), "/dist-ui/index.html"));
-  }
-});
+    const response = await net.fetch(fileUrl);
 
-app.on("window-all-closed", () => {
-  app.quit();
-});
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      // headers,
+    });
+  });
+
+  app.on("window-all-closed", async () => {
+    console.log("stopping servers...");
+    await serverManager.stop();
+    console.log("quitting...");
+    app.quit();
+  });
 
 
-export { alertMessageBox };
+  windowManager.createUiWindow();
+}
+
+app.on("ready", main);

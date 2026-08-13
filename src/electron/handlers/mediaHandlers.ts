@@ -45,9 +45,9 @@ export function registerMediaHandlers(
         }
       });
     } catch (err) {
-      if (err instanceof Error) {
-        dialog.showErrorBox("Error", `Error saving song: ${media.name}\n${err.message}`);
-      }
+      if (err instanceof Error)
+        console.log(`Error saving song: ${media.name}\n${err.message}`);
+      throw err
     }
   }
 
@@ -69,7 +69,13 @@ export function registerMediaHandlers(
     }).then(result => {
       if (result.canceled)
         return;
-      writeSong(result.filePath, media as MediaSong);
+      try {
+        writeSong(result.filePath, media as MediaSong);
+      } catch (err) {
+        if (err instanceof Error) {
+          dialog.showErrorBox("Error", `Error saving song: ${media.name}\n${err.message}`);
+        }
+      }
     });
   });
 
@@ -253,7 +259,9 @@ export function registerMediaHandlers(
                   case "song":
                     media = appState.setlistMedia.get(smi.id);
                     if (media instanceof MediaSong) {
-                      const fileName = path.join(result.filePath, filePrefix + media.name + ".sinai",)
+                      const invalidFilenameRegex = /[<>:"/\\|?*]|CON|PRN|AUX|NUL|COM1|COM2|COM3|COM4|COM5|COM6|COM7|COM8|COM9|COM¹|COM²|COM³|LPT1|LPT2|LPT3|LPT4|LPT5|LPT6|LPT7|LPT8|LPT9|LPT¹|LPT²|LPT³/;
+                      const mediaName = media.name.match(invalidFilenameRegex) !== null ? "invalid_name" : media.name;
+                      const fileName = path.join(result.filePath, filePrefix + mediaName + ".sinai",)
                       writeSong(
                         fileName,
                         media

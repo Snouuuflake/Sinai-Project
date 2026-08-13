@@ -371,10 +371,11 @@ const EditSongModal:
     >
       <div className="edit-song-modal-header"
       >
-        <h1
-          className="main-container-title"
-        >Edit Song:
-        </h1>
+        {/* <h1 */}
+        {/*   className="main-container-title" */}
+        {/* >Editando Canción: */}
+        {/* </h1> */}
+        <div>Título: </div>
         <input
           value={localSong.properties.title}
           onChange={(e) => {
@@ -382,7 +383,7 @@ const EditSongModal:
             setLocalSong({ ...localSong, properties: { ...localSong.properties, title: newTitle } });
           }}
         />
-        <div>by</div>
+        <div>Autor</div>:
         <input
           value={localSong.properties.author}
           onChange={(e) => {
@@ -452,13 +453,13 @@ const EditSongModal:
           hideModal();
         }}
       >
-        Update Song
+        Actualizar cambios
       </button>
       <button
         className="edit-song-modal-cancel-button"
         onClick={() => { hideModal() }}
       >
-        Cancel
+        Cancelar
       </button>
     </div>
 
@@ -554,7 +555,7 @@ const SongControls:
     return <>
       <div className="main-container-header ">
         {/* TODO: icon */}
-        <h1 className="main-container-title">Song Controls</h1>
+        <h1 className="main-container-title">Controles de canción</h1>
         <div className="main-container-header-buttons-container">
           <button
             className="song-controls-edit-button main-container-button"
@@ -565,7 +566,7 @@ const SongControls:
               }
             }
           >
-            Edit
+            Editar
           </button>
           <button
             className="song-controls-edit-button main-container-button"
@@ -575,7 +576,7 @@ const SongControls:
               }
             }
           >
-            Save
+            Guardar
           </button>
         </div>
       </div>

@@ -8,27 +8,27 @@ import { DISPLAYS } from "../shared/constants.js";
 function initExpressApp(appState: AppState) {
   const expressApp = express();
 
-  expressApp.get("/next-open-media/", (req, res) => {
+  expressApp.get("/next-open-media/", (_req, res) => {
     res.status(200).end();
     console.log("expressApp: GET /next-open-media/");
     ipcMain.emit("next-open-media");
   });
-  expressApp.get("/prev-open-media/", (req, res) => {
+  expressApp.get("/prev-open-media/", (_req, res) => {
     res.status(200).end();
     console.log("expressApp: GET /prev-open-media/");
     ipcMain.emit("prev-open-media");
   });
-  expressApp.get("/next-selected-element/", (req, res) => {
+  expressApp.get("/next-selected-element/", (_req, res) => {
     res.status(200).end();
     console.log("expressApp: GET /next-selected-element/");
     ipcMain.emit("next-selected-element");
   });
-  expressApp.get("/prev-selected-element/", (req, res) => {
+  expressApp.get("/prev-selected-element/", (_req, res) => {
     res.status(200).end();
     console.log("expressApp: GET /prev-selected-element/");
     ipcMain.emit("prev-selected-element");
   });
-  expressApp.get("/toggle-logo-to-all/", (req, res) => {
+  expressApp.get("/toggle-logo-to-all/", (_req, res) => {
     /*
      * if any !logo, sets logo to true for all, else, false
      */
@@ -45,7 +45,7 @@ function initExpressApp(appState: AppState) {
     }
 
   });
-  expressApp.get("/project-selected-element-to-all/", (req, res) => {
+  expressApp.get("/project-selected-element-to-all/", (_req, res) => {
     res.status(200).end();
     console.log(`expressApp: GET /project-selected-element-to-all/`);
 
@@ -63,8 +63,8 @@ function initExpressApp(appState: AppState) {
     }
   });
 
-  expressApp.get("/fetch-setlist-media/:id", (req, res) => {
-    const id = parseInt(req.params.id);
+  expressApp.get("/fetch-setlist-media/:id", (_req, res) => {
+    const id = parseInt(_req.params.id);
     const media = appState.setlistMedia.get(id);
     console.log("fetch-media", id, media?.value);
     if (!media || media.type !== "image") {

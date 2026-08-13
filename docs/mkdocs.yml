@@ -2,4 +2,5 @@ site_name: "Sinai Project"
 theme: readthedocs
 nav:
   - Home: index.md
+  - Uso Básico: uso-basico.md
   - API HTTP: httpapi.md

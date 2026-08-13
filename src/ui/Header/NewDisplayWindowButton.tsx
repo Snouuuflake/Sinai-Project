@@ -36,7 +36,7 @@ const NewDisplayWindowButton: React.FC<{}> =
           }
         }
       >
-        New Display Window
+        Crear ventana de proyección
       </button>
     )
   }

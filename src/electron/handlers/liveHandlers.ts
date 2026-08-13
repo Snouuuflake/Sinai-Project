@@ -24,11 +24,11 @@ export function registerLiveHandlers(
     }
   })
 
-  ipcMain.on("set-logo", (_event, displayIndex: number, logo: boolean) => {
+  ipcMain.on("set-logo", (_event, displayId: number, logo: boolean) => {
     try {
-      appState.setLogo(displayIndex, logo);
+      appState.setLogo(displayId, logo);
       uiUpdaters.updateUILogo();
-      displayUpdaters.updateDisplayLogo(displayIndex);
+      displayUpdaters.updateDisplayLogo(displayId);
     } catch (e) {
       if (e instanceof Error) dialog.showErrorBox("Error", e.message);
     }

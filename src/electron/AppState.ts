@@ -607,40 +607,40 @@ class AppState {
   }
 
   /**
-   * @param displayIndex display window index to set 
+   * @param displayId display window index to set 
    * @param id media id of new live media
    * @throws if invalid display index or live element id invalid
    */
-  setLiveElement(displayIndex: number, liveElementIdentifier: LiveElementIdentifier | null) {
+  setLiveElement(displayId: number, liveElementIdentifier: LiveElementIdentifier | null) {
     console.log("DEBUG! lei in setLiveElement:", liveElementIdentifier)
-    if (displayIndex < 0 || displayIndex >= DISPLAYS) {
+    if (displayId < 0 || displayId >= DISPLAYS) {
       throw new Error("setLiveElements: index is invalid");
     }
     if (liveElementIdentifier === null) {
-      this.#liveElements[displayIndex] = null;
+      this.#liveElements[displayId] = null;
       return;
     }
     if (!this.#setlistMedia.get(liveElementIdentifier.id)) {
       throw new Error("setLiveElements: id not in this.#media");
     }
-    this.#liveElements[displayIndex] = liveElementIdentifier;
+    this.#liveElements[displayId] = liveElementIdentifier;
     // console.log("setLiveElement result", this.#liveElements);
     return;
   }
   getLogo(): readonly boolean[] {
     return this.#logoIsVisible as readonly boolean[];
   }
-  getLogoEntry(displayIndex: number): boolean {
-    if (displayIndex < 0 || displayIndex >= DISPLAYS) {
+  getLogoEntry(displayId: number): boolean {
+    if (displayId < 0 || displayId >= DISPLAYS) {
       throw new Error("getLogo: index is invalid");
     }
-    return this.#logoIsVisible[displayIndex];
+    return this.#logoIsVisible[displayId];
   }
-  setLogo(displayIndex: number, logoIsVisible: boolean) {
-    if (displayIndex < 0 || displayIndex >= DISPLAYS) {
+  setLogo(displayId: number, logoIsVisible: boolean) {
+    if (displayId < 0 || displayId >= DISPLAYS) {
       throw new Error("setLogo: index is invalid");
     }
-    this.#logoIsVisible[displayIndex] = logoIsVisible
+    this.#logoIsVisible[displayId] = logoIsVisible
   }
   /**
    * @param id id of media to be moved 

@@ -69,7 +69,7 @@ const SetlistMenu: React.FC<{}> = ({ }) => {
           hideMenu();
         }
       }>
-      Add Images
+      Añadir imágenes
     </button>
     <button
       onClick={
@@ -78,7 +78,7 @@ const SetlistMenu: React.FC<{}> = ({ }) => {
           hideMenu();
         }
       }>
-      Add Songs
+      Añadir canciones
     </button>
     <button
       onClick={
@@ -87,7 +87,7 @@ const SetlistMenu: React.FC<{}> = ({ }) => {
           hideMenu();
         }
       }>
-      Open Setlist
+      Cargar setlist
     </button>
     <button
       onClick={
@@ -96,7 +96,7 @@ const SetlistMenu: React.FC<{}> = ({ }) => {
           hideMenu();
         }
       }>
-      Save Setlist
+      Guardar setlist
     </button>
     <button
       onClick={
@@ -106,7 +106,7 @@ const SetlistMenu: React.FC<{}> = ({ }) => {
         }
       }
     >
-      Create Song
+      Crear canción
     </button>
   </div>
 }
@@ -116,7 +116,7 @@ const Setlist: React.FC<{ setlist: SerializedMediaIdentifier[] | null }> = ({ se
   const maxIdChars = setlist?.map<number>(x => x.id.toString().length).reduce((p, c) => c > p ? c : p, 0) ?? 0
   return <div className="setlist main-container">
     <div className="main-container-header">
-      <h1 className="main-container-title">Media</h1>
+      <h1 className="main-container-title">Multimedia</h1>
       <div className="main-container-header-buttons-container">
         <button
           className="setlist-header-plus-button "

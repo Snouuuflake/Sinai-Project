@@ -13,10 +13,10 @@ export function registerDisplayHandlers(
     windowManager.createDisplayWindow(id);
   });
   // so that windows automatically start displaying upon creation
-  ipcws.handle("invoke-display-get-init-live-state", (displayIndex): SerializedLiveState => {
+  ipcws.handle("invoke-display-get-init-live-state", (displayId): SerializedLiveState => {
     return {
-      liveElement: appState.getDisplayStateLiveElement(displayIndex),
-      logo: appState.getLogoEntry(displayIndex),
+      liveElement: appState.getDisplayStateLiveElement(displayId),
+      logo: appState.getLogoEntry(displayId),
     }
   })
 }

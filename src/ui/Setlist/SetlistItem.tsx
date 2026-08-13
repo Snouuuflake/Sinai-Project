@@ -163,7 +163,7 @@ const SetlistItemMenu:
           }
         }
       >
-        Move
+        Reordenar
       </button>
       <button
         className="setlist-item-menu-button"
@@ -174,7 +174,7 @@ const SetlistItemMenu:
           }
         }
       >
-        Delete
+        Eliminar
       </button>
     </div>
   }

@@ -157,26 +157,26 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
   if (displayConfigRef.current === null) {
     displayConfigRef.current = new UIDisplayConfig();
     displayConfigRef.current.addHeading("General");
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("background-color", "hexcolor", "Background Color"));
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("background-image", "path", "Background Image"));
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("transition-duration", "nnumber", "Transition duration (ms)"));
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("logo-path", "path", "Logo image"));
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("logo-size", "nnumber", "Logo size (%)"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("background-color", "hexcolor", "Color de fondo"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("background-image", "path", "Imagen de fondo"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("transition-duration", "nnumber", "Tiempo de transición (ms)"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("logo-path", "path", "Logo"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("logo-size", "nnumber", "Tamaño de logo (%)"));
     displayConfigRef.current.addHeading("Text");
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("font-size", "nnumber", "Font Size"));
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("font", "string", "Font"));
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("bold", "boolean", "Bold Text"));
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-color", "hexcolor", "Text Color"));
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-outline-width", "nnumber", "Text Outline Width (px)"));
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-outline-color", "hexcolor", "Text Outline Color"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("font-size", "nnumber", "Tamaño de fuente"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("font", "string", "Fuente"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("bold", "boolean", "Texto en negrita"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-color", "hexcolor", "Color de texto"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-outline-width", "nnumber", "Ancho de borde del texto (px)"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-outline-color", "hexcolor", "Color de borde del texto"));
 
 
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-top", "nnumber", "Top Margin"));
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-bottom", "nnumber", "Bottom Margin"));
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-left", "nnumber", "Left Margin"));
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-right", "nnumber", "Right Margin"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-top", "nnumber", "Margen superior"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-bottom", "nnumber", "Margen inferior"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-left", "nnumber", "Margen izquierdo"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-right", "nnumber", "Margen derecho"));
 
-    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-background-color", "hexcolor", "Text Background Color"));
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-background-color", "hexcolor", "Color de fondo de texto"));
   }
 
   const [displayConfig, setDisplayConfig] = useState<ReadonlyUIDisplayConfigType>(displayConfigRef.current.config);
@@ -202,7 +202,7 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
   const generalConfigRef = useRef<UIGeneralConfig | null>(null);
   if (generalConfigRef.current === null) {
     generalConfigRef.current = new UIGeneralConfig();
-    generalConfigRef.current.addEntry(new UIGeneralConfigEntry("dark-theme", "boolean", "Dark Theme"));
+    generalConfigRef.current.addEntry(new UIGeneralConfigEntry("dark-theme", "boolean", "Tema oscuro"));
     generalConfigRef.current.addEntry(new UIGeneralConfigEntry("port", "nnumber", "Port"));
   }
 

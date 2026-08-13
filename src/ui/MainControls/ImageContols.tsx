@@ -15,7 +15,7 @@ const ImageControls:
     return <div className="image-controls">
       <div className="main-container-header ">
         {/* TODO: icon */}
-        <h1 className="main-container-title">Image Controls</h1>
+        <h1 className="main-container-title">Controles de imagen</h1>
       </div>
       <ProjectElementButton
         id={openMedia.id}

@@ -28,7 +28,7 @@ const ConfigInputBoolean = ({
         onSubmit(!cur);
       }}
     >
-      {cur ? "True" : "False"}
+      {cur ? "Sí" : "No"}
     </button>
   </div>
 }
@@ -300,7 +300,7 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
   return (
     <div className="settings-button-modal">
       <div className="settings-button-modal-header-container">
-        <h1 className="settings-button-modal-title">Settings</h1>
+        <h1 className="settings-button-modal-title">Ajustes</h1>
         <button
           className="settings-button-modal-exit-button hi-1-button"
           onClick={(_e) => hideModal()}
@@ -345,9 +345,9 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
             menuSelection === "other" ?
               <>
                 <div>
-                  <h3 className="config-heading">Local Server</h3>
+                  <h3 className="config-heading">Servidor Local</h3>
                   <div>
-                    Server Status: {" "}
+                    Status: {" "}
                     {
                       port !== null ?
                         <><span style={{ color: "#26d926" }}>Online</span> at port {port}</> :
@@ -363,7 +363,8 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
                           Array.from({ length: DISPLAYS }, (_x, i) => {
                             const url = `localhost:${port}/?displayId=${i}`;
                             return <>
-                              <div>{`Display ID ${i + 1}:`}</div>
+                              {/* <div>{`Display ID ${i + 1}:`}</div> */}
+                              <div></div>
                               <button
                                 className="config-server-url-button"
                                 onClick={() => {
@@ -430,7 +431,7 @@ const SettingsButton: React.FC<{}> = ({ }) => {
         }
       }
     >
-      Settings
+      Ajustes
     </button>
   )
 }

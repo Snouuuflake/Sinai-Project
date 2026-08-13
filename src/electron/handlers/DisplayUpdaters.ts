@@ -10,19 +10,19 @@ export class DisplayUpdaters {
     this.#windowManager = windowManager;
   }
 
-  updateDisplayLiveElement(displayIndex: number) {
+  updateDisplayLiveElement(displayId: number) {
     this.#windowManager.sendToDisplayWindows(
       "display-state-update-live-elements",
-      displayIndex,
-      this.#appState.getDisplayStateLiveElement(displayIndex)
+      displayId,
+      this.#appState.getDisplayStateLiveElement(displayId)
     );
   }
 
-  updateDisplayLogo(displayIndex: number) {
+  updateDisplayLogo(displayId: number) {
     this.#windowManager.sendToDisplayWindows(
       "display-state-update-logo",
-      displayIndex,
-      this.#appState.getLogoEntry(displayIndex)
+      displayId,
+      this.#appState.getLogoEntry(displayId)
     )
   }
 }

@@ -135,6 +135,10 @@ const EditSongModalTrash:
     )
   }
 
+const makeNewSectionName = (num: number) => {
+  return `Nueva Sección (${num})`;
+}
+
 const EditSongModalSectionList:
   React.FC<{
     song: Song;
@@ -144,83 +148,73 @@ const EditSongModalSectionList:
   }
   > = ({ song, setSong, onEdit, onCopy }) => {
     const indexBeingDragged = useRef<number | null>(null);
-    const [newSectionName, setNewSectionName] = useState<string>("");
     return (
       <div className="edit-song-modal-section-list ">
         <div className="edit-song-modal-add-section-container">
-          <input
-            className="edit-song-modal-add-section-input"
-            type="text"
-            value={newSectionName}
-            onChange={(e) => {
-              setNewSectionName(e.target.value);
-            }}>
-          </input>
           <button
             className="hi-1-button edit-song-modal-add-section-button"
             onClick={() => {
-              const trimmedNewSectionName = newSectionName.trim();
-              setNewSectionName(trimmedNewSectionName);
-              if (
-                song.sections.filter(
-                  s => s.name === trimmedNewSectionName
-                ).length != 0
-              ) {
-                (window as unknown as UIWindow).electron.sendAlert("Cannot have repeated section names");
-              } else if (trimmedNewSectionName === "") {
-                (window as unknown as UIWindow).electron.sendAlert("New section name cannot be empty");
-              } else {
-                const newSections = structuredClone(song.sections);
-                const newId = newSections.length == 0 ? 0 :
-                  Math.max(...song.sections.map(s => s.id)) + 1;
-                newSections.push({
-                  name: trimmedNewSectionName,
-                  id: newId,
-                  verses: [],
-                })
-                const newOrder = [...song.elementOrder]
-                newOrder.push(newId);
-                const newSong: Song = { ...song, sections: newSections, elementOrder: newOrder };
-                console.log(newSong);
-                setSong(newSong);
-              }
+              let i = 1;
+              let newSectionName: string = "";
+              do {
+                newSectionName = makeNewSectionName(i);
+                i++
+              } while (
+                song.sections.some(s => s.name === newSectionName));
+
+
+              const newSections = structuredClone(song.sections);
+              const newId = newSections.length == 0 ? 0 :
+                Math.max(...song.sections.map(s => s.id)) + 1;
+              newSections.push({
+                name: newSectionName,
+                id: newId,
+                verses: [],
+              })
+              const newOrder = [...song.elementOrder]
+              newOrder.push(newId);
+              const newSong: Song = { ...song, sections: newSections, elementOrder: newOrder };
+              console.log(newSong);
+              setSong(newSong);
             }}
           >
-            <Plus size={18} strokeWidth="4" />
+            Añadir sección
           </button>
         </div>
         <div className="edit-song-modal-section-list-items-container">
-          {song.elementOrder.map(
-            (id, i) => (
-              <EditSongModalSectionListItem
-                key={i}
-                song={song}
-                sectionId={id}
-                index={i}
-                onDragStart={
-                  (index) => {
-                    indexBeingDragged.current = index;
-                  }
-                }
-                onDrop={
-                  (index) => {
-                    if (indexBeingDragged.current === null ||
-                      indexBeingDragged.current === index) {
-                      return;
+          {
+            song.elementOrder.map(
+              (id, i) => (
+                <EditSongModalSectionListItem
+                  key={i}
+                  song={song}
+                  sectionId={id}
+                  index={i}
+                  onDragStart={
+                    (index) => {
+                      indexBeingDragged.current = index;
                     }
-                    const newOrder = [...song.elementOrder];
-                    const draggedItem = newOrder[indexBeingDragged.current];
-                    newOrder.splice(indexBeingDragged.current, 1);
-                    newOrder.splice(index, 0, draggedItem);
-                    indexBeingDragged.current = null;
-                    setSong({ ...song, elementOrder: newOrder });
                   }
-                }
-                onEdit={onEdit}
-                onCopy={onCopy}
-              />
+                  onDrop={
+                    (index) => {
+                      if (indexBeingDragged.current === null ||
+                        indexBeingDragged.current === index) {
+                        return;
+                      }
+                      const newOrder = [...song.elementOrder];
+                      const draggedItem = newOrder[indexBeingDragged.current];
+                      newOrder.splice(indexBeingDragged.current, 1);
+                      newOrder.splice(index, 0, draggedItem);
+                      indexBeingDragged.current = null;
+                      setSong({ ...song, elementOrder: newOrder });
+                    }
+                  }
+                  onEdit={onEdit}
+                  onCopy={onCopy}
+                />
+              )
             )
-          )}
+          }
         </div>
         <EditSongModalTrash onDrop={() => {
           if (indexBeingDragged.current === null) {
@@ -288,14 +282,21 @@ const EditSongModalSectionEditor:
         + (i == (a.length - 1) ? "" : "\n\n"), ""
     );
     const textareaRef = useRef<HTMLDivElement>(null);
-    const textareaContent = useRef<string>(
-      initialText
-    )
+    const textareaContent = useRef<string>(initialText);
     useEffect(() => {
       if (textareaRef.current) {
         textareaRef.current.innerText = initialText
       }
-    }, [sectionId])
+    }, [sectionId]);
+    const [nameValue, setNameValue] = useState<string>(openSection.name);
+    // const initialName = openSection.name;
+    // const nameInputRef = useRef<HTMLDivElement>(null);
+    // const nameInputContent = useRef<string>(initialName);
+    // useEffect(() => {
+    //   if (nameInputRef.current) {
+    //     nameInputRef.current.innerText = initialName
+    //   }
+    // }, [sectionId])
     return (
       <div className="edit-song-modal-section-editor"
         style={{
@@ -303,36 +304,13 @@ const EditSongModalSectionEditor:
         }}
       >
         <div className="main-container-header edit-song-modal-section-editor-header">
-          <h2 className="edit-song-modal-section-editor-title">
-            {openSection.name}
-          </h2>
-          <div className="main-container-header-buttons-container">
-            <button
-              className="edit-song-modal-setion-editor-save-button"
-              onClick={() => {
-                const newSection = structuredClone(openSection);
-                const currentMaxId = openSection.verses.length == 0 ? 0 : Math.max(...openSection.verses.map(s => s.id));
-                newSection.verses = parseVerses(currentMaxId, textareaContent.current);
-                const newSections = structuredClone(song.sections)
-                newSections.splice(
-                  newSections.findIndex(s => s.id == newSection.id),
-                  1,
-                  newSection
-                );
-                const newSong = { ...song, sections: newSections }
-                console.log(newSong);
-                setSong(newSong);
-                setOpenSection(null);
-              }}
-            >
-              Save
-            </button>
-            <button onClick={() => {
-              setOpenSection(null);
-            }}>
-              Cancel
-            </button>
-          </div>
+          <div>Nombre: </div>
+          <input
+            value={nameValue}
+            onInput={(event) => {
+              setNameValue((event.target as HTMLInputElement).value);
+            }}
+          />
         </div>
         <div
           ref={textareaRef}
@@ -343,20 +321,51 @@ const EditSongModalSectionEditor:
               textareaContent.current = (e.target.innerText ?? "")
             }
           }}
-          onPaste={(e) => {
-            // ---
-            // e.preventDefault();
-            // var text = e.clipboardData.getData('text/plain');
-            // document.execCommand('insertText', false, text);
-            // ---
-            // const text = e.clipboardData.getData('text/plain');
-            // textareaContent.current += text.replace(/\r?\n/, "\n");
-            // if (textareaRef.current !== null)
-            //   textareaRef.current.innerText = textareaContent.current;
-          }}
+          onPaste={(e) => { }}
         >
         </div>
-      </div>
+        <div className="edit-song-modal-section-editor-buttons-container">
+          <button
+            className="hi-1-button"
+            onClick={() => {
+              const newNameTrimmed = nameValue.trim();
+              if (
+                newNameTrimmed !== openSection.name &&
+                song.sections.find(s => s.name === newNameTrimmed)
+              ) {
+
+                (window as unknown as UIWindow).electron.sendAlert("Ya existe una sección con el mismo nombre.");
+                return;
+              }
+              if (newNameTrimmed === "") {
+                (window as unknown as UIWindow).electron.sendAlert("El nombre de la sección está vació.");
+                return;
+              }
+              const newSection = structuredClone(openSection);
+              newSection.name = newNameTrimmed;
+              const currentMaxId = openSection.verses.length == 0 ? 0 : Math.max(...openSection.verses.map(s => s.id));
+              newSection.verses = parseVerses(currentMaxId, textareaContent.current);
+              const newSections = structuredClone(song.sections)
+              newSections.splice(
+                newSections.findIndex(s => s.id == newSection.id),
+                1,
+                newSection
+              );
+              const newSong = { ...song, sections: newSections }
+              console.log(newSong);
+              setSong(newSong);
+              setOpenSection(null);
+            }}
+          >
+            Guardar
+          </button>
+          <button onClick={() => {
+            setOpenSection(null);
+          }}>
+            Cancelar
+          </button>
+        </div>
+      </div >
     )
   }
 
@@ -383,7 +392,7 @@ const EditSongModal:
             setLocalSong({ ...localSong, properties: { ...localSong.properties, title: newTitle } });
           }}
         />
-        <div>Autor</div>:
+        <div>Autor:</div>
         <input
           value={localSong.properties.author}
           onChange={(e) => {
@@ -462,7 +471,6 @@ const EditSongModal:
         Cancelar
       </button>
     </div>
-
   }
 
 

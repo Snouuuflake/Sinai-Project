@@ -127,6 +127,7 @@
 .edit-song-modal-add-section-button {
   display: grid;
   place-items: center;
+  flex-grow: 1;
   height: 25px;
   width: 25px;
   padding: 0;
@@ -141,8 +142,8 @@
 .edit-song-modal-section-editor {
   min-width: 0;
   display: grid;
-  grid-template-areas: "title" "textarea";
-  grid-template-rows: auto 1fr;
+  grid-template-areas: "title" "textarea" "buttons";
+  grid-template-rows: auto 1fr auto;
   gap: 5px;
   overflow-y: clip;
   height: 100%;
@@ -154,14 +155,11 @@
   overflow-x: clip;
   width: 100%;
   min-width: 0;
+  display: flex;
 }
-.edit-song-modal-section-editor-title {
-  all: unset;
-  font-size: 13pt;
-  font-weight: bold;
+.edit-song-modal-section-editor-header > input {
+  flex-grow: 1;
   min-width: 0;
-  text-overflow: ellipsis;
-  overflow-x: clip;
 }
 .edit-song-modal-textarea {
   grid-area: textarea;
@@ -184,6 +182,14 @@
   overflow-wrap: break-word; 
   word-break: break-word; /* Alias for robustness */
   background-color: var(--bg);
+}
+.edit-song-modal-section-editor-buttons-container {
+  grid-area: buttons;
+  display: flex;
+  gap: 5px;
+}
+.edit-song-modal-section-editor-buttons-container button {
+  flex-grow: 1;
 }
 .edit-song-modal-setion-editor-save-button {
   height: 100%;

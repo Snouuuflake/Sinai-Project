@@ -73,6 +73,8 @@ function addConfigEntries(appState: AppState, serverManager: ServerManager) {
 
   appState.addDcEntry(new MainDisplayConfigEntry("text-background-color", "hexcolor", "#00000000"));
 
+  appState.addDcEntry(new MainDisplayConfigEntry("image-background-color", "hexcolor", "#00000000"));
+
   // gc
   appState.addGcEntry(new MainGeneralConfigEntry("dark-theme", "boolean", false));
   appState.addGcEntry(new MainGeneralConfigEntry("port", "nnumber", 10730));

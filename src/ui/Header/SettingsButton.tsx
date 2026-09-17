@@ -326,68 +326,63 @@ const SettingsButtonModal: React.FC<{}> = ({ }) => {
       <div className="settings-button-modal-content">
         {
           menuSelection === "general" ?
-            generalConfig.map(entry =>
-              typeof entry === "string" ?
-                <h3 className="config-heading">{entry}</h3>
-                :
-                <ConfigInput
-                  key={entry.id}
-                  type={entry.type}
-                  id={entry.id}
-                  cur={entry.cur}
-                  isInit={entry.isInit}
-                  displayId={parseInt(menuSelection)}
-                  title={entry.title}
-                  isDisplay={false}
-                />
-            )
+            <>
+              {
+                generalConfig.map(entry =>
+                  typeof entry === "string" ?
+                    <h3 className="config-heading">{entry}</h3>
+                    :
+                    <ConfigInput
+                      key={entry.id}
+                      type={entry.type}
+                      id={entry.id}
+                      cur={entry.cur}
+                      isInit={entry.isInit}
+                      displayId={parseInt(menuSelection)}
+                      title={entry.title}
+                      isDisplay={false}
+                    />
+                )
+              }
+              <div>
+                <h3 className="config-heading">Servidor Local</h3>
+              </div>
+              <div>
+                Status: {" "}
+                {
+                  port !== null ?
+                    <><span style={{ color: "#26d926" }}>Online</span> at port {port}</> :
+                    <span style={{ color: "#d92626" }}>Offline</span>
+                }
+              </div>
+              {
+                port === null ?
+                  <></>
+                  :
+                  <div className="conifg-server-urls-container">
+                    {
+                      Array.from({ length: DISPLAYS }, (_x, i) => {
+                        const url = `localhost:${port}/?displayId=${i}`;
+                        return <>
+                          <div></div>
+                          <button
+                            className="config-server-url-button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(url);
+                            }}
+                          >
+                            {url}
+                            <Copy size={16} />
+                          </button>
+                        </>
+                      })
+                    }
+                  </div>
+              }
+            </>
             :
             menuSelection === "other" ?
               <>
-                <div>
-                  <h3 className="config-heading">Servidor Local</h3>
-                  <div>
-                    Status: {" "}
-                    {
-                      port !== null ?
-                        <><span style={{ color: "#26d926" }}>Online</span> at port {port}</> :
-                        <span style={{ color: "#d92626" }}>Offline</span>
-                    }
-                  </div>
-                  {
-                    port === null ?
-                      <></>
-                      :
-                      <div className="conifg-server-urls-container">
-                        {
-                          Array.from({ length: DISPLAYS }, (_x, i) => {
-                            const url = `localhost:${port}/?displayId=${i}`;
-                            return <>
-                              {/* <div>{`Display ID ${i + 1}:`}</div> */}
-                              <div></div>
-                              <button
-                                className="config-server-url-button"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(url);
-                                }}
-                              >
-                                {url}
-                                <Copy size={16} />
-                              </button>
-                            </>
-                          })
-                        }
-                      </div>
-                  }
-                </div>
-                {/* <button */}
-                {/*   style={{ width: "100%" }} */}
-                {/*   onClick={() => { */}
-                {/*     (window as unknown as UIWindow).electron.sendUIRestartServerRequest(); */}
-                {/*   }} */}
-                {/* > */}
-                {/*   Restart Server */}
-                {/* </button> */}
                 <h3 className="config-heading">Debug</h3>
                 <button
                   style={{ width: "100%" }}

@@ -102,6 +102,8 @@ export const DisplayConfigStateContextProvider: React.FC<{ children: React.React
 
     displayConfigRef.current.addEntry(new DisplayConfigEntry("text-background-color", "hexcolor", "#00000000"));
 
+    displayConfigRef.current.addEntry(new DisplayConfigEntry("image-background-color", "hexcolor", "#00000000"));
+
   }
 
   const [configHash, setConfigHash] = useState<Map<string, ConfigTypePrimitiveType<ConfigTypesKey>>>(displayConfigRef.current.configHash);

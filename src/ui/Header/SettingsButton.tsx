@@ -42,16 +42,18 @@ const ConfigInputHexcolor = ({
 }): React.ReactElement => {
   const [inputValue, setInputValue] = useState<string>(cur ?? "");
   const [isValid, setIsValid] = useState<boolean>(configTypes["hexcolor"].validator(inputValue));
+  const [inputValueSet, setInputValueSet] = useState<boolean>(false);
 
   useEffect(() => {
     const hasValidInput = configTypes["hexcolor"].validator(inputValue);
-    if (hasValidInput) {
+    if (hasValidInput && inputValueSet) {
       onSubmit(inputValue);
     }
     setIsValid(hasValidInput);
   }, [inputValue])
   useEffect(() => {
     setInputValue(cur ?? "");
+    setInputValueSet(true);
   }, [cur])
 
   if (cur === null) {
@@ -136,12 +138,13 @@ const ConfigInputNnumber = ({
   onSubmit: (newVaulue: ConfigTypePrimitiveType<"nnumber">) => void
 }): React.ReactElement => {
   const [inputValue, setInputValue] = useState<string>(JSON.stringify(cur) ?? "");
-  const [isValid, setIsValid] = useState<boolean>(configTypes["nnumber"].validator(inputValue));
+  const [isValid, setIsValid] = useState<boolean>(true);
+  const [inputValueSet, setInputValueSet] = useState<boolean>(false);
 
   useEffect(() => {
     const numberValue = parseInt(inputValue);
     const hasValidInput = configTypes["nnumber"].validator(numberValue);
-    if (hasValidInput) {
+    if (hasValidInput && inputValueSet) {
       onSubmit(numberValue);
     }
     setIsValid(hasValidInput);
@@ -149,6 +152,7 @@ const ConfigInputNnumber = ({
 
   useEffect(() => {
     setInputValue(JSON.stringify(cur) ?? "");
+    setInputValueSet(true);
   }, [cur])
 
   if (cur === null) {

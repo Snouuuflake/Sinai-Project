@@ -4,7 +4,7 @@
     "header header"
     "setlist controls";
   grid-template-rows: fit-content(200px) 1fr;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: min(40%, 300px) 1fr;
   gap: 10px;
   height: 100%;
 }

@@ -17,7 +17,7 @@ const NewDisplayContextMenu: React.FC<{}> = ({ }) => {
           }
         }
       >
-        New window with id: {i + 1}
+        Nuevo display con id: {i + 1}
       </button>
     })}
   </div>
@@ -36,7 +36,7 @@ const NewDisplayWindowButton: React.FC<{}> =
           }
         }
       >
-        Crear ventana de proyección
+        Crear Display
       </button>
     )
   }

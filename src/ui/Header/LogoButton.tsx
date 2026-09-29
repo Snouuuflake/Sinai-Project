@@ -2,13 +2,6 @@ import { useContextMenu } from "../ContextMenuContext";
 import { DISPLAYS } from "../../shared/constants";
 import { useUIState } from "../UIStateContext";
 
-const LogoContextMenuEntry: React.FC<{ logo: boolean, index: number }> = ({ logo, index }) => {
-  const { hideMenu } = useContextMenu();
-  return <button>
-    ${logo ? "Disable" : "Enable"} logo for window: {index + 1}
-  </button>
-}
-
 const LogoContextMenu: React.FC<{}> = ({ }) => {
   const { hideMenu } = useContextMenu();
   const { logo } = useUIState();
@@ -51,14 +44,14 @@ const LogoButton: React.FC<{}> =
       <button
         className={`header-button `}
         style={{
-          borderWidth: "3px",
+          borderWidth: "2px",
           borderStyle: "solid",
           borderColor: (logo.every(x => x)) ?
             "var(--hi-2)" :
             (logo.includes(true)) ?
               "color-mix(in oklch, var(--hi-1), transparent var(--blink-transparent-blend))"
               :
-              ""
+              "var(--gray-60)"
 
 
         }}

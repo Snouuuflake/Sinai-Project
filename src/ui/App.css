@@ -3,8 +3,8 @@
   grid-template-areas: 
     "header header"
     "setlist controls";
-  grid-template-rows: fit-content(200px) 1fr;
-  grid-template-columns: min(40%, 300px) 1fr;
+  grid-template-rows: fit-content(12rem) 1fr;
+  grid-template-columns: min(40%, 16rem) 1fr;
   gap: 10px;
   height: 100%;
 }
@@ -21,7 +21,7 @@
   border-radius: var(--main-container-br);
   border: 2px solid var(--gray-50);
   background-color: var(--gray-95);
-  padding: 10px;
+  padding: 0.5rem;
   box-sizing: border-box;
   
   display: flex;
@@ -56,7 +56,7 @@
 
 .main-container-title {
   all: unset;
-  font-size: 15pt;
+  font-size: 1.25rem;
   font-weight: bold;
   white-space: nowrap;
   text-overflow: ellipsis;

@@ -22,7 +22,7 @@ const ImageControls:
         element={ELEMENT}
         selected={selected}
       >
-        <div className={`image-controls-project-button-inner `}>
+        <div className={`image-controls-project-button-inner`}>
           <div className="image-controls-project-button-left">
             <LiveDisplayIndexArray
               id={openMedia.id}

@@ -38,7 +38,7 @@
 
 .settings-button-modal-title {
   margin: 0;
-  font-size: 25px;
+  font-size: 1.5rem;
   grid-template-columns: 1fr, var(--header-height);
 }
 
@@ -76,6 +76,7 @@
 }
 
 .config-heading {
+  font-size: 1.25rem;
   margin: 0;
   padding: 0;
 }

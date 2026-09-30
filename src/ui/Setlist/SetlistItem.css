@@ -90,7 +90,7 @@
 }
 
 .setlist-item-menu-button {
-  all: unset;
+  text-align: left;
 }
 .setlist-item-menu-button:hover {
   background: transparent;

@@ -110,7 +110,6 @@
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* outline: 1px solid blue; */
 }
 .config-input-boolean-button  {
   width: 100%;

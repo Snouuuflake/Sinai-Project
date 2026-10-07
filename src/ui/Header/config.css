@@ -86,6 +86,7 @@
   align-items: center;
 }
 .config-input-reset-button {
+  border: none;
   background-color: transparent;
   display: grid;
   align-items: center;
@@ -128,9 +129,7 @@
 .config-input-nnumber-input {
 }
 .config-input-nnumber-pm-button {
-  background-color: transparent;
-}
-.config-input-nnumber-pm-button {
+  border: none;
   background-color: transparent;
   display: grid;
   align-items: center;

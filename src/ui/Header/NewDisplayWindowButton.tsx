@@ -9,6 +9,7 @@ const NewDisplayContextMenu: React.FC<{}> = ({ }) => {
   >
     {Array.from({ length: DISPLAYS }, (_x, i) => {
       return <button
+        className="text-button"
         key={i}
         onClick={
           () => {

@@ -76,11 +76,6 @@
   display: flex;
   flex-direction: row;
 }
-/* .setlist-item-move-item-modal-x-button { */
-/*   flex-grow: 1; */
-/*   display: grid; */
-/*   justify-content: right; */
-/* } */
 
 .setlist-item-menu-container {
   width: 200px;
@@ -89,17 +84,6 @@
   font-size: 11pt;
 }
 
-.setlist-item-menu-button {
-  text-align: left;
-}
-.setlist-item-menu-button:hover {
-  background: transparent;
-  color: color-mix(in srgb, var(--gray-30), var(--hi-1));
-}
-.setlist-item-menu-button:active {
-  background: transparent;
-  color: var(--hi-1);
-}
 
 .setlist-item {
   all: unset;

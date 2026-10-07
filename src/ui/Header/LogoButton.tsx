@@ -7,20 +7,21 @@ const LogoContextMenu: React.FC<{}> = ({ }) => {
   const { logo } = useUIState();
   return <div
     className="context-menu-default-container"
-    style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}
   >
-    <button key="a" onClick={() => {
-      logo.forEach((_x, i) => {
-        (window as unknown as UIWindow).electron.sendSetLogo(i, false);
-        hideMenu();
-      })
-    }
-    }>
-      Remove logo from all displays
+    <button key="a"
+      className="text-button"
+      onClick={() => {
+        logo.forEach((_x, i) => {
+          (window as unknown as UIWindow).electron.sendSetLogo(i, false);
+          hideMenu();
+        })
+      }
+      }>
+      Ocultar logo en todo display
     </button>
-    <hr style={{ width: "90%" }} />
     {logo.map((x, i) => {
       return <button
+        className="text-button"
         key={i}
         onClick={
           () => {
@@ -29,7 +30,7 @@ const LogoContextMenu: React.FC<{}> = ({ }) => {
           }
         }
       >
-        {x ? "Remove logo from" : "Project logo to"} display: {i + 1}
+        {x ? "Ocultar logo en" : "Mostrar logo en"} display: {i + 1}
       </button>
     })}
   </div>

@@ -35,6 +35,7 @@ const ProjectToDisplayButton:
         onClick={
           isLive ? onClickRemove : onClickProject
         }
+        style={{ border: "none" }}
       >
         {`${isLive ? "Remove from" : "Project to"} display #${index + 1}`}
       </button>
@@ -51,6 +52,7 @@ const ProjectElementButtonContextMenu:
         className="context-menu-default-container project-element-button-context-menu"
       >
         <button
+          style={{ border: "none" }}
           onClick={
             () => {
               for (let i = 0; i < DISPLAYS; i++) {

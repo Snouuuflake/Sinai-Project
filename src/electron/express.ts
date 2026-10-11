@@ -104,11 +104,11 @@ function initExpressApp(appState: AppState) {
       }
     );
   });
-  expressApp.get("/local-file/:path", (req, res) => {
-    const path = decodeURIComponent(req.params.path);
-    console.log("local-file", path);
-    res.sendFile(path);
-  });
+  // expressApp.get("/local-file/:path", (req, res) => {
+  //   const path = decodeURIComponent(req.params.path);
+  //   console.log("local-file", path);
+  //   res.sendFile(path);
+  // });
   expressApp.use("/mobile", express.static(path.join(app.getAppPath(), "/dist-mobile-ui")));
   expressApp.use("/simple-http-controls", express.static(path.join(app.getAppPath(), "/dist-simple-http-controls")));
   expressApp.use(express.static(path.join(app.getAppPath(), "/dist-display")));

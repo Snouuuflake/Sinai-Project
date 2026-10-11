@@ -1,5 +1,6 @@
 import { isElectron } from "../shared/isElectron";
 import { SerializedLiveElement } from "../shared/media-classes"
+import { useDisplayConfigState } from "./DisplayConfigStateContext";
 
 export function mediaUrl(id: number): string {
   if (isElectron()) {
@@ -10,7 +11,14 @@ export function mediaUrl(id: number): string {
 
 const DisplayImage: React.FC<{ liveElement: SerializedLiveElement, className: string }> =
   ({ liveElement, className }) => {
-    return <img className={`display-image display-element-container ${className}`} src={mediaUrl(liveElement.id)} />
+    const { configHash } = useDisplayConfigState();
+    return <img
+      className={`display-image display-element-container ${className}`}
+      style={{
+        backgroundColor: (configHash.get("image-background-color") as string) ?? "",
+      }}
+      src={mediaUrl(liveElement.id)}
+    />
   }
 
 export default DisplayImage

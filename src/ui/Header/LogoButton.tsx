@@ -2,32 +2,26 @@ import { useContextMenu } from "../ContextMenuContext";
 import { DISPLAYS } from "../../shared/constants";
 import { useUIState } from "../UIStateContext";
 
-const LogoContextMenuEntry: React.FC<{ logo: boolean, index: number }> = ({ logo, index }) => {
-  const { hideMenu } = useContextMenu();
-  return <button>
-    ${logo ? "Disable" : "Enable"} logo for window: {index + 1}
-  </button>
-}
-
 const LogoContextMenu: React.FC<{}> = ({ }) => {
   const { hideMenu } = useContextMenu();
   const { logo } = useUIState();
   return <div
     className="context-menu-default-container"
-    style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}
   >
-    <button key="a" onClick={() => {
-      logo.forEach((_x, i) => {
-        (window as unknown as UIWindow).electron.sendSetLogo(i, false);
-        hideMenu();
-      })
-    }
-    }>
-      Remove logo from all displays
+    <button key="a"
+      className="text-button"
+      onClick={() => {
+        logo.forEach((_x, i) => {
+          (window as unknown as UIWindow).electron.sendSetLogo(i, false);
+          hideMenu();
+        })
+      }
+      }>
+      Ocultar logo en todo display
     </button>
-    <hr style={{ width: "90%" }} />
     {logo.map((x, i) => {
       return <button
+        className="text-button"
         key={i}
         onClick={
           () => {
@@ -36,7 +30,7 @@ const LogoContextMenu: React.FC<{}> = ({ }) => {
           }
         }
       >
-        {x ? "Remove logo from" : "Project logo to"} display: {i + 1}
+        {x ? "Ocultar logo en" : "Mostrar logo en"} display: {i + 1}
       </button>
     })}
   </div>
@@ -51,14 +45,14 @@ const LogoButton: React.FC<{}> =
       <button
         className={`header-button `}
         style={{
-          borderWidth: "3px",
+          borderWidth: "2px",
           borderStyle: "solid",
           borderColor: (logo.every(x => x)) ?
             "var(--hi-2)" :
             (logo.includes(true)) ?
               "color-mix(in oklch, var(--hi-1), transparent var(--blink-transparent-blend))"
               :
-              ""
+              "var(--gray-60)"
 
 
         }}

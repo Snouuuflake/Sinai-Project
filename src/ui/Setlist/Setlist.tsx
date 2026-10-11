@@ -63,6 +63,7 @@ const SetlistMenu: React.FC<{}> = ({ }) => {
   const { showModal } = useModal();
   return <div className="context-menu-default-container setlist-plus-menu-container">
     <button
+      className="text-button"
       onClick={
         (_e) => {
           (window as unknown as UIWindow).electron.sendAddImages();
@@ -72,6 +73,7 @@ const SetlistMenu: React.FC<{}> = ({ }) => {
       Añadir imágenes
     </button>
     <button
+      className="text-button"
       onClick={
         (_e) => {
           (window as unknown as UIWindow).electron.sendAddSongs();
@@ -81,6 +83,7 @@ const SetlistMenu: React.FC<{}> = ({ }) => {
       Añadir canciones
     </button>
     <button
+      className="text-button"
       onClick={
         (_e) => {
           (window as unknown as UIWindow).electron.sendReadDirectory();
@@ -90,6 +93,7 @@ const SetlistMenu: React.FC<{}> = ({ }) => {
       Cargar setlist
     </button>
     <button
+      className="text-button"
       onClick={
         (_e) => {
           (window as unknown as UIWindow).electron.sendWriteSetlist();
@@ -99,6 +103,7 @@ const SetlistMenu: React.FC<{}> = ({ }) => {
       Guardar setlist
     </button>
     <button
+      className="text-button"
       onClick={
         (e) => {
           hideMenu();

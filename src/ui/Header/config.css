@@ -38,7 +38,7 @@
 
 .settings-button-modal-title {
   margin: 0;
-  font-size: 25px;
+  font-size: 1.5rem;
   grid-template-columns: 1fr, var(--header-height);
 }
 
@@ -76,6 +76,7 @@
 }
 
 .config-heading {
+  font-size: 1.25rem;
   margin: 0;
   padding: 0;
 }
@@ -85,6 +86,7 @@
   align-items: center;
 }
 .config-input-reset-button {
+  border: none;
   background-color: transparent;
   display: grid;
   align-items: center;
@@ -108,7 +110,6 @@
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* outline: 1px solid blue; */
 }
 .config-input-boolean-button  {
   width: 100%;
@@ -127,9 +128,7 @@
 .config-input-nnumber-input {
 }
 .config-input-nnumber-pm-button {
-  background-color: transparent;
-}
-.config-input-nnumber-pm-button {
+  border: none;
   background-color: transparent;
   display: grid;
   align-items: center;

@@ -11,7 +11,6 @@ import { ConfigStateContextProvider } from "./ConfigStateContext";
 
 function App() {
   return (
-
     <ConfigStateContextProvider>
       <UIStateContextProvider>
         <ThemeContextProvider>

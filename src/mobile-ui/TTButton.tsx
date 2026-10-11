@@ -24,7 +24,7 @@ const TTButton: React.FC<{
       timerRef.current = setTimeout(() => {
         setPending(false)
         onTimeout();
-      }, 1000)
+      }, 500)
       registerTimer({
         id: timerRef.current,
         onClear: () => setPending(false)

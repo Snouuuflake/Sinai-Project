@@ -1,7 +1,9 @@
 /* -- blink animation setup ------------ */
 :root {
+  font-size: 20px;
   --blink-opacity: 1;
   --blink-transparent-blend: 0%;
+  --lt-blink-opacity: 0%;
 }
 
 @keyframes blink {
@@ -11,8 +13,33 @@
   }
 }
 
+@keyframes lt-blink {
+  0% {
+    --lt-blink-opacity: 0%;
+  }
+  50% {
+    --lt-blink-opacity: 25%;
+  }
+}
+
+
+@property --lt-fade-value {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+
+@keyframes lt-fade {
+  0% {
+    --lt-fade-value: 70%;
+  }
+  100% {
+    --lt-fade-value: 0%;
+  }
+}
+
 body {
-  animation: blink 0.7s step-start 0s infinite;
+  animation: blink 0.75s step-start 0s infinite;
 }
 /* ------------------------------------- */
 
@@ -32,13 +59,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --br-small: 10px;
-  --br-med: 20px;
+  --br-small: 3px;
+  --br-med: 7px;
   --hi-1-base: #ff0065ff;
   --hi-2-base: #00dbffff;
 
-  --main-container-br: 30px;
-
+  --main-container-br: 13px;
 }
 
 :root,
@@ -86,21 +112,16 @@ body {
   --hi-2: color-mix(in oklch, var(--hi-2-base), black 20%);
 }
 
+
+html, body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 body {
   background-color: var(--background);
 }
 
-html {
-  font-size: 30px;
-}
-
-button, input, select, textarea {
-  font-size: inherit;
-}
-
-* {
-  user-select: none;
-}
 
 /* because the icons package */
 *:not(svg):not(svg *) {
@@ -143,7 +164,6 @@ select, ::picker(select) {
 body {
   margin: 0;
   padding: 8px;
-  height: 100vh;
   height: 100dvh;
   box-sizing: border-box;
 }
@@ -153,19 +173,35 @@ body {
 }
 
 button {
-  /* background-color: var(--gray-95); */
   background-color: var(--gray-90);
-  /* border: 2px solid var(--gray-40); */
-  border: none;
   border-radius: var(--br-med);
+  font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
+
+  box-sizing: border-box;
+  border: 2px solid var(--gray-80);
+  padding: 0.125rem 0.25rem;
+  font-size: 1rem;
 }
 button:hover {
-  background-color: color-mix(in srgb, var(--gray-90), var(--fg) 20%)
+  background-color: color-mix(in srgb, var(--gray-90)  70%, var(--bg))
 }
 button:active {
   background-color: color-mix(in srgb, var(--gray-90), var(--fg) 60%)
+}
+
+.text-button {
+  border: none;
+  background: none;
+}
+.text-button:hover {
+  color: var(--gray-40);
+  background: none;
+}
+.text-button:active {
+  color: var(--gray-70);
+  background: none;
 }
 
 
@@ -174,18 +210,17 @@ input {
   box-sizing: border-box;
   border: 2px solid var(--gray-80);
   border-radius: 4px;
-  padding: 3px;
+  padding: 0.125rem 0.25rem;
+  font-size: 1rem;
 }
 
-
 .hi-1-button {
-  color: white;
-  background-color: var(--hi-1);
+  background-color: color-mix(in srgb, var(--hi-1), var(--bg) 60%);
+  border: 2px solid var(--hi-1)
 }
 
 .hi-1-button:hover {
-  /* border-color: var(--hi-1); */
-  background-color: color-mix(in srgb, var(--gray-90), var(--hi-1) 70%)
+  background-color: color-mix(in srgb, var(--bg), var(--hi-1) 60%)
 }
 
 .hi-1-button:active {
@@ -196,21 +231,4 @@ input {
 
 .droppable * {
   pointer-events: none;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-
-.text-only-button {
-  background-color: transparent;
-}
-.text-only-button:hover {
-  color: var(--gray-30);
-  background-color: transparent;
-}
-.text-only-button:active {
-  color: var(--gray-60);
-  background-color: transparent;
 }

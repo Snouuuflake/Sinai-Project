@@ -25,15 +25,15 @@
   border: 2px solid var(--fg);
   border-radius: var(--main-container-br);
   background-color: var(--gray-95);
-  padding: 5px;
+  padding: 0.5rem;
   min-height: 0;
   height: 80%;
   width: 80%;
   display: grid;
   grid-template-areas: "header header" "left right" "save cancel";
-  grid-template-columns: 1fr 200px;
+  grid-template-columns: 1fr 220px;
   grid-template-rows: auto 1fr;
-  gap: 5px;
+  gap: 0.5rem 0.25rem;
 
   overflow: hidden;
   position: relative;
@@ -84,7 +84,8 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  padding-right: 5px;
+  padding: 0.125rem;
+  padding-right: 0.5rem;
   min-width: 0;
 }
 .edit-song-modal-section-list-item-name {
@@ -95,6 +96,7 @@
 }
 .edit-song-modal-section-list-item:hover {
   background-color: color-mix(in oklch, var(--gray-80), var(--hi-1));
+  background-color: var(--gray-60);
 }
 .edit-song-modal-section-list-item-icon-button {
   all: unset;
@@ -122,15 +124,11 @@
 .edit-song-modal-add-section-container {
   display: flex;
   gap: 3px;
-  height: 25px;
 }
 .edit-song-modal-add-section-button {
   display: grid;
   place-items: center;
   flex-grow: 1;
-  height: 25px;
-  width: 25px;
-  padding: 0;
 }
 .edit-song-modal-add-section-input {
   flex-grow: 1;
@@ -145,21 +143,21 @@
   grid-template-areas: "title" "textarea" "buttons";
   grid-template-rows: auto 1fr auto;
   gap: 5px;
-  overflow-y: clip;
+  /* overflow-y: clip; */
   height: 100%;
   min-height: 0;
 }
 .edit-song-modal-section-editor-header {
   grid-area: title;
-  height: 25px;
   overflow-x: clip;
   width: 100%;
   min-width: 0;
   display: flex;
 }
-.edit-song-modal-section-editor-header > input {
+.edit-song-modal-section-editor-header input {
   flex-grow: 1;
   min-width: 0;
+  box-sizing: border-box;
 }
 .edit-song-modal-textarea {
   grid-area: textarea;

@@ -1,35 +1,18 @@
-import { app, BrowserWindow, ipcMain, dialog, protocol, net } from "electron";
+import { app, dialog, protocol, net } from "electron";
 import { pathToFileURL } from "url";
-import path from "path";
 import * as fs from "fs";
-import express from "express";
-import { AddressInfo, WebSocketServer } from "ws";
-import http from "http";
 import { initExpressApp } from "./express.js";
 
 
-import { isDev } from "./util.js";
-import { getConfigPath, getPreloadPath } from "./pathResolver.js";
-import { DISPLAYS } from "../shared/constants.js";
-import {
-  LiveElementIdentifier,
-  MediaImage,
-  MediaSong,
-  Song,
-  SerializedLiveState,
-  Media,
-} from "../shared/media-classes.js";
+import { getConfigPath } from "./pathResolver.js";
 
-import { parseSong, logSong, stringifySong } from "./parser.js";
-
-import { AppState, MainDisplayConfigEntry, MainGeneralConfigEntry } from "./AppState.js";
+import { AppState } from "./AppState.js";
 
 import { IpcWs } from "./IpcWs.js";
 import { ServerManager } from "./ServerManager.js";
 import { addConfigEntries } from "./appState-config.js";
 import { registerConfigHandlers } from "./handlers/configHandlers.js";
 import { WindowManager } from "./WindowManager.js";
-import { FILTERS, matchFilter } from "./filters.js";
 import { registerMediaHandlers } from "./handlers/mediaHandlers.js";
 import { registerServerHandlers } from "./handlers/serverHandlers.js";
 import { registerLiveHandlers } from "./handlers/liveHandlers.js";

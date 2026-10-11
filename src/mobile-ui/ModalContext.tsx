@@ -2,7 +2,7 @@ import { useRef, useState, useEffect, createContext, useContext } from "react";
 
 
 type ModalContextType = {
-  showModal: (e: React.MouseEvent | null, content: React.ReactNode) => void;
+  showModal: (content: React.ReactNode) => void;
   hideModal: () => void;
 }
 
@@ -10,6 +10,7 @@ const ModalContext = createContext<ModalContextType | null>(null);
 
 export const useModal = (): ModalContextType => {
   const context = useContext(ModalContext);
+  console.log("context", context);
   if (!context) {
     throw new Error("used useModal outside ModalContext!");
   }
@@ -22,14 +23,11 @@ export const ModalContextProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   const value: ModalContextType = {
-    /**
-     * event is optional
-     */
-    showModal: (e, content) => {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
+    // INFO: does not stop event propagation
+    showModal: (content) => {
+      // e.preventDefault();
+      // e.stopPropagation();
+
       setContent(content);
       setVisible(true);
     },
@@ -78,7 +76,7 @@ export const ModalContextProvider: React.FC<{ children: React.ReactNode }> = ({ 
             top: "0",
             left: "0",
             height: "100dvh",
-            width: "100vw",
+            width: "100dvw",
             zIndex: 500,
             display: "flex",
             alignItems: "center",

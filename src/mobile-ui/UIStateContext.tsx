@@ -1,19 +1,20 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { DISPLAYS } from "../shared/constants";
 import {
   SerializedMediaIdentifier,
   SerializedMediaWithId,
   LiveElementIdentifier,
 } from "../shared/media-classes";
-
-import { CustomIPC } from "./IpcWsOnlyClient";
+import { CustomIPC } from "./IpcWsClient";
 
 type UIStateContextType = {
   setlist: SerializedMediaIdentifier[];
   openMedia: SerializedMediaWithId | null;
   liveElements: Array<LiveElementIdentifier | null>;
+  selectedLiveElementId: number | null;
   logo: boolean[];
 }
+
 
 export const UIStateContext = createContext<UIStateContextType | null>(null);
 
@@ -21,6 +22,7 @@ export const UIStateContextProvider:
   React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [setlist, setSetlist] = useState<SerializedMediaIdentifier[]>([]);
     const [openMedia, setOpenMedia] = useState<SerializedMediaWithId | null>(null);
+    const [selectedLiveElementId, setSelectedLiveElementId] = useState<number | null>(null);
     const [liveElements, setLiveElements] = useState<
       Array<LiveElementIdentifier | null>
     >(Array.from({ length: DISPLAYS }, (_x) => null));
@@ -28,40 +30,46 @@ export const UIStateContextProvider:
     const [logo, setLogo] = useState<boolean[]>(Array.from({ length: DISPLAYS }, (_x) => false));
 
     useEffect(() => {
-      const remover = CustomIPC.on("ui-state-update-setlist", (newValue: SerializedMediaIdentifier[]) => {
-        console.log(newValue);
-        setSetlist(newValue);
-      });
+      const remover = CustomIPC.on("ui-state-update-setlist",
+        (newValue: SerializedMediaIdentifier[]) => { setSetlist(newValue); }
+      );
       return remover;
-    });
+    }, [])
+
     useEffect(() => {
-      const remover = CustomIPC.on("ui-state-update-open-media", (newValue: SerializedMediaWithId) => {
-        console.log(newValue);
-        setOpenMedia(newValue);
-      });
+      const remover = CustomIPC.on("ui-state-update-open-media",
+        (newValue: SerializedMediaWithId) => { setOpenMedia(newValue); }
+      );
       return remover;
-    });
+    }, [])
+
     useEffect(() => {
-      const remover = CustomIPC.on("ui-state-update-live-elements", (newValue: Array<LiveElementIdentifier | null>) => {
-        console.log(newValue);
-        setLiveElements(newValue);
-      });
+      const remover = CustomIPC.on("ui-state-update-selected-live-element-id",
+        (newValue: number | null) => { setSelectedLiveElementId(newValue); }
+      );
       return remover;
-    });
+    }, [])
+
     useEffect(() => {
-      const remover = CustomIPC.on("ui-state-update-logo", (newValue: Array<boolean>) => {
-        console.log(newValue);
-        setLogo(newValue);
-      });
+      const remover = CustomIPC.on("ui-state-update-live-elements",
+        (newValue: Array<LiveElementIdentifier | null>) => { setLiveElements(newValue) }
+      );
       return remover;
-    });
+    }, [])
+
     useEffect(() => {
-      console.log("sending something")
-      CustomIPC.send("ui-state-request")      // (window as unknown as UIWindow).electron.sendUIStateRequest();
-    }, []);
+      const remover = CustomIPC.on("ui-state-update-logo",
+        (newValue: Array<boolean>) => { setLogo(newValue) }
+      );
+      return remover;
+    }, [])
+
+    useEffect(() => {
+      CustomIPC.send("ui-state-request")
+    }, [])
 
     return <UIStateContext.Provider
-      value={{ setlist, openMedia, liveElements, logo }}>
+      value={{ setlist, openMedia, selectedLiveElementId, liveElements, logo }}>
       {children}
     </UIStateContext.Provider >
   };

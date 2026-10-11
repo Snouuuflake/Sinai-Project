@@ -1,19 +1,15 @@
-import { DISPLAYS } from "../shared/constants";
-import { CustomIPC } from "./IpcWsOnlyClient";
 import { useUIState } from "./UIStateContext";
-import Header from "./Header";
-import Controls from "./Controls";
 
-import "./AppContainer.css"
+import Header from "./Header/Header";
+import Setlist from "./Setlist/Setlist";
+import MainControls from "./MainControls/MainControls";
 
-const AppContainer: React.FC<{}> = () => {
-  const { logo } = useUIState();
-  return (
-    <div className="app-container">
-      <Header />
-      <Controls />
-    </div>
-  )
+const AppContainer: React.FC<{}> = ({ }) => {
+  const uiState = useUIState();
+  return <div className="app-container">
+    <Header />
+    <MainControls openMedia={uiState.openMedia} />
+  </div>
 }
 
 export default AppContainer;

@@ -1,21 +1,23 @@
 import AppContainer from "./AppContainer";
-import { UIStateContextProvider } from "./UIStateContext";
-import { TTButtonTimerContextProvider } from "./TTButtonTimerContext";
+import "./App.css"
 import { ContextMenuContextProvider } from "./ContextMenuContext";
 import { ModalContextProvider } from "./ModalContext";
+import { UIStateContextProvider } from "./UIStateContext";
 
 const App: React.FC<{}> = ({ }) => {
   console.log("!!!!!!")
   return (
-    <UIStateContextProvider>
-      <TTButtonTimerContextProvider>
+    <>
+      <UIStateContextProvider>
+        {/*   <TTButtonTimerContextProvider> */}
         <ContextMenuContextProvider>
           <ModalContextProvider>
             <AppContainer />
           </ModalContextProvider>
         </ContextMenuContextProvider>
-      </TTButtonTimerContextProvider>
-    </UIStateContextProvider>
+        {/*   </TTButtonTimerContextProvider> */}
+      </UIStateContextProvider>
+    </>
   )
 }
 

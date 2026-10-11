@@ -177,6 +177,8 @@ export const ConfigStateContextProvider: React.FC<{ children: React.ReactNode }>
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-margin-right", "nnumber", "Margen derecho"));
 
     displayConfigRef.current.addEntry(new UIDisplayConfigEntry("text-background-color", "hexcolor", "Color de fondo de texto"));
+
+    displayConfigRef.current.addEntry(new UIDisplayConfigEntry("image-background-color", "hexcolor", "Color de fondo de imágenes"));
   }
 
   const [displayConfig, setDisplayConfig] = useState<ReadonlyUIDisplayConfigType>(displayConfigRef.current.config);

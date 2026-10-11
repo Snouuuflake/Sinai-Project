@@ -153,9 +153,9 @@ const SetlistItemMenu:
     const { hideMenu } = useContextMenu();
     const { showModal } = useModal();
     return <div
-      className="context-menu-default-container setlist-item-menu-container">
+      className="context-menu-default-container ">
       <button
-        className="setlist-item-menu-button"
+        className="text-button"
         onClick={
           (e) => {
             hideMenu();
@@ -166,7 +166,7 @@ const SetlistItemMenu:
         Reordenar
       </button>
       <button
-        className="setlist-item-menu-button"
+        className="text-button"
         onClick={
           (_e) => {
             (window as unknown as UIWindow).electron.sendDeleteMedia(item.id);

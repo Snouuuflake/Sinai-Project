@@ -1,11 +1,12 @@
-
 /**
+ * copied from src/shared at commit 04adb25a695c63f65f792d162f7ed9327e83f5a4
  * Client module for allowing IPC (-style) communication from both Electron 
  * BrowserWindow(s) and windows served from Electron to an actual browser (Chrome, Firefox, etc)
  *
  * Requires the client to have a url with an explicit port (localhost:8000)
  * (this could easilty be abstracted i think but its not requiered for this project)
  */
+const isElectron = () => false;
 
 type IpcHandler = (...args: any[]) => void;
 
@@ -26,8 +27,7 @@ function getWs(): WebSocket {
 
   // WebSocket on same port as client url
   const port = parseInt(window.location.port);
-  // FIXME: this cant be localhost
-  ws = new WebSocket(window.location.origin.replace(/^http/, "ws"));
+  ws = new WebSocket(`ws://${window.location.host}`);
 
   ws.addEventListener("open", () => {
     wsReady = true;
@@ -83,28 +83,42 @@ function wsSend(msg: object) {
  */
 export const CustomIPC = {
   on(channel: string, callback: IpcHandler): () => void {
-    if (!wsListeners.has(channel)) wsListeners.set(channel, new Set());
-    wsListeners.get(channel)!.add(callback);
-    getWs(); // ensure connected
-    // Like Electron ipcRenderer.on, returns a function to delete the added listener
-    // Needed for React effects
-    return () => wsListeners.get(channel)?.delete(callback);
+    if (isElectron()) {
+      // ipcRendererOnS is a safe version of ipcRenderer.on, given that it can only use channels whitelisted in the preload file
+      return (window as unknown as DisplayWindow).electron.ipcRendererOnS(channel, (_event, ...values: any[]) => { callback(...values) });
+    } else {
+      // creates channel in  channel doesn't exist and adds callback to channel
+      if (!wsListeners.has(channel)) wsListeners.set(channel, new Set());
+      wsListeners.get(channel)!.add(callback);
+      getWs(); // ensure connected
+      // Like Electron ipcRenderer.on, returns a function to delete the added listener
+      // Needed for React effects
+      return () => wsListeners.get(channel)?.delete(callback);
+    }
   },
 
   send(channel: string, ...args: any[]): void {
-    wsSend({ type: "send", channel, args });
+    if (isElectron()) {
+      // ipcRendererSendS is a safe version of ipcRenderer.send, given that it can only use channels whitelisted in the preload file
+      (window as unknown as DisplayWindow).electron.ipcRendererSendS(channel, ...args);
+    } else {
+      wsSend({ type: "send", channel, args });
+    }
   },
 
   invoke(channel: string, ...args: any[]): Promise<any> {
-    return new Promise((resolve) => {
-      // creates id for all messages related to this invoke
-      const id = invokeIdCounter++;
-      console.log(`invoked with id ${id}`, channel, ...args);
-      // resolve function to pendingInvokes to be called when the server responds
-      pendingInvokes.set(id, resolve);
-      wsSend({ type: "invoke", channel, args, id });
-    });
-  },
-
-  getWsVariable: () => ws,
+    if (isElectron()) {
+      // ipcRendererInvokeS is a safe version of ipcRenderer.invoke, given that it can only use channels whitelisted in the preload file
+      return (window as unknown as DisplayWindow).electron.ipcRendererInvokeS(channel, ...args);
+    } else {
+      return new Promise((resolve) => {
+        // creates id for all messages related to this invoke
+        const id = invokeIdCounter++;
+        console.log(`invoked with id ${id}`, channel, ...args);
+        // resolve function to pendingInvokes to be called when the server responds
+        pendingInvokes.set(id, resolve);
+        wsSend({ type: "invoke", channel, args, id });
+      });
+    }
+  }
 };

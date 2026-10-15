@@ -2,7 +2,7 @@ import {
   SerializedMediaWithId,
   SerializedImageMediaWithId,
   SerializedSongMediaWithId
-} from "../../shared/media-classes"
+} from "../../shared/media-types"
 import ImageControls from "./ImageContols";
 import SongControls from "./SongControls";
 

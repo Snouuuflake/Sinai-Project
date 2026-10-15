@@ -1,4 +1,4 @@
-import { encodeOrderedVerseId, SerializedImageMediaWithId } from "../../shared/media-classes"
+import { encodeOrderedVerseId, SerializedImageMediaWithId } from "../../shared/media-types"
 
 import ProjectElementButton from "./ProjectElementButton";
 import LiveDisplayIndexArray from "./LiveDisplayIndexArray";

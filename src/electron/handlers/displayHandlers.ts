@@ -2,7 +2,7 @@ import { ipcMain } from "electron";
 import { AppState } from "../AppState.js";
 import { WindowManager } from "../WindowManager.js";
 import { IpcWs } from "../IpcWs.js";
-import { SerializedLiveState } from "../../shared/media-classes.js";
+import { SerializedLiveState } from "../../shared/media-types.js";
 
 export function registerDisplayHandlers(
   appState: AppState,

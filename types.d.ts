@@ -1,4 +1,4 @@
-import * as mc from "./src/shared/media-classes.js";
+import * as mc from "./src/shared/media-types.js";
 import * as cc from "./src/shared/config-classes.js";
 
 declare global {
@@ -28,6 +28,7 @@ declare global {
     sendSetOpenMedia: (id: number) => void;
     sendSetLiveElement: (displayId: number, liveElementIdentifier: mc.LiveElementIdentifier | null) => void;
     sendSetLogo: (displayId: number, logo: boolean) => void;
+    sendAddPDFs: () => void;
     sendAddImages: () => void;
     sendAddSongs: () => void;
     sendReadDirectory: () => void;

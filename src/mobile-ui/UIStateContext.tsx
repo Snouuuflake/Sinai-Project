@@ -4,7 +4,7 @@ import {
   SerializedMediaIdentifier,
   SerializedMediaWithId,
   LiveElementIdentifier,
-} from "../shared/media-classes";
+} from "../shared/media-types";
 import { CustomIPC } from "./IpcWsClient";
 
 type UIStateContextType = {

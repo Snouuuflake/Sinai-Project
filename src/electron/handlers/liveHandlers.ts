@@ -2,7 +2,7 @@ import { dialog, ipcMain } from "electron";
 import { AppState } from "../AppState.js";
 import { WindowManager } from "../WindowManager.js";
 import { UIUpdaters } from "./UIUpdaters.js";
-import { LiveElementIdentifier } from "../../shared/media-classes.js";
+import { LiveElementIdentifier } from "../../shared/media-types.js";
 import { DisplayUpdaters } from "./DisplayUpdaters.js";
 
 export function registerLiveHandlers(

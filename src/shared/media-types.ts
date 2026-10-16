@@ -73,7 +73,7 @@ export type SerializedSongMediaWithId =
 export type SerializedPDFMediaWithId =
   Omit<SerializedMediaWithId, "value" | "type"> & {
     type: "song";
-    value: MediaSongValueType;
+    value: MediaPDFValueType;
   }
 
 export type MediaPDFValueType = {

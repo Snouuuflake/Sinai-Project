@@ -43,11 +43,22 @@ export class MediaPDF extends Media {
     const document = mupdf.PDFDocument.openDocument(fs.readFileSync(path), "application/pdf");
 
     const pages = Array.from({ length: document.countPages() }, (_v, i) => {
-      let page = document.loadPage(0)
-      let pixmap = page.toPixmap(mupdf.Matrix.identity, mupdf.ColorSpace.DeviceRGB, false, true)
-      let pngImage = pixmap.asPNG()
-      return Buffer.from(pngImage, 'binary').toString('base64')
-    })
+      let page = document.loadPage(i);
+
+      // pdfs will have one dimension of 2000
+      const maxW = 2000;
+      const maxH = 2000;
+
+      const [x0, y0, x1, y1] = page.getBounds();
+      const pageW = x1 - x0;
+      const pageH = y1 - y0;
+
+      const scale = Math.min(maxW / pageW, maxH / pageH);
+
+      let pixmap = page.toPixmap(mupdf.Matrix.scale(scale, scale), mupdf.ColorSpace.DeviceRGB, false, true);
+      let pngImage = pixmap.asPNG();
+      return Buffer.from(pngImage, 'binary').toString('base64');
+    });
 
     this.value = {
       path: path,

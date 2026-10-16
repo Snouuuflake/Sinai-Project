@@ -1,12 +1,14 @@
 import {
   SerializedMediaWithId,
   SerializedImageMediaWithId,
-  SerializedSongMediaWithId
+  SerializedSongMediaWithId,
+  SerializedPDFMediaWithId
 } from "../../shared/media-types"
 import ImageControls from "./ImageContols";
 import SongControls from "./SongControls";
 
 import "./MainControls.css";
+import PDFControls from "./PDFControls";
 
 const MainControls:
   React.FC<{ openMedia: SerializedMediaWithId | null }>
@@ -19,7 +21,9 @@ const MainControls:
             ? <ImageControls openMedia={openMedia as SerializedImageMediaWithId} />
             : openMedia.type === "song"
               ? <SongControls openMedia={openMedia as SerializedSongMediaWithId} />
-              : openMedia.name
+              : openMedia.type === "pdf" ?
+                <PDFControls openMedia={openMedia as SerializedPDFMediaWithId} />
+                : openMedia.name
       }
     </div>
   }

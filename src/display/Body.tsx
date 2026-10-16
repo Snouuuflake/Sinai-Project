@@ -6,6 +6,7 @@ import DisplayImage from "./DisplayImage";
 import { formatSrcPath } from "./util";
 import { CustomIPC } from "../shared/IpcWsClient";
 import { isElectron } from "../shared/isElectron";
+import DisplayB64Image from "./DisplayB64Image";
 
 export function extraMediaUrl(id: string, x: number = 0): string {
   if (isElectron()) {
@@ -65,7 +66,9 @@ const LiveElement: React.FC<{
         <DisplayText liveElement={liveElement} className={className} /> :
         liveElement.type === "image" ?
           <DisplayImage liveElement={liveElement} className={className} /> :
-          <></>
+          liveElement.type === "b64png" ?
+            <DisplayB64Image liveElement={liveElement} className={className} /> :
+            <></>
   }
 
 const Body: React.FC<{}> = () => {

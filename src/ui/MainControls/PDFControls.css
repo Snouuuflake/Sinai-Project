@@ -1,0 +1,21 @@
+.pdf-controls {
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  display: grid;
+  grid-template-areas: "header" "button";
+  grid-template-rows: fit-content(100px) 1fr;
+}
+
+.pdf-controls-pages-container {
+  overflow-y: scroll;
+  border-top: 2px solid var(--gray-60);
+  border-bottom: 2px solid var(--gray-60);
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}

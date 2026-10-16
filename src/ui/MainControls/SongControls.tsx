@@ -563,7 +563,7 @@ const SongControls:
     return <>
       <div className="main-container-header ">
         {/* TODO: icon */}
-        <h1 className="main-container-title">Controles de canción</h1>
+        <h1 className="main-container-title">{openMedia.value.song.properties.title}</h1>
         <div className="main-container-header-buttons-container">
           <button
             className="song-controls-edit-button main-container-button"

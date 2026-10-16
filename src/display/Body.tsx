@@ -100,7 +100,6 @@ const Body: React.FC<{}> = () => {
   )
 
   useEffect(() => {
-    // const remover = (window as unknown as UIWindow).electron.onDisplayStateUpdateLiveElement(
     const remover = CustomIPC.on("display-state-update-live-elements",
       (displayId, newValue) => {
         console.log("set curLiveElement", newValue);
@@ -118,7 +117,6 @@ const Body: React.FC<{}> = () => {
       }
     );
     if (!hasRequestedLiveState.current)
-      // (window as unknown as UIWindow).electron.invokeDisplayGetInitLiveState(DISPLAY_ID).then(le => {
       CustomIPC.invoke("invoke-display-get-init-live-state", DISPLAY_ID).then(le => {
         hasRequestedLiveState.current = true;
         curLiveElementRef.current = le.liveElement;
@@ -128,7 +126,6 @@ const Body: React.FC<{}> = () => {
     return remover;
   }, []);
   useEffect(() => {
-    // const remover = (window as unknown as UIWindow).electron.onDisplayStateUpdateLogo(
     const remover = CustomIPC.on("display-state-update-logo",
       (displayId, logo) => {
         if (displayId === DISPLAY_ID)
@@ -151,9 +148,11 @@ const Body: React.FC<{}> = () => {
 }
 .animation-in {
 animation-name: fade-in;
+animation-timing-function: linear(0, 1 49%, 1);
 }
 .animation-out {
 animation-name: fade-out;
+animation-timing-function: linear(0, 0 51%, 1);
 }
 `
       }

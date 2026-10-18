@@ -5,7 +5,6 @@ import { ModalContextProvider } from "./ModalContext";
 import { UIStateContextProvider } from "./UIStateContext";
 
 const App: React.FC<{}> = ({ }) => {
-  console.log("!!!!!!")
   return (
     <>
       <UIStateContextProvider>

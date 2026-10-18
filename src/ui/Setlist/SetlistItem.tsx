@@ -1,5 +1,5 @@
 import { useState, useRef } from "react"
-import { SerializedMediaIdentifier } from "../../shared/media-classes"
+import { SerializedMediaIdentifier } from "../../shared/media-types"
 import { useContextMenu } from "../ContextMenuContext";
 import { useModal } from "../ModalContext";
 import { useUIState } from "../UIStateContext";

@@ -1,4 +1,4 @@
-import { encodeOrderedVerseId, SerializedSongMediaWithId, SongSection, SongVerse, Song, getSectionFromOrderedSection } from "../../shared/media-classes";
+import { encodeOrderedVerseId, SerializedSongMediaWithId, SongSection, SongVerse, Song, getSectionFromOrderedSection } from "../../shared/media-types";
 
 import ProjectElementButton from "./ProjectElementButton";
 import LiveDisplayIndexArray from "./LiveDisplayIndexArray";

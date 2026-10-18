@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import { AppState } from "./AppState.js";
 import { app, ipcMain } from "electron";
-import { LiveElementIdentifier } from "../shared/media-classes.js";
+import { LiveElementIdentifier } from "../shared/media-types.js";
 import { DISPLAYS } from "../shared/constants.js";
 
 function initExpressApp(appState: AppState) {

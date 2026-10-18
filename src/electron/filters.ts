@@ -5,6 +5,12 @@ export const FILTERS = {
       "apng", "gif", "ico", "cur", "jpg", "jpeg", "jfif", "pjpeg", "pjp", "png", "svg",
     ]
   },
+  "PDFs": {
+    name: "Songs",
+    extensions: [
+      "pdf"
+    ]
+  },
   "Songs": {
     name: "Songs",
     extensions: [

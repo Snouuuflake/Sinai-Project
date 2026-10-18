@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SerializedMediaIdentifier } from "../../shared/media-classes";
+import { SerializedMediaIdentifier } from "../../shared/media-types";
 import { useContextMenu } from "../ContextMenuContext";
 import { useModal } from "../ModalContext";
 
@@ -62,6 +62,16 @@ const SetlistMenu: React.FC<{}> = ({ }) => {
   const { hideMenu } = useContextMenu();
   const { showModal } = useModal();
   return <div className="context-menu-default-container setlist-plus-menu-container">
+    <button
+      className="text-button"
+      onClick={
+        (_e) => {
+          (window as unknown as UIWindow).electron.sendAddPDFs();
+          hideMenu();
+        }
+      }>
+      Añadir PDFs
+    </button>
     <button
       className="text-button"
       onClick={

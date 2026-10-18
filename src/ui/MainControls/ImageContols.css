@@ -44,14 +44,17 @@
   grid-area: bottom;
 }
 .image-controls-image {
-  --margin: 5px;
+  --margin: 0.25rem;
   grid-area: preview;
-  width: calc(100% - var(--margin));
-  height: calc(100% - var(--margin));
+  max-width: calc(100% - var(--margin));
+  max-height: calc(100% - var(--margin));
+  width: auto;
+  height: auto;
   margin: var(--margin);
-  border-radius: 6px ;
+  border-radius: 0.5rem ;
   overflow: clip;
   justify-self: right;
   min-width: 0;
   min-height: 0;
+  object-fit: contain;
 }

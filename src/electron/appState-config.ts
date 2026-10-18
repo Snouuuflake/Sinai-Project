@@ -1,4 +1,4 @@
-import { Media, MediaImage } from "../shared/media-classes.js";
+import { Media, MediaImage } from "./media-classes.js";
 import { AppState, MainDisplayConfigEntry, MainGeneralConfigEntry } from "./AppState.js";
 import path from "path";
 import { ServerManager } from "./ServerManager.js";

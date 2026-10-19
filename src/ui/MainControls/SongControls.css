@@ -18,7 +18,7 @@
 .song-controls-section-verses-container {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 0.5rem;
 }
 
 .edit-song-modal-container {

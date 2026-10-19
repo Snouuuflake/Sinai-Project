@@ -46,11 +46,9 @@
 }
 
 .main-container-header-buttons-container {
-  flex-grow: 1;
   display: flex;
   justify-content: flex-end;
   height: 100%;
-  min-width: 0;
   gap: 7px;
 }
 
@@ -62,5 +60,6 @@
   text-overflow: ellipsis;
   overflow-x: clip;
   min-width: 0;
-  padding-right: 10px;
+  flex-grow: 1;
+  width: 100%;
 }

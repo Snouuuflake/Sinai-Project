@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { LiveElementTextValue, SerializedLiveElement } from "../shared/media-classes"
+import { LiveElementTextValue, SerializedLiveElement } from "../shared/media-types"
 import { useDisplayConfigState } from "./DisplayConfigStateContext";
 
 const AutoScaleText: React.FC<{

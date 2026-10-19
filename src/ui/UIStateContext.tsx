@@ -4,7 +4,7 @@ import {
   SerializedMediaIdentifier,
   SerializedMediaWithId,
   LiveElementIdentifier,
-} from "../shared/media-classes";
+} from "../shared/media-types";
 
 type UIStateContextType = {
   setlist: SerializedMediaIdentifier[];

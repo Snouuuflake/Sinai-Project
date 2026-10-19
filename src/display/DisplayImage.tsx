@@ -1,5 +1,5 @@
 import { isElectron } from "../shared/isElectron";
-import { SerializedLiveElement } from "../shared/media-classes"
+import { SerializedLiveElement } from "../shared/media-types"
 import { useDisplayConfigState } from "./DisplayConfigStateContext";
 
 export function mediaUrl(id: number): string {

@@ -6,20 +6,17 @@ import { getConfigPath } from "./pathResolver.js";
 import {
   SerializedLiveElement,
   LiveElementIdentifier,
-  Media,
   SerializedMediaIdentifier,
   SerializedMediaWithId,
   SerializedMedia,
-  MediaSong,
   Song,
   decodeOrderedVerseId,
   getSectionFromOrderedSection,
   encodeOrderedVerseId,
   SongSection,
-  MediaImage,
   // encodeVerseId,
   // decodeVerseId,
-} from "../shared/media-classes.js";
+} from "../shared/media-types.js";
 import {
   ConfigEntryBase,
   ConfigTypePrimitiveType,
@@ -27,6 +24,7 @@ import {
   SerializedDisplayConfigEntry,
   SerializedGeneralConfigEntry
 } from "../shared/config-classes.js";
+import { Media, MediaSong, MediaImage } from "./media-classes.js";
 
 type GeneralConfigEntryCallback = (newValue: unknown) => void;
 type DisplayConfigEntryCallback = (newValue: unknown[]) => void;
@@ -668,7 +666,9 @@ class AppState {
   addSetlistMedia(media: Media) {
     this.#setlistMedia.set(this.#mediaIdCounter, media);
     this.#setlist.push(this.#mediaIdCounter);
+    const res = this.#mediaIdCounter;
     this.#mediaIdCounter++;
+    return res;
   }
   /**
    * @param id id of item to remove 

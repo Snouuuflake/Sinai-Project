@@ -5,7 +5,8 @@ import { AppState } from "../AppState.js";
 import { WindowManager } from "../WindowManager.js";
 import { FILTERS, matchFilter } from "../filters.js";
 import { UIUpdaters } from "./UIUpdaters.js";
-import { Media, MediaImage, MediaSong, Song } from "../../shared/media-classes.js";
+import { Media, MediaImage, MediaPDF, MediaSong } from "../media-classes.js";
+import { Song } from "../../shared/media-types.js";
 import { logSong, parseSong, stringifySong } from "../parser.js";
 
 export function registerMediaHandlers(
@@ -92,6 +93,51 @@ export function registerMediaHandlers(
       }
     );
   }
+
+  function readPDF(filePath: string): Promise<void | Error> {
+    return new Promise<void>(
+      (resolve, reject) => {
+        let newId: number | null = null;
+        try {
+          newId = appState.addSetlistMedia(
+            new MediaPDF(filePath.split(path.sep).at(-1) ?? "Document", filePath)
+          );
+        } catch (err) {
+          console.error(err);
+          if (newId !== null)
+            appState.deleteSetlistMedia(newId);
+          reject(`Unable to read PDF: ${filePath}`);
+        }
+        resolve();
+      }
+    )
+  }
+
+
+  ipcMain.on("add-pdfs", (_event) => {
+    if (!windowManager.uiWindow)
+      return;
+    dialog.showOpenDialog(windowManager.uiWindow, {
+      title: "Add PDFs",
+      filters: [
+        FILTERS["PDFs"] as any
+      ],
+      properties: ["openFile", "multiSelections"]
+    }).then(
+      result => {
+        // TODO: test
+        if (result.canceled) return;
+        Promise.allSettled(
+          result.filePaths.map(readPDF)
+        ).then(results => {
+          const rejections = results.filter(r => r.status === "rejected").map(r => r.reason);
+          if (rejections.length > 0)
+            dialog.showErrorBox("Error", rejections.join("\n"));
+        });
+        uiUpdaters.updateUISetlist();
+      }
+    )
+  });
 
   ipcMain.on("add-images", (_event) => {
     if (!windowManager.uiWindow)

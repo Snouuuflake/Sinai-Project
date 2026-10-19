@@ -5,7 +5,7 @@ import {
   SongElementTypeType,
   SongPropertiesType,
   Song,
-} from "../shared/media-classes.js";
+} from "../shared/media-types.js";
 
 const ATTRIBUTE_COMMANDS = {
   title: "T",

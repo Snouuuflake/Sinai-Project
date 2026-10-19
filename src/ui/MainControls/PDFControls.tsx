@@ -21,7 +21,7 @@ const PDFControls:
         <h1 className="main-container-title">{openMedia.name}</h1>
       </div>
 
-      <div className="pdf-controls-pages-container">
+      <div className="pdf-controls-pages-container scrollable-borders">
         {
           openMedia.value.b64pages.map((p, i) => {
             return <ProjectElementButton

@@ -9,13 +9,11 @@
 }
 
 .pdf-controls-pages-container {
-  overflow-y: scroll;
-  border-top: 2px solid var(--gray-60);
-  border-bottom: 2px solid var(--gray-60);
   height: 100%;
 
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.5rem 0;
+  box-sizing: border-box;
 }

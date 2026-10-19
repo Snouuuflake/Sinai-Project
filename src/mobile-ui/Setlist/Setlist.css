@@ -45,9 +45,6 @@
 .setlist-items-container {
   width: 100%;
   flex-grow: 1;
-  overflow-y: scroll;
-  border-top: 2px solid var(--gray-60);
-  border-bottom: 2px solid var(--gray-60);
 }
 
 .setlist-plus-menu-container {
